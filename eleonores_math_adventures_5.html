@@ -1,0 +1,1968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Eleonore's Math Adventures</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Quicksand:wght@400;500;600;700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night-deep: #1a0d36; --night: #2a1657; --royal: #4a1d7a; --violet: #7d3eb5;
+    --lavender: #c9a8e8; --lavender-soft: #e8d6f5;
+    --gold: #f0c761; --gold-bright: #ffd97a; --gold-deep: #c89540; --gold-shadow: #8b6320;
+    --rose: #e589b5; --rose-deep: #c45a8e;
+    --cream: #fdf4dc; --parchment: #f5e6c4; --parchment-shadow: #d9c191;
+    --ink: #3d1f5c; --leaf: #6b9a5a; --leaf-deep: #3e6f37;
+    --shadow-soft: 0 4px 12px rgba(26,13,54,.25);
+    --shadow-medium: 0 8px 24px rgba(26,13,54,.35);
+    --shadow-deep: 0 12px 40px rgba(26,13,54,.5);
+    --font-title: 'Cinzel Decorative', serif;
+    --font-ui: 'Quicksand', sans-serif;
+    --font-num: 'Fredoka', sans-serif;
+  }
+  *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+  html, body { height:100%; overflow:hidden; user-select:none; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
+  body { font-family:var(--font-ui); font-weight:500; color:var(--ink); background:var(--night-deep); }
+  button { font-family:inherit; border:none; cursor:pointer; background:none; color:inherit; }
+
+  #stage { position:relative; width:100vw; height:100vh; height:100dvh; overflow:hidden; }
+  .screen { position:absolute; inset:0; opacity:0; pointer-events:none; transition:opacity .6s ease; }
+  .screen.active { opacity:1; pointer-events:auto; }
+
+  .sky-bg { position:absolute; inset:0;
+    background:
+      radial-gradient(ellipse at 20% 10%, rgba(125,62,181,.4), transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(229,137,181,.25), transparent 50%),
+      radial-gradient(ellipse at 50% 100%, rgba(74,29,122,.6), transparent 60%),
+      linear-gradient(180deg, var(--night-deep) 0%, var(--night) 60%, var(--royal) 100%);
+  }
+  .stars { position:absolute; inset:0;
+    background-image:
+      radial-gradient(1px 1px at 12% 18%, #fff, transparent),
+      radial-gradient(1px 1px at 28% 32%, #fff, transparent),
+      radial-gradient(2px 2px at 42% 12%, var(--gold-bright), transparent),
+      radial-gradient(1px 1px at 58% 28%, #fff, transparent),
+      radial-gradient(1px 1px at 72% 8%, #fff, transparent),
+      radial-gradient(2px 2px at 86% 22%, var(--gold-bright), transparent),
+      radial-gradient(1px 1px at 8% 48%, #fff, transparent),
+      radial-gradient(1px 1px at 92% 52%, #fff, transparent),
+      radial-gradient(1px 1px at 35% 62%, var(--lavender), transparent),
+      radial-gradient(1px 1px at 65% 75%, #fff, transparent),
+      radial-gradient(2px 2px at 18% 78%, var(--gold-bright), transparent),
+      radial-gradient(1px 1px at 78% 88%, #fff, transparent);
+    animation:twinkle 4s ease-in-out infinite alternate;
+  }
+  @keyframes twinkle { from{opacity:.6} to{opacity:1} }
+
+  /* ENTRY */
+  #entry { display:grid; grid-template-rows:auto minmax(0,1fr) auto; align-items:center; justify-items:center; padding:1rem 1rem 1.5rem; gap:.5rem; overflow-y:auto; overflow-x:hidden; }
+  .entry-header { position:relative; z-index:2; text-align:center; padding-top:clamp(.5rem,2vh,1.5rem); }
+  .entry-eyebrow { font-weight:600; color:var(--rose); letter-spacing:.4em; text-transform:uppercase; font-size:clamp(.7rem,1.6vw,.95rem); margin-bottom:1rem; opacity:0; animation:fadeInUp .8s .2s forwards; }
+  .entry-title { font-family:var(--font-title); font-weight:900; color:var(--gold-bright); font-size:clamp(2rem,6vw,4rem); line-height:1; letter-spacing:.02em;
+    text-shadow: 0 2px 0 var(--gold-deep), 0 4px 0 var(--gold-shadow), 0 0 30px rgba(240,199,97,.6), 0 0 60px rgba(240,199,97,.3);
+    opacity:0; animation:fadeInUp .9s .4s forwards;
+  }
+  .entry-title .name { display:block; color:var(--rose); text-shadow:0 2px 0 var(--rose-deep), 0 4px 0 #7a2849, 0 0 30px rgba(229,137,181,.5); }
+  .entry-flourish { color:var(--gold); font-size:1.2rem; margin:.3rem 0; letter-spacing:.5em; opacity:0; animation:fadeInUp .9s .5s forwards; }
+  .entry-subtitle { font-family:var(--font-title); color:var(--lavender); font-size:clamp(.9rem,2vw,1.3rem); margin-top:.8rem; letter-spacing:.3em; text-transform:uppercase; opacity:0; animation:fadeInUp .9s .6s forwards; }
+  .scene { position:relative; z-index:1; width:100%; max-width:900px; min-height:0; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+  .scene svg { width:100%; height:100%; max-height:min(48vh,380px); max-width:700px; filter:drop-shadow(0 8px 24px rgba(0,0,0,.4)); }
+  .entry-actions { position:relative; z-index:2; display:flex; flex-direction:column; gap:.8rem; align-items:center; padding-bottom:.5rem; opacity:0; animation:fadeInUp .9s 1s forwards; }
+
+  /* BUTTONS */
+  .btn-royal { position:relative; font-family:var(--font-title); font-weight:700; font-size:clamp(1.1rem,2.4vw,1.4rem); color:var(--ink);
+    background:linear-gradient(180deg,var(--gold-bright) 0%, var(--gold) 50%, var(--gold-deep) 100%);
+    padding:1rem 2.5rem; border-radius:100px;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.6), inset 0 -2px 0 rgba(0,0,0,.15), 0 0 0 3px var(--gold-deep), 0 0 0 5px var(--royal), 0 8px 0 var(--gold-shadow), 0 12px 30px rgba(0,0,0,.4);
+    letter-spacing:.08em; text-transform:uppercase; transform:translateY(0); transition:transform .15s ease, box-shadow .15s ease;
+    display:flex; align-items:center; gap:.6rem; min-height:56px;
+  }
+  .btn-royal:hover:not(:disabled) { transform:translateY(-2px); }
+  .btn-royal:active:not(:disabled) { transform:translateY(4px);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.6), inset 0 -2px 0 rgba(0,0,0,.15), 0 0 0 3px var(--gold-deep), 0 0 0 5px var(--royal), 0 4px 0 var(--gold-shadow), 0 6px 20px rgba(0,0,0,.3);
+  }
+  .btn-royal:disabled { opacity:.5; cursor:not-allowed; }
+  .btn-royal .crown-icon { font-size:1.3em; }
+
+  .btn-ghost { font-family:var(--font-ui); font-weight:600; font-size:.95rem; color:var(--lavender); background:transparent; padding:.6rem 1.5rem; border-radius:100px; border:2px solid rgba(201,168,232,.4); letter-spacing:.05em; transition:all .2s ease; }
+  .btn-ghost:hover { background:rgba(201,168,232,.1); border-color:var(--lavender); color:var(--lavender-soft); }
+
+  .btn-action { font-family:var(--font-num); font-weight:700; font-size:1.05rem; color:var(--cream);
+    background:linear-gradient(180deg,var(--rose) 0%, var(--rose-deep) 100%);
+    padding:.6rem 1.2rem; border-radius:100px; border:2px solid #7a2849;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.3), 0 4px 0 #7a2849, 0 6px 12px rgba(0,0,0,.2);
+    transition:transform .1s ease, box-shadow .1s ease;
+  }
+  .btn-action:hover:not(:disabled) { transform:translateY(-1px); }
+  .btn-action:active:not(:disabled) { transform:translateY(2px); box-shadow: inset 0 2px 0 rgba(255,255,255,.3), 0 2px 0 #7a2849, 0 3px 6px rgba(0,0,0,.15); }
+  .btn-action:disabled { opacity:.5; cursor:not-allowed; filter:saturate(.5); }
+
+  /* TOGGLES */
+  .toggles { position:absolute; top:1rem; right:1rem; z-index:100; display:flex; gap:.5rem; }
+  .toggle-btn { width:44px; height:44px; border-radius:50%; background:rgba(26,13,54,.6); border:2px solid rgba(240,199,97,.5); color:var(--gold-bright); font-size:1.1rem; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; transition:all .2s ease; }
+  .toggle-btn:hover { background:rgba(74,29,122,.8); transform:scale(1.05); }
+  .toggle-btn.off { color:rgba(201,168,232,.5); border-color:rgba(201,168,232,.3); }
+
+  /* MAP */
+  #map-screen { overflow:hidden; }
+  .map-bg { position:absolute; inset:0;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(229,137,181,.2), transparent 60%),
+      radial-gradient(ellipse at 70% 80%, rgba(125,62,181,.4), transparent 60%),
+      linear-gradient(180deg, var(--night) 0%, var(--royal) 50%, var(--violet) 100%);
+  }
+  .map-header { position:absolute; top:0; left:0; right:0; padding:1rem 1.5rem; display:flex; justify-content:space-between; align-items:center; z-index:10; background:linear-gradient(180deg, rgba(26,13,54,.5), transparent); }
+  .back-btn { width:44px; height:44px; border-radius:50%; background:rgba(26,13,54,.6); border:2px solid rgba(240,199,97,.5); color:var(--gold-bright); font-size:1.4rem; backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; line-height:1; padding-bottom:2px; }
+  .map-title { font-family:var(--font-title); font-weight:700; color:var(--gold-bright); font-size:clamp(1rem,2.4vw,1.4rem); letter-spacing:.15em; text-shadow:0 2px 4px rgba(0,0,0,.5); }
+  .map-stars { font-family:var(--font-num); color:var(--gold-bright); font-size:1rem; background:rgba(26,13,54,.6); padding:.5rem 1rem; border-radius:100px; border:2px solid rgba(240,199,97,.5); backdrop-filter:blur(8px); display:flex; align-items:center; gap:.4rem; }
+
+  .map-canvas { position:absolute; inset:0; padding-top:70px; }
+  .map-canvas svg { width:100%; height:100%; display:block; }
+
+  .level-node { cursor:pointer; }
+  .level-node.locked { cursor:not-allowed; }
+  .node-inner { transform-origin:center; transition:transform .2s ease, filter .2s ease; }
+  .level-node.unlocked:hover .node-inner { transform:scale(1.06); filter:drop-shadow(0 0 12px rgba(255,217,122,.7)); }
+  .level-node.locked.bumped .node-inner { animation:lockedBump .4s ease; }
+  @keyframes lockedBump {
+    0%,100% { filter:drop-shadow(0 0 0 transparent); }
+    50% { filter:drop-shadow(0 0 14px rgba(229,137,181,.8)) brightness(1.2); }
+  }
+  .level-pulse { transform-origin:center; transform-box:fill-box; animation:pulse 2s ease-in-out infinite; }
+  @keyframes pulse {
+    0%,100% { transform:scale(1); opacity:.6; }
+    50% { transform:scale(1.18); opacity:.2; }
+  }
+
+  /* LEVEL */
+  #level-screen { background:linear-gradient(180deg, #4a1d7a 0%, #6b3fa0 50%, #8b5dc2 100%); }
+  .level-bg { position:absolute; inset:0;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(229,137,181,.3), transparent 60%),
+      radial-gradient(ellipse at 0% 100%, rgba(240,199,97,.2), transparent 50%),
+      radial-gradient(ellipse at 100% 100%, rgba(229,137,181,.2), transparent 50%);
+  }
+  .level-header { position:relative; padding:1rem 1.5rem; display:flex; justify-content:space-between; align-items:center; gap:1rem; z-index:5; }
+  .level-progress { flex:1; max-width:300px; height:14px; background:rgba(26,13,54,.4); border-radius:100px; border:2px solid rgba(240,199,97,.4); overflow:hidden; }
+  .level-progress-fill { height:100%; background:linear-gradient(90deg, var(--gold), var(--gold-bright)); border-radius:100px; width:0%; transition:width .5s ease; box-shadow:0 0 10px var(--gold-bright); }
+
+  .level-content { position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; padding:0 1rem 1rem; height:calc(100% - 76px); gap:.8rem; overflow-y:auto; }
+
+  .speech-area { position:relative; display:flex; align-items:flex-start; gap:.8rem; width:100%; max-width:800px; flex-shrink:0; }
+  .princess-avatar { width:70px; height:70px; flex-shrink:0; filter:drop-shadow(0 4px 8px rgba(0,0,0,.3)); }
+  .speech-bubble { flex:1; background:var(--cream); color:var(--ink); padding:.8rem 1.1rem; border-radius:18px; font-weight:600; font-size:clamp(.9rem,1.8vw,1.1rem); position:relative; box-shadow:var(--shadow-medium); border:3px solid var(--gold); line-height:1.4; }
+  .speech-bubble::before { content:''; position:absolute; left:-14px; top:22px; width:0; height:0; border:12px solid transparent; border-right-color:var(--gold); border-left:0; }
+  .speech-bubble::after { content:''; position:absolute; left:-10px; top:24px; width:0; height:0; border:10px solid transparent; border-right-color:var(--cream); border-left:0; }
+
+  .problem-area { flex:1; width:100%; max-width:900px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.8rem; min-height:0; }
+  .panel { display:none; width:100%; flex-direction:column; align-items:center; gap:.8rem; }
+  .panel.active { display:flex; }
+
+  /* CHOICE PANEL */
+  .equation { display:flex; align-items:center; justify-content:center; gap:clamp(.4rem,1.6vw,1rem); width:100%; flex-wrap:wrap; }
+  .scroll-tray { background:var(--parchment);
+    background-image: radial-gradient(ellipse at 20% 30%, rgba(217,193,145,.4), transparent 50%), radial-gradient(ellipse at 80% 70%, rgba(217,193,145,.4), transparent 50%);
+    border:3px solid var(--gold-deep); border-radius:18px; padding:clamp(.6rem,1.6vw,1rem);
+    box-shadow: inset 0 0 20px rgba(139,99,32,.2), var(--shadow-medium);
+    position:relative; min-width:130px; min-height:120px; display:flex; align-items:center; justify-content:center;
+  }
+  .scroll-tray::before, .scroll-tray::after { content:''; position:absolute; width:12px; height:calc(100% + 12px); top:-6px; background:linear-gradient(90deg, var(--gold-deep), var(--gold), var(--gold-deep)); border-radius:6px; box-shadow:0 2px 4px rgba(0,0,0,.2); }
+  .scroll-tray::before { left:-8px; }
+  .scroll-tray::after { right:-8px; }
+  .blocks-svg { display:block; overflow:visible; }
+  .equation-symbol { font-family:var(--font-num); font-weight:700; color:var(--gold-bright); font-size:clamp(1.8rem,4.5vw,3rem); text-shadow:0 2px 0 var(--gold-deep), 0 4px 8px rgba(0,0,0,.3); line-height:1; }
+  .equation-question { background:var(--cream); border:3px solid var(--gold); border-radius:18px; width:clamp(60px,10vw,90px); height:clamp(60px,10vw,90px); display:flex; align-items:center; justify-content:center; font-family:var(--font-num); font-weight:700; font-size:clamp(2rem,5vw,3.5rem); color:var(--rose-deep); box-shadow:var(--shadow-medium); }
+
+  .answers { display:grid; grid-template-columns:repeat(2, 1fr); gap:.7rem; width:100%; max-width:500px; }
+  .answer-btn { background:linear-gradient(180deg, var(--lavender-soft) 0%, var(--lavender) 100%); color:var(--ink); font-family:var(--font-num); font-weight:700; font-size:clamp(1.5rem,3.5vw,2.2rem); padding:.7rem .5rem; border-radius:16px; border:3px solid var(--violet);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.6), 0 5px 0 var(--violet), 0 8px 16px rgba(0,0,0,.2);
+    min-height:64px; transition:transform .1s ease, background .2s ease, box-shadow .1s ease;
+  }
+  .answer-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow: inset 0 2px 0 rgba(255,255,255,.6), 0 7px 0 var(--violet), 0 10px 18px rgba(0,0,0,.25); }
+  .answer-btn:active:not(:disabled) { transform:translateY(3px); box-shadow: inset 0 2px 0 rgba(255,255,255,.6), 0 2px 0 var(--violet), 0 4px 10px rgba(0,0,0,.15); }
+  .answer-btn.correct { background:linear-gradient(180deg, #b8e09a 0%, #6ec24a 100%); border-color:#3a7a25; box-shadow: inset 0 2px 0 rgba(255,255,255,.6), 0 5px 0 #3a7a25, 0 8px 16px rgba(0,0,0,.2); animation:correctPop .5s ease; }
+  .answer-btn.wrong { background:linear-gradient(180deg, #f5b8b8 0%, #d96565 100%); border-color:#8a2828; animation:shake .4s ease; box-shadow: inset 0 2px 0 rgba(255,255,255,.6), 0 5px 0 #8a2828, 0 8px 16px rgba(0,0,0,.2); }
+  .answer-btn:disabled { cursor:default; }
+  @keyframes correctPop { 0%,100%{transform:scale(1)} 40%{transform:scale(1.15)} }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+
+  /* INTERACTIVE BLOCKS */
+  .block { position:relative; cursor:grab; touch-action:none; user-select:none; -webkit-user-drag:none; transition:transform .15s ease, opacity .2s ease; flex-shrink:0; }
+  .block.dragging { opacity:.4; cursor:grabbing; }
+  .block:hover { transform:scale(1.1); }
+  .block-tens { width:14px; height:66px;
+    background:linear-gradient(95deg, #9c5dd1 0%, #7d3eb5 35%, #4a1d7a 75%, #3d1f5c 100%);
+    border-radius:7px; border:1.5px solid #1a0d36;
+    box-shadow: inset 1px 0 0 rgba(255,255,255,.25), inset -1px 0 0 rgba(0,0,0,.3), 0 2px 4px rgba(0,0,0,.3);
+  }
+  .block-tens::before { content:''; position:absolute; top:-3px; left:50%; transform:translateX(-50%); width:6px; height:6px; border-radius:50%; background:radial-gradient(circle at 30% 30%, #ffe9a0, #f0c761 60%, #c89540); box-shadow:0 1px 2px rgba(0,0,0,.3); }
+  .block-ones { width:18px; height:18px; border-radius:50%;
+    background:radial-gradient(circle at 30% 30%, #ffe9a0, #f0c761 60%, #c89540);
+    border:1.5px solid #8b6320; box-shadow: inset 0 1px 2px rgba(255,255,255,.5), 0 2px 3px rgba(0,0,0,.25);
+  }
+  .block-ghost { position:fixed; pointer-events:none; z-index:9999; opacity:.85; filter:drop-shadow(0 6px 12px rgba(0,0,0,.4)); transform:scale(1.1); }
+
+  .drop-zone { transition:background .2s ease, border-color .2s ease, box-shadow .2s ease; }
+  .drop-zone.drop-hover { background:rgba(255,217,122,.25) !important; border-color:var(--gold-bright) !important; box-shadow: inset 0 0 30px rgba(240,199,97,.3), 0 0 20px rgba(240,199,97,.6) !important; }
+
+  /* BUILD PANEL */
+  .build-target { background:var(--cream); border:3px solid var(--gold); border-radius:16px; padding:.7rem 1.3rem; box-shadow:var(--shadow-medium); text-align:center; font-weight:600; font-size:clamp(.9rem,1.8vw,1.05rem); color:var(--ink); }
+  .build-target .num { display:block; font-family:var(--font-num); font-weight:700; font-size:clamp(2.5rem,6vw,3.5rem); color:var(--rose-deep); line-height:1; margin-top:.2rem; }
+  .build-stage { display:grid; grid-template-columns:minmax(120px,1fr) minmax(220px,2fr); gap:.8rem; width:100%; max-width:700px; }
+  .build-supply { background:var(--parchment);
+    background-image:radial-gradient(ellipse at 50% 100%, rgba(125,62,181,.15), transparent 50%);
+    border:3px solid var(--gold-deep); border-radius:16px; padding:.6rem; display:flex; flex-direction:column; align-items:center; gap:.5rem; box-shadow:inset 0 0 14px rgba(139,99,32,.2);
+  }
+  .supply-label { font-family:var(--font-title); font-weight:700; font-size:.85rem; letter-spacing:.15em; color:var(--royal); text-transform:uppercase; }
+  .supply-stamps { display:flex; gap:1rem; align-items:flex-end; padding:.5rem .3rem .3rem; }
+  .stamp-wrap { display:flex; flex-direction:column; align-items:center; gap:.3rem; }
+  .stamp-label { font-family:var(--font-num); font-weight:600; font-size:.85rem; color:var(--royal); }
+
+  .build-workspace { background:var(--cream); border:3px dashed var(--gold-deep); border-radius:16px; min-height:130px; padding:.7rem; box-shadow:inset 0 0 14px rgba(139,99,32,.15); display:flex; flex-direction:column; gap:.4rem; }
+  .workspace-label { font-weight:600; font-size:.8rem; color:var(--ink); opacity:.6; text-align:center; }
+  .workspace-content { flex:1; display:flex; align-items:flex-end; gap:.6rem; flex-wrap:wrap; }
+  .workspace-tens { display:flex; gap:4px; align-items:flex-end; }
+  .workspace-ones { display:grid; grid-template-columns:repeat(5, auto); gap:4px; align-content:end; }
+
+  .build-status { display:flex; align-items:center; gap:.8rem; flex-wrap:wrap; justify-content:center; }
+  .build-count { background:rgba(26,13,54,.5); border:2px solid var(--gold); border-radius:12px; padding:.4rem .9rem; font-family:var(--font-num); font-weight:700; font-size:1.1rem; color:var(--cream); backdrop-filter:blur(6px); }
+  .build-count .num { color:var(--gold-bright); font-size:1.4rem; margin-left:.3rem; }
+
+  /* COMBINE PANEL */
+  .combine-stage { display:flex; align-items:stretch; gap:.5rem; width:100%; max-width:800px; flex-wrap:wrap; justify-content:center; }
+  .combine-tray { background:var(--parchment);
+    background-image:radial-gradient(ellipse at 50% 0%, rgba(229,137,181,.2), transparent 60%);
+    border:3px solid var(--gold-deep); border-radius:16px; padding:.6rem; min-width:130px; flex:1; max-width:240px; display:flex; flex-direction:column; gap:.4rem;
+    box-shadow:inset 0 0 14px rgba(139,99,32,.2), var(--shadow-soft); position:relative;
+  }
+  .tray-label { font-family:var(--font-num); font-weight:700; font-size:1rem; color:var(--royal); text-align:center; background:rgba(255,255,255,.5); padding:.15rem; border-radius:8px; }
+  .tray-content { flex:1; display:flex; align-items:flex-end; gap:.5rem; min-height:90px; }
+  .tray-content.empty::after { content:'✓ Sent!'; font-family:var(--font-num); font-weight:600; color:var(--leaf-deep); font-size:.95rem; margin:auto; opacity:.6; }
+  .tray-tens, .tray-ones, .cauldron-tens, .cauldron-ones { display:flex; gap:3px; align-items:flex-end; }
+  .tray-ones, .cauldron-ones { display:grid; grid-template-columns:repeat(5, auto); gap:3px; align-content:end; }
+
+  .send-all-btn { font-family:var(--font-num); font-weight:600; font-size:.85rem; color:var(--royal); background:rgba(255,217,122,.6); border:2px solid var(--gold-deep); border-radius:100px; padding:.3rem .6rem; transition:all .15s ease; }
+  .send-all-btn:hover:not(:disabled) { background:var(--gold-bright); transform:scale(1.05); }
+  .send-all-btn:disabled { opacity:.3; cursor:not-allowed; }
+
+  .combine-arrow { display:flex; align-items:center; justify-content:center; font-family:var(--font-num); font-weight:700; font-size:2rem; color:var(--gold-bright); text-shadow:0 2px 4px rgba(0,0,0,.4); min-width:30px; }
+
+  .cauldron { background:radial-gradient(ellipse at 50% 30%, rgba(229,137,181,.25), transparent 60%), var(--cream);
+    border:4px solid var(--rose-deep); border-radius:20px; padding:.6rem; min-width:180px; flex:1.4; max-width:320px;
+    display:flex; flex-direction:column; gap:.4rem;
+    box-shadow: inset 0 0 20px rgba(229,137,181,.2), 0 0 0 2px var(--gold), 0 8px 20px rgba(0,0,0,.3);
+    position:relative;
+  }
+  .cauldron::before { content:'✨'; position:absolute; top:-10px; left:-10px; font-size:1.4rem; animation:sparkle 2s ease-in-out infinite; }
+  .cauldron::after { content:'✨'; position:absolute; top:-8px; right:-10px; font-size:1.2rem; animation:sparkle 2s ease-in-out infinite .6s; }
+  .cauldron-label { font-family:var(--font-title); font-weight:700; font-size:1rem; color:var(--rose-deep); text-align:center; letter-spacing:.1em; }
+  .cauldron-content { flex:1; display:flex; align-items:flex-end; gap:.5rem; min-height:90px; }
+  .cauldron.celebrating { animation:celebratePulse .6s ease; border-color:#3a7a25; }
+  @keyframes celebratePulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04); box-shadow:0 0 40px rgba(110,194,74,.7)} }
+
+  /* TRADE PORTAL */
+  .trade-portal { background:linear-gradient(135deg, #ffe9a0, #f0c761 50%, #e589b5);
+    border:3px solid var(--gold-deep); border-radius:16px; padding:.7rem 1.2rem; margin-top:.5rem;
+    display:none; align-items:center; gap:.8rem; flex-wrap:wrap; justify-content:center;
+    box-shadow:0 0 20px rgba(240,199,97,.6), 0 4px 12px rgba(0,0,0,.3);
+    animation:portalAppear .5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .trade-portal.active { display:flex; }
+  .trade-portal-text { font-family:var(--font-num); font-weight:700; color:var(--ink); font-size:clamp(.9rem,2vw,1.05rem); text-align:center; flex:1; min-width:180px; }
+  .trade-visual { display:inline-flex; align-items:center; gap:.4rem; font-family:var(--font-num); font-weight:700; color:var(--royal); }
+  @keyframes portalAppear {
+    0% { opacity:0; transform:scale(.7) rotate(-3deg); }
+    100% { opacity:1; transform:scale(1) rotate(0); }
+  }
+
+  .trading { animation:tradeSwirl .8s ease-in forwards; }
+  @keyframes tradeSwirl {
+    0% { transform:scale(1) rotate(0); opacity:1; }
+    50% { transform:scale(1.3) rotate(180deg); opacity:1; filter:brightness(1.5); }
+    100% { transform:scale(0) rotate(540deg); opacity:0; }
+  }
+  .trade-spawn { animation:tradeSpawn .6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+  @keyframes tradeSpawn {
+    0% { transform:scale(0) rotate(-180deg); opacity:0; filter:brightness(2); }
+    60% { filter:brightness(1.8); }
+    100% { transform:scale(1) rotate(0); opacity:1; filter:brightness(1); }
+  }
+
+  .check-row { display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; justify-content:center; }
+  .total-display { background:rgba(26,13,54,.5); border:2px solid var(--gold); border-radius:14px; padding:.4rem 1rem; color:var(--cream); font-family:var(--font-num); font-weight:600; font-size:1rem; backdrop-filter:blur(6px); }
+  .total-display .num { color:var(--gold-bright); font-size:1.4rem; margin-left:.4rem; }
+
+  /* CELEBRATION */
+  #celebration { position:absolute; inset:0; background:rgba(26,13,54,.85); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); z-index:1000; display:none; align-items:center; justify-content:center; padding:1rem; }
+  #celebration.active { display:flex; animation:fadeIn .4s ease; }
+  .celebration-card { background:var(--cream); border:5px solid var(--gold); border-radius:24px; padding:clamp(1.5rem,4vw,2.5rem) clamp(1.5rem,4vw,3rem); text-align:center; max-width:480px; width:100%; box-shadow:var(--shadow-deep); position:relative; animation:cardPop .6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes cardPop { 0%{transform:scale(.5); opacity:0} 100%{transform:scale(1); opacity:1} }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  .celebration-title { font-family:var(--font-title); font-weight:900; font-size:clamp(1.8rem,5vw,2.6rem); color:var(--rose-deep); margin-bottom:.5rem; text-shadow:0 2px 0 rgba(196,90,142,.3); }
+  .celebration-subtitle { font-weight:600; color:var(--ink); font-size:clamp(1rem,2.4vw,1.2rem); margin-bottom:1.5rem; }
+  .celebration-stars { display:flex; justify-content:center; gap:.5rem; margin:1.5rem 0; }
+  .celeb-star { width:clamp(50px,10vw,70px); height:clamp(50px,10vw,70px); opacity:.3; transform:scale(.6); transition:all .6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .celeb-star.earned { opacity:1; transform:scale(1); filter:drop-shadow(0 0 12px var(--gold-bright)); }
+  .celebration-actions { display:flex; flex-direction:column; gap:.6rem; margin-top:1rem; }
+
+  .confetti { position:absolute; width:12px; height:12px; pointer-events:none; animation:confettiFall 3s linear forwards; }
+  @keyframes confettiFall { 0%{transform:translateY(-50px) rotate(0deg); opacity:1} 100%{transform:translateY(100vh) rotate(720deg); opacity:0} }
+
+  /* SHARED ANIMATIONS */
+  @keyframes fadeInUp { from{opacity:0; transform:translateY(20px)} to{opacity:1; transform:translateY(0)} }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  .floating { animation:float 4s ease-in-out infinite; }
+  @keyframes sparkle { 0%,100%{opacity:.3; transform:scale(.8)} 50%{opacity:1; transform:scale(1.2)} }
+
+  .sparkle-burst { position:absolute; pointer-events:none; z-index:10; }
+  .sparkle-burst span { position:absolute; font-size:1.5rem; animation:burst .8s ease-out forwards; }
+  @keyframes burst { 0%{transform:translate(0,0) scale(0); opacity:1} 100%{transform:translate(var(--tx),var(--ty)) scale(1.5); opacity:0} }
+
+  @keyframes blockSpawn { 0%{transform:scale(0); opacity:0} 60%{transform:scale(1.15); opacity:1} 100%{transform:scale(1); opacity:1} }
+  .block-spawn { animation:blockSpawn .3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+  /* STORY SCREEN */
+  #story-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .story-page {
+    position: relative; z-index: 5;
+    background: var(--cream);
+    background-image:
+      radial-gradient(ellipse at 20% 30%, rgba(217,193,145,.3), transparent 50%),
+      radial-gradient(ellipse at 80% 70%, rgba(217,193,145,.3), transparent 50%);
+    border: 4px solid var(--gold);
+    border-radius: 24px;
+    padding: clamp(1.4rem, 3vw, 2.2rem) clamp(1.2rem, 3vw, 2rem);
+    max-width: 600px; width: 100%;
+    max-height: 92vh; overflow-y: auto;
+    text-align: center;
+    box-shadow: 0 0 0 6px var(--gold-deep), 0 20px 60px rgba(0,0,0,.5);
+    animation: storyAppear .6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes storyAppear {
+    0% { opacity:0; transform: translateY(30px) scale(.95); }
+    100% { opacity:1; transform: translateY(0) scale(1); }
+  }
+  .story-icon {
+    font-size: clamp(2rem, 5vw, 2.8rem);
+    display: block;
+    margin-bottom: .3rem;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,.2));
+  }
+  .story-flourish {
+    color: var(--gold-deep);
+    font-size: 1rem;
+    letter-spacing: .5em;
+    margin: .3rem 0 .8rem;
+    opacity: .7;
+  }
+  .story-title {
+    font-family: var(--font-title);
+    font-weight: 900;
+    color: var(--rose-deep);
+    font-size: clamp(1.3rem, 3.5vw, 1.9rem);
+    margin-bottom: 1rem;
+    letter-spacing: .04em;
+    text-shadow: 0 2px 0 rgba(196, 90, 142, .15);
+  }
+  .story-body { text-align: left; }
+  .story-body p {
+    font-family: var(--font-ui);
+    font-weight: 500;
+    color: var(--ink);
+    font-size: clamp(.95rem, 2.1vw, 1.1rem);
+    line-height: 1.65;
+    margin-bottom: .8rem;
+  }
+  .story-body p:last-child { margin-bottom: 0; }
+  .story-body.has-dropcap p:first-child::first-letter {
+    font-family: var(--font-title);
+    font-size: 3.2em;
+    float: left;
+    line-height: .9;
+    margin: .05em .12em 0 0;
+    color: var(--rose-deep);
+    font-weight: 900;
+    text-shadow: 0 2px 0 rgba(196, 90, 142, .2);
+  }
+  .story-actions {
+    margin-top: 1.3rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  /* RESPONSIVE */
+  @media (max-height:700px) {
+    .scene svg { max-height:min(40vh,280px); }
+    .princess-avatar { width:56px; height:56px; }
+  }
+  @media (max-height:640px) {
+    .princess-avatar { width:50px; height:50px; }
+    .scroll-tray { min-height:100px; }
+    .answer-btn { min-height:56px; }
+    .scene svg { max-height:min(32vh,220px); }
+    .block-tens { height:54px; }
+  }
+  @media (min-width:768px) {
+    .speech-area { gap:1.2rem; }
+    .princess-avatar { width:90px; height:90px; }
+    .answers { grid-template-columns:repeat(4, 1fr); max-width:700px; }
+  }
+  @media (max-width:540px) {
+    .build-stage { grid-template-columns:1fr; }
+    .combine-stage { gap:.4rem; }
+    .combine-tray { min-width:110px; max-width:180px; }
+    /* Switch ones grid to 4 columns so 7+ ones still fit a narrow tray */
+    .tray-ones, .cauldron-ones, .workspace-ones { grid-template-columns:repeat(4, auto); }
+    .cauldron { min-width:100%; flex-basis:100%; order:99; }
+    .combine-arrow { display:none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="stage">
+
+  <div class="toggles">
+    <button id="sound-toggle" class="toggle-btn" title="Sound on/off" aria-label="Toggle sound">
+      <span aria-hidden="true">♪</span>
+    </button>
+  </div>
+
+  <!-- ENTRY SCREEN -->
+  <section id="entry" class="screen active">
+    <div class="sky-bg"></div>
+    <div class="stars"></div>
+
+    <header class="entry-header">
+      <div class="entry-eyebrow">A Royal Quest</div>
+      <h1 class="entry-title">Eleonore's<span class="name">Math Adventures</span></h1>
+      <div class="entry-flourish">✦ &nbsp; ✦ &nbsp; ✦</div>
+      <div class="entry-subtitle">Where Numbers Become Magic</div>
+    </header>
+
+    <div class="scene">
+      <svg viewBox="0 0 800 400" preserveAspectRatio="xMidYEnd meet" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="castleGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#4a1d7a"/>
+            <stop offset="100%" stop-color="#1a0d36"/>
+          </linearGradient>
+          <linearGradient id="hillGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#3e6f37"/>
+            <stop offset="100%" stop-color="#1f3a1c"/>
+          </linearGradient>
+          <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#fff9d9" stop-opacity=".8"/>
+            <stop offset="100%" stop-color="#fff9d9" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="flagGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#e589b5"/>
+            <stop offset="100%" stop-color="#c45a8e"/>
+          </linearGradient>
+        </defs>
+        <circle cx="650" cy="80" r="50" fill="url(#moonGlow)"/>
+        <circle cx="650" cy="80" r="32" fill="#fff9d9"/>
+        <circle cx="638" cy="72" r="6" fill="#e8e0c0" opacity=".6"/>
+        <circle cx="660" cy="92" r="4" fill="#e8e0c0" opacity=".6"/>
+        <path d="M 0 320 Q 120 260 240 290 Q 360 250 480 280 Q 600 240 720 270 L 800 280 L 800 400 L 0 400 Z" fill="url(#hillGrad)" opacity=".6"/>
+        <path d="M 0 350 Q 150 310 300 330 Q 450 305 600 325 Q 700 320 800 335 L 800 400 L 0 400 Z" fill="#1f3a1c" opacity=".8"/>
+        <g transform="translate(280, 130)">
+          <rect x="60" y="60" width="120" height="170" fill="url(#castleGrad)"/>
+          <rect x="80" y="80" width="20" height="30" fill="#f0c761" opacity=".8"/>
+          <rect x="140" y="80" width="20" height="30" fill="#f0c761" opacity=".8"/>
+          <rect x="80" y="140" width="20" height="30" fill="#f0c761" opacity=".8"/>
+          <rect x="140" y="140" width="20" height="30" fill="#f0c761" opacity=".8"/>
+          <rect x="100" y="190" width="40" height="40" fill="#1a0d36"/>
+          <path d="M 100 230 Q 120 220 140 230 L 140 190 L 100 190 Z" fill="#f0c761" opacity=".6"/>
+          <rect x="55" y="50" width="15" height="15" fill="#4a1d7a"/>
+          <rect x="80" y="50" width="15" height="15" fill="#4a1d7a"/>
+          <rect x="105" y="50" width="15" height="15" fill="#4a1d7a"/>
+          <rect x="130" y="50" width="15" height="15" fill="#4a1d7a"/>
+          <rect x="155" y="50" width="15" height="15" fill="#4a1d7a"/>
+          <rect x="170" y="50" width="15" height="15" fill="#4a1d7a"/>
+          <rect x="20" y="100" width="50" height="130" fill="url(#castleGrad)"/>
+          <polygon points="20,100 70,100 45,40" fill="#7d3eb5"/>
+          <rect x="35" y="140" width="20" height="30" fill="#f0c761" opacity=".8"/>
+          <rect x="170" y="100" width="50" height="130" fill="url(#castleGrad)"/>
+          <polygon points="170,100 220,100 195,40" fill="#7d3eb5"/>
+          <rect x="185" y="140" width="20" height="30" fill="#f0c761" opacity=".8"/>
+          <polygon points="60,60 180,60 120,-10" fill="#7d3eb5"/>
+          <line x1="120" y1="-10" x2="120" y2="-30" stroke="#f0c761" stroke-width="2"/>
+          <path d="M 120 -30 L 145 -25 L 140 -15 L 145 -8 L 120 -10 Z" fill="url(#flagGrad)"/>
+          <line x1="45" y1="40" x2="45" y2="20" stroke="#f0c761" stroke-width="2"/>
+          <path d="M 45 20 L 65 24 L 60 30 L 65 36 L 45 32 Z" fill="url(#flagGrad)"/>
+          <line x1="195" y1="40" x2="195" y2="20" stroke="#f0c761" stroke-width="2"/>
+          <path d="M 195 20 L 215 24 L 210 30 L 215 36 L 195 32 Z" fill="url(#flagGrad)"/>
+        </g>
+        <path d="M 0 380 Q 200 340 400 360 Q 600 340 800 370 L 800 400 L 0 400 Z" fill="#2a4d24"/>
+        <g transform="translate(380, 280)" class="floating">
+          <path d="M 0 60 Q -28 50 -40 100 L 40 100 Q 28 50 0 60 Z" fill="#7d3eb5"/>
+          <path d="M -40 100 L -45 110 L 45 110 L 40 100 Z" fill="#4a1d7a"/>
+          <path d="M -20 65 Q 0 70 20 65 L 18 78 Q 0 82 -18 78 Z" fill="#f0c761" opacity=".9"/>
+          <circle cx="0" cy="72" r="3" fill="#e589b5"/>
+          <ellipse cx="0" cy="48" rx="14" ry="14" fill="#7d3eb5"/>
+          <rect x="-3" y="35" width="6" height="6" fill="#f5d4b0"/>
+          <ellipse cx="0" cy="22" rx="18" ry="20" fill="#5c2818"/>
+          <ellipse cx="0" cy="22" rx="13" ry="14" fill="#f5d4b0"/>
+          <path d="M -13 18 Q -10 8 0 8 Q 10 8 13 18 Q 12 14 8 14 Q 4 16 0 14 Q -4 16 -8 14 Q -12 14 -13 18 Z" fill="#5c2818"/>
+          <path d="M -13 18 Q -16 28 -14 38 Q -12 32 -10 28" fill="#5c2818"/>
+          <path d="M 13 18 Q 16 28 14 38 Q 12 32 10 28" fill="#5c2818"/>
+          <circle cx="-5" cy="22" r="1.5" fill="#1a0d36"/>
+          <circle cx="5" cy="22" r="1.5" fill="#1a0d36"/>
+          <circle cx="-7" cy="26" r="2" fill="#e589b5" opacity=".5"/>
+          <circle cx="7" cy="26" r="2" fill="#e589b5" opacity=".5"/>
+          <path d="M -3 28 Q 0 30 3 28" stroke="#1a0d36" stroke-width="1" fill="none" stroke-linecap="round"/>
+          <path d="M -10 9 L -8 4 L -4 8 L 0 2 L 4 8 L 8 4 L 10 9 Z" fill="#f0c761" stroke="#c89540" stroke-width=".5"/>
+          <circle cx="0" cy="6" r="1.5" fill="#e589b5"/>
+          <circle cx="-6" cy="8" r="1" fill="#7d3eb5"/>
+          <circle cx="6" cy="8" r="1" fill="#7d3eb5"/>
+          <ellipse cx="-15" cy="50" rx="4" ry="10" fill="#f5d4b0" transform="rotate(-15 -15 50)"/>
+          <ellipse cx="15" cy="50" rx="4" ry="10" fill="#f5d4b0" transform="rotate(15 15 50)"/>
+          <text x="-50" y="20" font-size="14" fill="#f0c761" opacity=".9" style="animation:sparkle 2s infinite">✦</text>
+          <text x="45" y="40" font-size="10" fill="#f0c761" opacity=".7" style="animation:sparkle 2.5s infinite .3s">✦</text>
+          <text x="-55" y="70" font-size="8" fill="#e589b5" opacity=".8" style="animation:sparkle 3s infinite .6s">✦</text>
+          <text x="55" y="80" font-size="12" fill="#e589b5" opacity=".8" style="animation:sparkle 2.2s infinite 1s">✦</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="entry-actions">
+      <button id="begin-btn" class="btn-royal">
+        <span class="crown-icon">👑</span>
+        <span>Begin the Quest</span>
+      </button>
+      <button id="reset-btn" class="btn-ghost" style="display:none">Start Over</button>
+    </div>
+  </section>
+
+  <!-- MAP SCREEN -->
+  <section id="map-screen" class="screen">
+    <div class="map-bg"></div>
+    <div class="stars"></div>
+
+    <div class="map-header">
+      <button id="map-back" class="back-btn" aria-label="Back to title">←</button>
+      <div class="map-title">The Kingdom Map</div>
+      <div class="map-stars">
+        <span style="color:#ffd97a">★</span>
+        <span id="total-stars">0</span>
+      </div>
+    </div>
+
+    <div class="map-canvas">
+      <svg id="map-svg" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="pathGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f5e6c4"/>
+            <stop offset="100%" stop-color="#d9c191"/>
+          </linearGradient>
+          <radialGradient id="nodeUnlocked" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#ffd97a"/>
+            <stop offset="60%" stop-color="#f0c761"/>
+            <stop offset="100%" stop-color="#c89540"/>
+          </radialGradient>
+          <radialGradient id="nodeLocked" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#7d3eb5"/>
+            <stop offset="100%" stop-color="#3d1f5c"/>
+          </radialGradient>
+          <radialGradient id="nodeCurrent" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#ffe9a0"/>
+            <stop offset="50%" stop-color="#ffd97a"/>
+            <stop offset="100%" stop-color="#f0c761"/>
+          </radialGradient>
+          <radialGradient id="nodeDone" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#b8e09a"/>
+            <stop offset="60%" stop-color="#6ec24a"/>
+            <stop offset="100%" stop-color="#3a7a25"/>
+          </radialGradient>
+          <filter id="nodeShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="4" stdDeviation="3" flood-opacity=".4"/>
+          </filter>
+        </defs>
+
+        <g opacity=".7">
+          <ellipse cx="80" cy="600" rx="40" ry="60" fill="#2a4d24"/>
+          <rect x="75" y="610" width="10" height="40" fill="#3d2814"/>
+          <ellipse cx="920" cy="180" rx="45" ry="65" fill="#2a4d24"/>
+          <rect x="915" y="190" width="10" height="40" fill="#3d2814"/>
+          <ellipse cx="100" cy="200" rx="35" ry="50" fill="#2a4d24"/>
+          <ellipse cx="900" cy="600" rx="35" ry="55" fill="#2a4d24"/>
+        </g>
+
+        <g fill="rgba(255,255,255,.15)">
+          <ellipse cx="200" cy="80" rx="60" ry="20"/>
+          <ellipse cx="220" cy="70" rx="40" ry="18"/>
+          <ellipse cx="700" cy="120" rx="70" ry="22"/>
+          <ellipse cx="720" cy="110" rx="50" ry="20"/>
+        </g>
+
+        <path d="M 130 620 Q 280 580 320 480 Q 350 380 500 380 Q 650 380 670 280 Q 680 180 830 130"
+              fill="none" stroke="url(#pathGrad)" stroke-width="22" stroke-linecap="round"
+              stroke-dasharray="4 14" opacity=".9"/>
+
+        <g id="map-nodes"></g>
+      </svg>
+    </div>
+  </section>
+
+  <!-- LEVEL SCREEN -->
+  <section id="level-screen" class="screen">
+    <div class="level-bg"></div>
+
+    <div class="level-header">
+      <button id="level-back" class="back-btn" aria-label="Back to map">←</button>
+      <div class="level-progress">
+        <div id="progress-fill" class="level-progress-fill"></div>
+      </div>
+      <div style="width:44px"></div>
+    </div>
+
+    <div class="level-content">
+      <div class="speech-area">
+        <svg class="princess-avatar" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="50" cy="50" r="48" fill="#fdf4dc" stroke="#f0c761" stroke-width="3"/>
+          <ellipse cx="50" cy="48" rx="28" ry="32" fill="#5c2818"/>
+          <ellipse cx="50" cy="48" rx="20" ry="22" fill="#f5d4b0"/>
+          <path d="M 30 40 Q 35 28 50 28 Q 65 28 70 40 Q 65 36 60 38 Q 50 36 40 38 Q 35 36 30 40 Z" fill="#5c2818"/>
+          <circle cx="42" cy="48" r="2" fill="#1a0d36"/>
+          <circle cx="58" cy="48" r="2" fill="#1a0d36"/>
+          <circle cx="38" cy="55" r="3" fill="#e589b5" opacity=".5"/>
+          <circle cx="62" cy="55" r="3" fill="#e589b5" opacity=".5"/>
+          <path d="M 45 60 Q 50 64 55 60" stroke="#1a0d36" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <path d="M 32 32 L 38 22 L 44 30 L 50 18 L 56 30 L 62 22 L 68 32 Z" fill="#f0c761" stroke="#c89540" stroke-width="1"/>
+          <circle cx="50" cy="25" r="2" fill="#e589b5"/>
+          <circle cx="40" cy="28" r="1.5" fill="#7d3eb5"/>
+          <circle cx="60" cy="28" r="1.5" fill="#7d3eb5"/>
+        </svg>
+        <div id="speech-bubble" class="speech-bubble">Welcome to the Royal Garden!</div>
+      </div>
+
+      <div class="problem-area">
+
+        <!-- CHOICE PANEL (Levels 1 & 5) -->
+        <div id="panel-choice" class="panel">
+          <div class="equation">
+            <div class="scroll-tray">
+              <svg id="addend-a" class="blocks-svg" width="180" height="120" viewBox="0 0 180 120"></svg>
+            </div>
+            <div class="equation-symbol">+</div>
+            <div class="scroll-tray">
+              <svg id="addend-b" class="blocks-svg" width="180" height="120" viewBox="0 0 180 120"></svg>
+            </div>
+            <div class="equation-symbol">=</div>
+            <div class="equation-question">?</div>
+          </div>
+          <div id="answers-choice" class="answers"></div>
+        </div>
+
+        <!-- BUILD PANEL (Level 2) -->
+        <div id="panel-build" class="panel">
+          <div class="build-target">
+            Build the number
+            <span class="num" id="build-target-num">47</span>
+          </div>
+          <div class="build-stage">
+            <div class="build-supply">
+              <div class="supply-label">Supply</div>
+              <div class="supply-stamps">
+                <div class="stamp-wrap">
+                  <div class="block block-tens" data-stamp="tens" aria-label="Drag a tens line"></div>
+                  <span class="stamp-label">10</span>
+                </div>
+                <div class="stamp-wrap">
+                  <div class="block block-ones" data-stamp="ones" aria-label="Drag a ones circle"></div>
+                  <span class="stamp-label">1</span>
+                </div>
+              </div>
+            </div>
+            <div class="build-workspace drop-zone" data-zone="workspace">
+              <div class="workspace-label">Drop here · tap a block to remove</div>
+              <div class="workspace-content">
+                <div class="workspace-tens" id="ws-tens"></div>
+                <div class="workspace-ones" id="ws-ones"></div>
+              </div>
+            </div>
+          </div>
+          <div class="build-status">
+            <div class="build-count">You have: <span class="num" id="build-current">0</span></div>
+            <button id="build-check" class="btn-action">Check Answer</button>
+          </div>
+        </div>
+
+        <!-- COMBINE PANEL (Levels 3 & 4) -->
+        <div id="panel-combine" class="panel">
+          <div class="combine-stage">
+            <div class="combine-tray">
+              <div class="tray-label" id="tray-a-label">23</div>
+              <div class="tray-content" id="tray-a-content">
+                <div class="tray-tens" id="tray-a-tens"></div>
+                <div class="tray-ones" id="tray-a-ones"></div>
+              </div>
+            </div>
+            <div class="combine-arrow">→</div>
+            <div class="combine-tray">
+              <div class="tray-label" id="tray-b-label">14</div>
+              <div class="tray-content" id="tray-b-content">
+                <div class="tray-tens" id="tray-b-tens"></div>
+                <div class="tray-ones" id="tray-b-ones"></div>
+              </div>
+            </div>
+            <div class="combine-arrow">→</div>
+            <div class="cauldron drop-zone" data-zone="cauldron">
+              <div class="cauldron-label">✨ Magic Cauldron ✨</div>
+              <div class="cauldron-content">
+                <div class="cauldron-tens" id="cauldron-tens"></div>
+                <div class="cauldron-ones" id="cauldron-ones"></div>
+              </div>
+            </div>
+          </div>
+          <div id="trade-portal" class="trade-portal">
+            <div class="trade-portal-text">
+              ✨ Magic Trade! ✨<br>
+              <span class="trade-visual">10 circles → 1 line</span>
+            </div>
+            <button id="trade-btn" class="btn-action">Trade Now!</button>
+          </div>
+          <div id="answers-combine" class="answers" style="display:none"></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- STORY SCREEN -->
+  <section id="story-screen" class="screen">
+    <div class="sky-bg"></div>
+    <div class="stars"></div>
+    <div class="story-page">
+      <span id="story-icon" class="story-icon" aria-hidden="true">👑</span>
+      <div class="story-flourish">✦ &nbsp;✦&nbsp; ✦</div>
+      <h2 id="story-title" class="story-title">The Quest Begins</h2>
+      <div id="story-body" class="story-body"></div>
+      <div class="story-flourish">✦ &nbsp;✦&nbsp; ✦</div>
+      <div class="story-actions">
+        <button id="story-continue" class="btn-royal">
+          <span class="crown-icon">📜</span>
+          <span>Continue</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CELEBRATION OVERLAY -->
+  <div id="celebration">
+    <div class="celebration-card">
+      <div class="celebration-title" id="celeb-title">Wonderful!</div>
+      <div class="celebration-subtitle" id="celeb-sub">You finished the level!</div>
+      <div class="celebration-stars">
+        <svg class="celeb-star" data-idx="0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="#f0c761" stroke="#c89540" stroke-width="1" d="M12 2 l3 7 7 .5 -5.5 4.5 2 7 -6.5-4 -6.5 4 2-7 -5.5-4.5 7-.5z"/></svg>
+        <svg class="celeb-star" data-idx="1" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="#f0c761" stroke="#c89540" stroke-width="1" d="M12 2 l3 7 7 .5 -5.5 4.5 2 7 -6.5-4 -6.5 4 2-7 -5.5-4.5 7-.5z"/></svg>
+        <svg class="celeb-star" data-idx="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="#f0c761" stroke="#c89540" stroke-width="1" d="M12 2 l3 7 7 .5 -5.5 4.5 2 7 -6.5-4 -6.5 4 2-7 -5.5-4.5 7-.5z"/></svg>
+      </div>
+      <div class="celebration-actions">
+        <button id="celeb-continue" class="btn-royal">
+          <span class="crown-icon">🗺</span>
+          <span>Back to Map</span>
+        </button>
+        <button id="celeb-replay" class="btn-ghost">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  /* ---------- LEVEL DEFINITIONS ---------- */
+  const LEVEL_DEFS = {
+    1: { name:'Royal Garden', icon:'flower', type:'choice', regroup:false, count:5, pos:{x:130,y:620},
+         intro:"Welcome to the Royal Garden! Each line is ten and each circle is one. Count them all!",
+         story: {
+           intro: {
+             title: "Chapter One: The Royal Garden",
+             icon: "🌸",
+             paragraphs: ["Eleonore was the first to spot it: the Royal Garden's flowers had forgotten how to count their petals. She knelt down, opened her satchel, and got to work. \"Don't worry, little flowers. I know exactly how to fix this.\""],
+           },
+           outro: {
+             title: "Garden Restored",
+             icon: "🗝️",
+             paragraphs: ["The garden bloomed brighter than ever. Eleonore tucked a glowing Garden Key into her satchel and pressed onward — she had four more places to save before sunrise."],
+           },
+         } },
+    2: { name:'Enchanted Forest', icon:'tree', type:'build', count:5, pos:{x:320,y:480},
+         intro:"Build magic numbers! Drag tens-lines and ones-circles into your workspace. Tap a block to remove it.",
+         story: {
+           intro: {
+             title: "Chapter Two: The Enchanted Forest",
+             icon: "🌲",
+             paragraphs: ["The Enchanted Forest was darker than Eleonore expected. The trees had lost their numbers and couldn't remember their shapes. Most children would have turned back. Eleonore rolled up her sleeves. \"Right. Let's build them, one by one.\""],
+           },
+           outro: {
+             title: "Forest Awakened",
+             icon: "✨",
+             paragraphs: ["The forest woke up around her — leaves rustled, fireflies danced. Eleonore smiled to herself. Two down. She knew exactly where to head next."],
+           },
+         } },
+    3: { name:'Crystal Lake', icon:'crystal', type:'combine', regroup:false, count:5, pos:{x:500,y:380},
+         intro:"Drag (or tap) every crystal into the magic cauldron, then count them up!",
+         story: {
+           intro: {
+             title: "Chapter Three: Crystal Lake",
+             icon: "💎",
+             paragraphs: ["At Crystal Lake, Eleonore saw the problem right away: the magic crystals were split between two streams, and neither one had enough on its own. \"Combine them,\" she muttered, already gathering the first handful. \"That's the trick.\""],
+           },
+           outro: {
+             title: "The Lake Sparkles Again",
+             icon: "💧",
+             paragraphs: ["The lake burst into a thousand colors. Eleonore wiped the sparkle-water from her cheek, grinning. The Dragon's Keep was next — and she had a plan for that, too."],
+           },
+         } },
+    4: { name:"Dragon's Keep", icon:'dragon', type:'combine', regroup:true, count:5, pos:{x:670,y:280},
+         intro:"When you have 10 or more circles, trade them for a magic line! Watch for the trade portal.",
+         story: {
+           intro: {
+             title: "Chapter Four: Dragon's Keep",
+             icon: "🐉",
+             paragraphs: ["A great purple dragon sat curled around a heap of treasure, grumbling. \"Too many gems! Can't count them all!\" Eleonore stepped forward, unafraid. \"I can. Watch — every ten little jewels can become one big one. That's how the magic works.\""],
+           },
+           outro: {
+             title: "The Dragon's Tooth",
+             icon: "🦷",
+             paragraphs: ["The dragon blinked at her in awe and lowered its head. Eleonore took the Dragon's Tooth it offered with a polite curtsy and turned toward the castle. One more to go."],
+           },
+         } },
+    5: { name:'Royal Castle', icon:'castle', type:'choice', regroup:'mixed', count:7, pos:{x:830,y:130},
+         intro:"The final challenge! Solve every problem to become the Royal Mathematician.",
+         story: {
+           intro: {
+             title: "Chapter Five: The Royal Castle",
+             icon: "🏰",
+             paragraphs: ["The Shadow Sprites cackled from the castle towers. \"You'll never solve them all, Princess!\" Eleonore set down her satchel, lifted her chin, and looked them straight in the eye. \"I've solved every one so far. Watch me finish this.\""],
+           },
+           outro: {
+             title: "Hero of the Kingdom",
+             icon: "🌅",
+             paragraphs: ["The last Shadow Sprite shrieked and dissolved into the dawn. Every Royal Number returned to its rightful place, and the kingdom of Lumora glowed brighter than it ever had. Eleonore walked back through the great hall — Royal Mathematician, hero of the kingdom, and still home in time for breakfast."],
+           },
+         } },
+  };
+
+  const STORIES = {
+    setup: {
+      title: "The Quest Begins",
+      icon: "👑",
+      dropCap: true,
+      paragraphs: [
+        "The kingdom of Lumora ran on Royal Numbers — they made the gardens bloom, kept the lake crystal-clear, and held the magic of every corner of the land in place.",
+        "One moonlit night, the mischievous Shadow Sprites crept in and stole the Royal Numbers, scattering them across the kingdom. The magic began to fade.",
+        "While the grown-ups argued about what to do, young Princess Eleonore quietly fetched her crown and her satchel of magic blocks — the silver lines worth ten and the golden circles worth one.",
+        "\"I'll get them back,\" she said. And before anyone could stop her, she was out the castle gates and into the night.",
+      ],
+    },
+  };
+
+  /* ---------- STATE ---------- */
+  const STORAGE_KEY = 'eleonore_math_progress_v2';
+  const state = {
+    audioOn: true,
+    progress: { stars: {} },
+    level: null,
+    audioCtx: null,
+  };
+
+  /* ---------- SAVE / LOAD ---------- */
+  function loadProgress() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (data.stars) state.progress.stars = data.stars;
+        if (typeof data.audioOn === 'boolean') state.audioOn = data.audioOn;
+      }
+    } catch (e) {}
+  }
+  function saveProgress() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        stars: state.progress.stars,
+        audioOn: state.audioOn,
+      }));
+    } catch (e) {}
+  }
+
+  /* ---------- AUDIO ---------- */
+  function ensureAudio() {
+    if (!state.audioCtx) {
+      try { state.audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch (e) { state.audioCtx = null; }
+    }
+    if (state.audioCtx && state.audioCtx.state === 'suspended') state.audioCtx.resume();
+    if (state.audioOn && state.audioCtx && !state.musicPlaying) startAmbientMusic();
+  }
+  function tone(freq, dur, type='sine', vol=0.18, when=0) {
+    if (!state.audioOn || !state.audioCtx) return;
+    const ctx = state.audioCtx, t0 = ctx.currentTime + when;
+    const osc = ctx.createOscillator(), gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t0);
+    gain.gain.setValueAtTime(0, t0);
+    gain.gain.linearRampToValueAtTime(vol, t0 + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(t0); osc.stop(t0 + dur);
+  }
+  const sounds = {
+    tap:     () => tone(660, 0.08, 'sine', 0.12),
+    pop:     () => tone(880, 0.06, 'triangle', 0.10),
+    drop:    () => { tone(523, 0.06, 'sine', 0.10); tone(659, 0.08, 'sine', 0.10, 0.04); },
+    correct: () => { tone(523.25,.12,'triangle',.18,0); tone(659.25,.12,'triangle',.18,.08); tone(783.99,.22,'triangle',.18,.16); },
+    wrong:   () => { tone(220, 0.18, 'sine', 0.12, 0); tone(180, 0.22, 'sine', 0.12, 0.08); },
+    sparkle: () => { tone(1046.5, 0.08, 'sine', 0.08); tone(1318.5, 0.10, 'sine', 0.08, 0.04); },
+    trade:   () => {
+      tone(587.33,.10,'triangle',.15,0); tone(739.99,.10,'triangle',.15,.06);
+      tone(880,.10,'triangle',.15,.12); tone(1108.73,.18,'triangle',.18,.18);
+    },
+    fanfare: () => {
+      [523.25, 659.25, 783.99, 1046.5].forEach((n, i) => tone(n, 0.18, 'triangle', 0.18, i * 0.10));
+      tone(1318.5, 0.4, 'triangle', 0.2, 0.4);
+    },
+  };
+
+  /* ---------- AMBIENT BACKGROUND MUSIC ---------- */
+  // Slow chord pad: C - Am - F - G (I-vi-IV-V), the calmest progression in the book.
+  // Triangle waves at very low volume so it sits behind sound effects without clashing.
+  const MUSIC_CHORDS = [
+    [261.63, 329.63, 392.00, 523.25], // C major (C4-E4-G4-C5)
+    [220.00, 261.63, 329.63, 440.00], // A minor (A3-C4-E4-A4)
+    [174.61, 220.00, 261.63, 349.23], // F major (F3-A3-C4-F4)
+    [196.00, 246.94, 293.66, 392.00], // G major (G3-B3-D4-G4)
+  ];
+  const CHORD_DUR = 8;     // seconds per chord
+  const CHORD_VOL = 0.05;  // very low — "low key background"
+
+  function startAmbientMusic() {
+    if (!state.audioOn || !state.audioCtx || state.musicPlaying) return;
+    state.musicPlaying = true;
+    state.musicChordIdx = 0;
+    const ctx = state.audioCtx;
+    const mg = ctx.createGain();
+    mg.gain.value = 0;
+    mg.connect(ctx.destination);
+    state.musicGain = mg;
+    // Gentle 3s fade-in
+    mg.gain.linearRampToValueAtTime(1, ctx.currentTime + 3);
+    scheduleNextChord();
+  }
+
+  function scheduleNextChord() {
+    if (!state.musicPlaying || !state.audioCtx || !state.musicGain) return;
+    const ctx = state.audioCtx;
+    const chord = MUSIC_CHORDS[state.musicChordIdx];
+    const t0 = ctx.currentTime;
+    chord.forEach(freq => {
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = freq;
+      g.gain.setValueAtTime(0, t0);
+      g.gain.linearRampToValueAtTime(CHORD_VOL, t0 + 1.5);
+      g.gain.setValueAtTime(CHORD_VOL, t0 + CHORD_DUR - 1.5);
+      g.gain.linearRampToValueAtTime(0, t0 + CHORD_DUR);
+      osc.connect(g).connect(state.musicGain);
+      osc.start(t0);
+      osc.stop(t0 + CHORD_DUR + 0.05);
+    });
+    state.musicChordIdx = (state.musicChordIdx + 1) % MUSIC_CHORDS.length;
+    // Schedule next chord 0.5s before this one fully releases — smooth crossfade
+    state.musicTimer = setTimeout(scheduleNextChord, (CHORD_DUR - 0.5) * 1000);
+  }
+
+  function stopAmbientMusic() {
+    state.musicPlaying = false;
+    if (state.musicTimer) { clearTimeout(state.musicTimer); state.musicTimer = null; }
+    if (state.musicGain && state.audioCtx) {
+      const ctx = state.audioCtx;
+      const g = state.musicGain;
+      g.gain.cancelScheduledValues(ctx.currentTime);
+      g.gain.setValueAtTime(g.gain.value, ctx.currentTime);
+      g.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.2);
+      const oldGain = g;
+      state.musicGain = null;
+      setTimeout(() => { try { oldGain.disconnect(); } catch (e) {} }, 1500);
+    }
+  }
+
+  /* ---------- DRAG ARTIFACT CLEANUP (safety net) ---------- */
+  function cleanupDragArtifacts() {
+    document.querySelectorAll('.block-ghost').forEach(g => g.remove());
+    document.querySelectorAll('.block.dragging').forEach(b => b.classList.remove('dragging'));
+    document.querySelectorAll('.drop-zone.drop-hover').forEach(z => z.classList.remove('drop-hover'));
+  }
+
+  /* ---------- SCREEN ROUTING ---------- */
+  function showScreen(name) {
+    cleanupDragArtifacts();
+    document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+    const t = document.getElementById(name);
+    if (t) t.classList.add('active');
+  }
+  function showPanel(name) {
+    cleanupDragArtifacts();
+    document.querySelectorAll('#level-screen .panel').forEach(el => el.classList.remove('active'));
+    const t = document.getElementById('panel-' + name);
+    if (t) t.classList.add('active');
+  }
+  function setSpeech(text) {
+    document.getElementById('speech-bubble').textContent = text;
+  }
+
+  /* ---------- STORY DISPLAY ---------- */
+  function showStory(content, onContinue) {
+    const titleEl = document.getElementById('story-title');
+    const bodyEl = document.getElementById('story-body');
+    const iconEl = document.getElementById('story-icon');
+
+    titleEl.textContent = content.title;
+    if (content.icon) {
+      iconEl.textContent = content.icon;
+      iconEl.style.display = '';
+    } else {
+      iconEl.style.display = 'none';
+    }
+
+    bodyEl.innerHTML = '';
+    bodyEl.classList.toggle('has-dropcap', !!content.dropCap);
+    content.paragraphs.forEach(text => {
+      const p = document.createElement('p');
+      p.textContent = text;
+      bodyEl.appendChild(p);
+    });
+    bodyEl.scrollTop = 0;
+
+    showScreen('story-screen');
+
+    const btn = document.getElementById('story-continue');
+    btn.onclick = () => {
+      sounds.tap();
+      if (onContinue) onContinue();
+    };
+  }
+
+  /* ---------- BLOCK RENDERING (SVG, choice panel) ---------- */
+  function renderBlocks(svg, num) {
+    const tens = Math.floor(num / 10), ones = num % 10;
+    const NS = 'http://www.w3.org/2000/svg';
+    svg.innerHTML = '';
+
+    const TX_START = 8, TW = 11, TH = 78, TGAP = 16, TTOP = 20;
+    const OX_START = TX_START + tens * TGAP + (tens > 0 ? 14 : 0);
+    const OR = 8, OGAP = 20, OROW = 20, OTOP = 32;
+
+    const defs = document.createElementNS(NS, 'defs');
+    defs.innerHTML = `
+      <linearGradient id="tg-${svg.id}" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#7d3eb5"/>
+        <stop offset="50%" stop-color="#4a1d7a"/>
+        <stop offset="100%" stop-color="#3d1f5c"/>
+      </linearGradient>
+      <radialGradient id="og-${svg.id}" cx="35%" cy="35%" r="65%">
+        <stop offset="0%" stop-color="#ffe9a0"/>
+        <stop offset="60%" stop-color="#f0c761"/>
+        <stop offset="100%" stop-color="#c89540"/>
+      </radialGradient>`;
+    svg.appendChild(defs);
+
+    for (let i = 0; i < tens; i++) {
+      const x = TX_START + i * TGAP;
+      const r = document.createElementNS(NS, 'rect');
+      r.setAttribute('x', x); r.setAttribute('y', TTOP);
+      r.setAttribute('width', TW); r.setAttribute('height', TH);
+      r.setAttribute('rx', 5);
+      r.setAttribute('fill', `url(#tg-${svg.id})`);
+      r.setAttribute('stroke', '#1a0d36'); r.setAttribute('stroke-width', '1');
+      r.style.opacity = '0';
+      r.style.animation = `fadeInUp .3s ${i * 0.05}s forwards`;
+      svg.appendChild(r);
+      const c = document.createElementNS(NS, 'circle');
+      c.setAttribute('cx', x + TW/2); c.setAttribute('cy', TTOP);
+      c.setAttribute('r', 3); c.setAttribute('fill', '#f0c761');
+      c.style.opacity = '0';
+      c.style.animation = `fadeInUp .3s ${i * 0.05 + 0.1}s forwards`;
+      svg.appendChild(c);
+    }
+
+    for (let i = 0; i < ones; i++) {
+      const col = i % 5, row = Math.floor(i / 5);
+      const cx = OX_START + col * OGAP + OR;
+      const cy = OTOP + row * OROW + OR;
+      const c = document.createElementNS(NS, 'circle');
+      c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', OR);
+      c.setAttribute('fill', `url(#og-${svg.id})`);
+      c.setAttribute('stroke', '#8b6320'); c.setAttribute('stroke-width', '1');
+      c.style.opacity = '0';
+      c.style.animation = `fadeInUp .3s ${(tens * 0.05) + i * 0.04}s forwards`;
+      svg.appendChild(c);
+    }
+
+    const totalW = OX_START + Math.min(ones, 5) * OGAP;
+    const vbW = Math.max(160, totalW + 16);
+    svg.setAttribute('viewBox', `0 0 ${vbW} 120`);
+
+    const label = document.createElementNS(NS, 'text');
+    label.setAttribute('x', vbW / 2); label.setAttribute('y', 115);
+    label.setAttribute('text-anchor', 'middle');
+    label.setAttribute('font-family', 'Fredoka, sans-serif');
+    label.setAttribute('font-weight', '700');
+    label.setAttribute('font-size', '20');
+    label.setAttribute('fill', '#3d1f5c');
+    label.textContent = num;
+    svg.appendChild(label);
+  }
+
+  /* ---------- INTERACTIVE BLOCKS (HTML) ---------- */
+  function createBlockEl(type, opts = {}) {
+    const el = document.createElement('div');
+    el.className = 'block block-' + type;
+    el.dataset.type = type;
+    if (opts.spawn) el.classList.add('block-spawn');
+    return el;
+  }
+
+  /* ---------- DRAG & DROP ---------- */
+  // Each interactive block gets:
+  //   - tap (small movement) → onTap(info)
+  //   - drag → ghost follows pointer; on release into .drop-zone → onDrop(info, zoneName)
+  function attachBlockInteraction(el, info, onTap, onDrop) {
+    let startX = 0, startY = 0, isDragging = false, ghost = null, pointerId = null;
+    const TAP = 7;
+
+    el.addEventListener('pointerdown', e => {
+      if (e.button !== undefined && e.button !== 0) return;
+      startX = e.clientX; startY = e.clientY;
+      isDragging = false;
+      pointerId = e.pointerId;
+    });
+
+    el.addEventListener('pointermove', e => {
+      if (pointerId !== e.pointerId) return;
+      const dx = e.clientX - startX, dy = e.clientY - startY;
+      if (!isDragging && Math.hypot(dx, dy) > TAP) {
+        isDragging = true;
+        try { el.setPointerCapture(e.pointerId); } catch (err) {}
+        ghost = createBlockEl(info.type);
+        ghost.classList.add('block-ghost');
+        ghost.style.left = (e.clientX - 11) + 'px';
+        ghost.style.top  = (e.clientY - 38) + 'px';
+        document.body.appendChild(ghost);
+        el.classList.add('dragging');
+      }
+      if (isDragging) {
+        ghost.style.left = (e.clientX - 11) + 'px';
+        ghost.style.top  = (e.clientY - 38) + 'px';
+        const target = findDropTarget(e.clientX, e.clientY);
+        document.querySelectorAll('.drop-zone').forEach(z => {
+          z.classList.toggle('drop-hover', z === target);
+        });
+      }
+    });
+
+    const finalize = (e) => {
+      if (pointerId !== e.pointerId) return;
+      if (isDragging) {
+        const target = findDropTarget(e.clientX, e.clientY);
+        if (ghost) { ghost.remove(); ghost = null; }
+        el.classList.remove('dragging');
+        document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drop-hover'));
+        if (target && target.dataset.zone) {
+          onDrop && onDrop(info, target.dataset.zone);
+        }
+      } else {
+        onTap && onTap(info);
+      }
+      pointerId = null; isDragging = false;
+    };
+    el.addEventListener('pointerup', finalize);
+    el.addEventListener('pointercancel', e => {
+      if (pointerId !== e.pointerId) return;
+      if (ghost) { ghost.remove(); ghost = null; }
+      el.classList.remove('dragging');
+      document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drop-hover'));
+      pointerId = null; isDragging = false;
+    });
+  }
+
+  function findDropTarget(x, y) {
+    const el = document.elementFromPoint(x, y);
+    return el ? el.closest('.drop-zone') : null;
+  }
+
+  /* ---------- PROBLEM GENERATORS ---------- */
+  const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+  function genNoRegroup() {
+    while (true) {
+      const t1 = randInt(1, 4), o1 = randInt(1, 7);
+      const t2 = randInt(1, 4);
+      const maxO2 = 9 - o1;
+      if (maxO2 < 1) continue;
+      const o2 = randInt(1, maxO2);
+      const a = t1 * 10 + o1, b = t2 * 10 + o2;
+      return { a, b, sum: a + b, regroup: false };
+    }
+  }
+  function genRegroup() {
+    while (true) {
+      const t1 = randInt(1, 4), o1 = randInt(2, 9);
+      const t2 = randInt(1, 4);
+      const minO2 = Math.max(1, 10 - o1);
+      const o2 = randInt(minO2, 9);
+      if (o1 + o2 < 10) continue;
+      const a = t1 * 10 + o1, b = t2 * 10 + o2, sum = a + b;
+      if (sum > 99) continue;
+      return { a, b, sum, regroup: true };
+    }
+  }
+
+  function generateProblems(levelId) {
+    const def = LEVEL_DEFS[levelId];
+    const problems = [];
+    const used = new Set();
+    const tryAdd = (p) => {
+      const k = Math.min(p.a, p.b) + '+' + Math.max(p.a, p.b);
+      if (used.has(k)) return false;
+      used.add(k); problems.push(p); return true;
+    };
+
+    if (def.type === 'build') {
+      while (problems.length < def.count) {
+        const t = randInt(1, 4), o = randInt(1, 9);
+        const num = t * 10 + o;
+        if (used.has(num)) continue;
+        used.add(num);
+        problems.push({ target: num });
+      }
+    } else if (def.regroup === 'mixed') {
+      const targetReg = Math.ceil(def.count / 2);
+      while (problems.filter(p => p.regroup).length < targetReg) tryAdd(genRegroup());
+      while (problems.length < def.count) tryAdd(genNoRegroup());
+      for (let i = problems.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [problems[i], problems[j]] = [problems[j], problems[i]];
+      }
+    } else if (def.regroup === true) {
+      while (problems.length < def.count) tryAdd(genRegroup());
+    } else {
+      while (problems.length < def.count) tryAdd(genNoRegroup());
+    }
+    return problems;
+  }
+
+  function generateAnswerChoices(correct) {
+    const choices = new Set([correct]);
+    const cands = [correct + 1, correct - 1, correct + 10, correct - 10, correct + 2, correct - 2]
+      .filter(n => n > 0 && n < 100);
+    // Pick distractors at random so the wrong-answer pool varies between problems...
+    cands.sort(() => Math.random() - 0.5);
+    for (const c of cands) {
+      if (choices.size >= 4) break;
+      choices.add(c);
+    }
+    // ...but always present them in numerical order so the layout is predictable.
+    return [...choices].sort((a, b) => a - b);
+  }
+
+  /* ---------- LEVEL FLOW ---------- */
+  const ENCOURAGEMENT = [
+    "Yes! You're a math princess! ✦",
+    "Wonderful counting! ✦",
+    "Magnificent! ✦",
+    "You did it! Sparkly work! ✦",
+    "Royal mathematician at work! ✦",
+  ];
+  const TRY_AGAIN = [
+    "Almost! Try counting again.",
+    "Not quite — count the lines first, then the circles.",
+    "You can do it! Try again.",
+    "Hmm, count carefully. Each line is ten!",
+  ];
+  const PROMPTS_CHOICE = ["How many altogether?","What's the total?","Add them up!","How many in all?","Count them up!","What do they make together?"];
+  const PROMPTS_BUILD  = ["Build the number using the magic blocks!","How many tens and ones do you need?","Drag the blocks to build it!","You've got this!","Remember: each line is 10!"];
+  const PROMPTS_COMBINE= ["Move all the blocks into the cauldron!","Drag (or tap) every block to the cauldron.","Combine them in the magic cauldron!","Send all the crystals into the cauldron!","Move every line and circle to the cauldron!"];
+
+  function startLevel(levelId) {
+    const def = LEVEL_DEFS[levelId];
+    if (!def) return;
+    state.level = {
+      id: levelId, def,
+      problems: generateProblems(levelId),
+      currentIdx: 0,
+      correctFirstTry: 0,
+      attemptedThisProblem: false,
+      workspace: { tens: 0, ones: 0 },
+      trayA: { tens: 0, ones: 0 },
+      trayB: { tens: 0, ones: 0 },
+      cauldron: { tens: 0, ones: 0 },
+      readyForAnswer: false,
+    };
+    showScreen('level-screen');
+    showPanel(def.type);
+    setSpeech(def.intro);
+    updateProgressBar();
+    setTimeout(() => presentProblem(), 700);
+  }
+
+  function updateProgressBar() {
+    const lvl = state.level; if (!lvl) return;
+    const pct = (lvl.currentIdx / lvl.problems.length) * 100;
+    document.getElementById('progress-fill').style.width = pct + '%';
+  }
+
+  function presentProblem() {
+    cleanupDragArtifacts();
+    const lvl = state.level; if (!lvl) return;
+    if (lvl.currentIdx >= lvl.problems.length) { finishLevel(); return; }
+    updateProgressBar();
+    lvl.attemptedThisProblem = false;
+    lvl.readyForAnswer = false;
+    switch (lvl.def.type) {
+      case 'choice':  presentChoice();  break;
+      case 'build':   presentBuild();   break;
+      case 'combine': presentCombine(); break;
+    }
+  }
+
+  /* ---------- CHOICE PANEL (1 & 5) ---------- */
+  function presentChoice() {
+    const lvl = state.level;
+    const p = lvl.problems[lvl.currentIdx];
+    renderBlocks(document.getElementById('addend-a'), p.a);
+    renderBlocks(document.getElementById('addend-b'), p.b);
+
+    const ansContainer = document.getElementById('answers-choice');
+    ansContainer.innerHTML = '';
+    generateAnswerChoices(p.sum).forEach(n => {
+      const btn = document.createElement('button');
+      btn.className = 'answer-btn';
+      btn.textContent = n;
+      btn.addEventListener('click', () => handleChoiceAnswer(btn, n, p.sum));
+      ansContainer.appendChild(btn);
+    });
+    if (lvl.currentIdx > 0) {
+      setSpeech(PROMPTS_CHOICE[lvl.currentIdx % PROMPTS_CHOICE.length]);
+    }
+  }
+
+  function handleChoiceAnswer(btn, value, correct) {
+    sounds.tap();
+    if (value === correct) {
+      btn.classList.add('correct');
+      sounds.correct();
+      sparkleBurst(btn);
+      if (!state.level.attemptedThisProblem) state.level.correctFirstTry++;
+      document.querySelectorAll('#answers-choice .answer-btn').forEach(b => b.disabled = true);
+      setSpeech(ENCOURAGEMENT[state.level.currentIdx % ENCOURAGEMENT.length]);
+      setTimeout(() => { state.level.currentIdx++; presentProblem(); }, 1500);
+    } else {
+      btn.classList.add('wrong');
+      sounds.wrong();
+      state.level.attemptedThisProblem = true;
+      setSpeech(TRY_AGAIN[Math.floor(Math.random() * TRY_AGAIN.length)]);
+      btn.disabled = true;
+      setTimeout(() => btn.classList.remove('wrong'), 500);
+    }
+  }
+
+  /* ---------- BUILD PANEL (Level 2) ---------- */
+  function presentBuild() {
+    const lvl = state.level;
+    const p = lvl.problems[lvl.currentIdx];
+    lvl.workspace = { tens: 0, ones: 0 };
+    document.getElementById('build-target-num').textContent = p.target;
+    renderBuildWorkspace();
+    setSpeech(lvl.currentIdx === 0 ? lvl.def.intro : PROMPTS_BUILD[lvl.currentIdx % PROMPTS_BUILD.length]);
+    document.getElementById('build-check').disabled = false;
+  }
+
+  function renderBuildWorkspace() {
+    const ws = state.level.workspace;
+    const tensEl = document.getElementById('ws-tens');
+    const onesEl = document.getElementById('ws-ones');
+    tensEl.innerHTML = ''; onesEl.innerHTML = '';
+
+    for (let i = 0; i < ws.tens; i++) {
+      const blk = createBlockEl('tens', { spawn: true });
+      tensEl.appendChild(blk);
+      attachBlockInteraction(blk, { type: 'tens', source: 'workspace' },
+        () => removeFromWorkspace('tens', blk),
+        null
+      );
+    }
+    for (let i = 0; i < ws.ones; i++) {
+      const blk = createBlockEl('ones', { spawn: true });
+      onesEl.appendChild(blk);
+      attachBlockInteraction(blk, { type: 'ones', source: 'workspace' },
+        () => removeFromWorkspace('ones', blk),
+        null
+      );
+    }
+    updateBuildCount();
+  }
+  function updateBuildCount() {
+    const ws = state.level.workspace;
+    document.getElementById('build-current').textContent = ws.tens * 10 + ws.ones;
+  }
+
+  function addToWorkspace(type) {
+    const ws = state.level.workspace;
+    if (type === 'tens') { if (ws.tens >= 9) return; ws.tens++; }
+    else                 { if (ws.ones >= 19) return; ws.ones++; }
+    sounds.drop();
+    renderBuildWorkspace();
+  }
+  function removeFromWorkspace(type, blockEl) {
+    const ws = state.level.workspace;
+    if (type === 'tens' && ws.tens > 0) ws.tens--;
+    else if (type === 'ones' && ws.ones > 0) ws.ones--;
+    sounds.pop();
+    if (blockEl) {
+      blockEl.style.transition = 'transform .2s ease, opacity .2s ease';
+      blockEl.style.transform = 'scale(0)';
+      blockEl.style.opacity = '0';
+      setTimeout(() => renderBuildWorkspace(), 150);
+    } else {
+      renderBuildWorkspace();
+    }
+  }
+
+  function setupBuildSupplyStamps() {
+    document.querySelectorAll('#panel-build .block[data-stamp]').forEach(stamp => {
+      const type = stamp.dataset.stamp;
+      attachBlockInteraction(stamp, { type, source: 'supply' },
+        () => addToWorkspace(type),
+        (info, zone) => { if (zone === 'workspace') addToWorkspace(type); }
+      );
+    });
+  }
+
+  function checkBuildAnswer() {
+    const lvl = state.level;
+    const p = lvl.problems[lvl.currentIdx];
+    const total = lvl.workspace.tens * 10 + lvl.workspace.ones;
+    const wsZone = document.querySelector('#panel-build .build-workspace');
+
+    if (total === p.target) {
+      sounds.correct();
+      sparkleBurst(wsZone);
+      wsZone.style.borderColor = '#3a7a25';
+      wsZone.style.background = 'rgba(184, 224, 154, 0.3)';
+      if (!lvl.attemptedThisProblem) lvl.correctFirstTry++;
+      document.getElementById('build-check').disabled = true;
+      setSpeech(ENCOURAGEMENT[lvl.currentIdx % ENCOURAGEMENT.length]);
+      setTimeout(() => {
+        wsZone.style.borderColor = '';
+        wsZone.style.background = '';
+        lvl.currentIdx++;
+        presentProblem();
+      }, 1500);
+    } else {
+      sounds.wrong();
+      lvl.attemptedThisProblem = true;
+      let hint;
+      if (total < p.target) hint = `Almost! You need ${p.target - total} more.`;
+      else                  hint = `Oh — that's ${total - p.target} too many. Tap to remove some!`;
+      setSpeech(hint);
+      wsZone.style.animation = 'shake 0.4s ease';
+      setTimeout(() => wsZone.style.animation = '', 400);
+    }
+  }
+
+  /* ---------- COMBINE PANEL (Levels 3 & 4) ---------- */
+  function presentCombine() {
+    const lvl = state.level;
+    const p = lvl.problems[lvl.currentIdx];
+    lvl.trayA = { tens: Math.floor(p.a / 10), ones: p.a % 10 };
+    lvl.trayB = { tens: Math.floor(p.b / 10), ones: p.b % 10 };
+    lvl.cauldron = { tens: 0, ones: 0 };
+    lvl.readyForAnswer = false;
+
+    document.getElementById('tray-a-label').textContent = p.a;
+    document.getElementById('tray-b-label').textContent = p.b;
+    document.getElementById('answers-combine').style.display = 'none';
+    document.getElementById('trade-portal').classList.remove('active');
+
+    renderCombineState();
+    setSpeech(lvl.currentIdx === 0 ? lvl.def.intro : PROMPTS_COMBINE[lvl.currentIdx % PROMPTS_COMBINE.length]);
+    setupSendAllButtons();
+  }
+
+  function renderCombineState() {
+    const lvl = state.level;
+    renderTray('a', lvl.trayA);
+    renderTray('b', lvl.trayB);
+    renderCauldron();
+    checkCombineReady();
+  }
+
+  function renderTray(letter, data) {
+    const tensEl = document.getElementById('tray-' + letter + '-tens');
+    const onesEl = document.getElementById('tray-' + letter + '-ones');
+    const contentEl = document.getElementById('tray-' + letter + '-content');
+    tensEl.innerHTML = ''; onesEl.innerHTML = '';
+
+    if (data.tens === 0 && data.ones === 0) contentEl.classList.add('empty');
+    else                                    contentEl.classList.remove('empty');
+
+    for (let i = 0; i < data.tens; i++) {
+      const blk = createBlockEl('tens');
+      tensEl.appendChild(blk);
+      attachBlockInteraction(blk, { type: 'tens', source: 'tray-' + letter },
+        () => moveTrayBlockToCauldron(letter, 'tens', blk),
+        (info, zone) => { if (zone === 'cauldron') moveTrayBlockToCauldron(letter, 'tens', blk); }
+      );
+    }
+    for (let i = 0; i < data.ones; i++) {
+      const blk = createBlockEl('ones');
+      onesEl.appendChild(blk);
+      attachBlockInteraction(blk, { type: 'ones', source: 'tray-' + letter },
+        () => moveTrayBlockToCauldron(letter, 'ones', blk),
+        (info, zone) => { if (zone === 'cauldron') moveTrayBlockToCauldron(letter, 'ones', blk); }
+      );
+    }
+  }
+
+  function renderCauldron() {
+    const c = state.level.cauldron;
+    const tensEl = document.getElementById('cauldron-tens');
+    const onesEl = document.getElementById('cauldron-ones');
+    tensEl.innerHTML = ''; onesEl.innerHTML = '';
+    for (let i = 0; i < c.tens; i++) tensEl.appendChild(createBlockEl('tens', { spawn: true }));
+    for (let i = 0; i < c.ones; i++) onesEl.appendChild(createBlockEl('ones', { spawn: true }));
+  }
+
+  function moveTrayBlockToCauldron(letter, type, blockEl) {
+    const lvl = state.level;
+    const tray = letter === 'a' ? lvl.trayA : lvl.trayB;
+    if (type === 'tens' && tray.tens > 0) tray.tens--;
+    else if (type === 'ones' && tray.ones > 0) tray.ones--;
+    else return;
+
+    if (type === 'tens') lvl.cauldron.tens++;
+    else lvl.cauldron.ones++;
+
+    sounds.drop();
+    if (blockEl) {
+      blockEl.style.transition = 'transform .25s ease, opacity .25s ease';
+      blockEl.style.transform = 'translateY(-12px) scale(0.6)';
+      blockEl.style.opacity = '0';
+    }
+    setTimeout(() => renderCombineState(), 180);
+  }
+
+  function setupSendAllButtons() { /* removed — no batch-send buttons anymore */ }
+
+  function checkCombineReady() {
+    const lvl = state.level;
+    const allMoved = (lvl.trayA.tens + lvl.trayA.ones + lvl.trayB.tens + lvl.trayB.ones) === 0;
+    if (!allMoved) return;
+    if (lvl.def.regroup && lvl.cauldron.ones >= 10 && !lvl.readyForAnswer) {
+      showTradePortal();
+    } else if (!lvl.readyForAnswer) {
+      showCombineAnswer();
+    }
+  }
+
+  function showTradePortal() {
+    document.getElementById('trade-portal').classList.add('active');
+    setSpeech("Oh! There are 10 or more circles. Tap 'Trade Now!' to turn 10 circles into 1 magic line.");
+  }
+
+  function performTrade() {
+    const lvl = state.level;
+    if (lvl.cauldron.ones < 10) return;
+    sounds.trade();
+    const onesEl = document.getElementById('cauldron-ones');
+    const onesBlocks = onesEl.querySelectorAll('.block-ones');
+    const toAnimate = Array.from(onesBlocks).slice(-10);
+    toAnimate.forEach((blk, i) => {
+      blk.style.animation = `tradeSwirl 0.8s ${i * 0.04}s ease-in forwards`;
+    });
+    setTimeout(() => {
+      lvl.cauldron.ones -= 10;
+      lvl.cauldron.tens += 1;
+      renderCauldron();
+      const tensEl = document.getElementById('cauldron-tens');
+      const last = tensEl.lastElementChild;
+      if (last) {
+        last.classList.remove('block-spawn');
+        last.classList.add('trade-spawn');
+      }
+      sounds.sparkle();
+      if (lvl.cauldron.ones >= 10) {
+        setSpeech("Wonderful! Trade again!");
+      } else {
+        document.getElementById('trade-portal').classList.remove('active');
+        showCombineAnswer();
+      }
+    }, 900);
+  }
+
+  function showCombineAnswer() {
+    const lvl = state.level;
+    if (lvl.readyForAnswer) return;
+    lvl.readyForAnswer = true;
+    const p = lvl.problems[lvl.currentIdx];
+    const ansContainer = document.getElementById('answers-combine');
+    ansContainer.innerHTML = '';
+    ansContainer.style.display = '';
+    generateAnswerChoices(p.sum).forEach(n => {
+      const btn = document.createElement('button');
+      btn.className = 'answer-btn';
+      btn.textContent = n;
+      btn.addEventListener('click', () => handleCombineAnswer(btn, n, p.sum));
+      ansContainer.appendChild(btn);
+    });
+    setSpeech("How many in the cauldron? Pick the answer!");
+  }
+
+  function handleCombineAnswer(btn, value, correct) {
+    sounds.tap();
+    const lvl = state.level;
+    if (value === correct) {
+      btn.classList.add('correct');
+      sounds.correct();
+      sparkleBurst(btn);
+      const c = document.querySelector('#panel-combine .cauldron');
+      c.classList.add('celebrating');
+      if (!lvl.attemptedThisProblem) lvl.correctFirstTry++;
+      document.querySelectorAll('#answers-combine .answer-btn').forEach(b => b.disabled = true);
+      setSpeech(ENCOURAGEMENT[lvl.currentIdx % ENCOURAGEMENT.length]);
+      setTimeout(() => {
+        c.classList.remove('celebrating');
+        lvl.currentIdx++;
+        presentProblem();
+      }, 1600);
+    } else {
+      btn.classList.add('wrong');
+      sounds.wrong();
+      lvl.attemptedThisProblem = true;
+      setSpeech(TRY_AGAIN[Math.floor(Math.random() * TRY_AGAIN.length)]);
+      btn.disabled = true;
+      setTimeout(() => btn.classList.remove('wrong'), 500);
+    }
+  }
+
+  /* ---------- LEVEL FINISH ---------- */
+  function finishLevel() {
+    updateProgressBar();
+    const correct = state.level.correctFirstTry;
+    const total = state.level.problems.length;
+    let stars = 1;
+    if (correct === total) stars = 3;
+    else if (correct >= total - 1) stars = 2;
+
+    const id = state.level.id;
+    const prev = state.progress.stars[id] || 0;
+    state.progress.stars[id] = Math.max(prev, stars);
+    saveProgress();
+
+    showCelebration(stars, correct, total);
+  }
+
+  function showCelebration(stars, correct, total) {
+    const titles = ["You did it!", "Wonderful!", "Magnificent!", "Royal Success!"];
+    document.getElementById('celeb-title').textContent = titles[stars] || "You did it!";
+    document.getElementById('celeb-sub').textContent = `You got ${correct} out of ${total} on your first try!`;
+    document.querySelectorAll('.celeb-star').forEach(el => el.classList.remove('earned'));
+    document.getElementById('celebration').classList.add('active');
+    sounds.fanfare();
+    setTimeout(() => {
+      const starEls = document.querySelectorAll('.celeb-star');
+      for (let i = 0; i < stars; i++) {
+        setTimeout(() => { starEls[i].classList.add('earned'); sounds.sparkle(); }, i * 350);
+      }
+    }, 400);
+    confetti(40);
+  }
+
+  function confetti(count) {
+    const colors = ['#f0c761', '#e589b5', '#7d3eb5', '#c9a8e8', '#ffd97a'];
+    const stage = document.getElementById('celebration');
+    for (let i = 0; i < count; i++) {
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.background = colors[i % colors.length];
+      c.style.left = Math.random() * 100 + '%';
+      c.style.top = '-20px';
+      c.style.animationDelay = (Math.random() * 1.5) + 's';
+      c.style.animationDuration = (2 + Math.random() * 2) + 's';
+      if (Math.random() > 0.5) c.style.borderRadius = '50%';
+      stage.appendChild(c);
+      setTimeout(() => c.remove(), 5000);
+    }
+  }
+
+  function sparkleBurst(target) {
+    const burst = document.createElement('div');
+    burst.className = 'sparkle-burst';
+    const rect = target.getBoundingClientRect();
+    const stage = document.getElementById('stage').getBoundingClientRect();
+    burst.style.left = (rect.left - stage.left + rect.width / 2) + 'px';
+    burst.style.top  = (rect.top  - stage.top  + rect.height / 2) + 'px';
+    const symbols = ['✦', '✧', '⭐', '✨', '💜'];
+    for (let i = 0; i < 10; i++) {
+      const s = document.createElement('span');
+      s.textContent = symbols[i % symbols.length];
+      const angle = (Math.PI * 2 * i) / 10;
+      const dist = 60 + Math.random() * 40;
+      s.style.setProperty('--tx', `${Math.cos(angle) * dist}px`);
+      s.style.setProperty('--ty', `${Math.sin(angle) * dist}px`);
+      s.style.animationDelay = (i * 0.02) + 's';
+      burst.appendChild(s);
+    }
+    document.getElementById('stage').appendChild(burst);
+    setTimeout(() => burst.remove(), 1200);
+  }
+
+  /* ---------- MAP ---------- */
+  const ICONS = {
+    flower: `
+      <g transform="translate(0, -8)">
+        <circle cx="0" cy="-12" r="8" fill="#e589b5"/>
+        <circle cx="-10" cy="-2" r="8" fill="#e589b5"/>
+        <circle cx="10" cy="-2" r="8" fill="#e589b5"/>
+        <circle cx="-6" cy="10" r="8" fill="#e589b5"/>
+        <circle cx="6" cy="10" r="8" fill="#e589b5"/>
+        <circle cx="0" cy="0" r="6" fill="#ffd97a"/>
+      </g>`,
+    tree: `
+      <g transform="translate(0, -4)">
+        <ellipse cx="0" cy="-6" rx="16" ry="20" fill="#3e6f37"/>
+        <ellipse cx="-10" cy="-2" rx="11" ry="14" fill="#5a8a4a"/>
+        <ellipse cx="10" cy="-2" rx="11" ry="14" fill="#5a8a4a"/>
+        <rect x="-3" y="10" width="6" height="14" fill="#3d2814"/>
+        <circle cx="-5" cy="-10" r="2" fill="#e589b5"/>
+        <circle cx="6" cy="-12" r="2" fill="#ffd97a"/>
+      </g>`,
+    crystal: `
+      <g transform="translate(0, -4)">
+        <polygon points="0,-18 -10,-4 -6,14 6,14 10,-4" fill="#9fd5e8" stroke="#4a7a8a" stroke-width="1"/>
+        <polygon points="0,-18 -6,14 0,14" fill="#c4e7f2" opacity=".8"/>
+        <polygon points="0,-18 -10,-4 0,-4" fill="#fff" opacity=".4"/>
+        <circle cx="-12" cy="6" r="3" fill="#c4e7f2"/>
+        <circle cx="11" cy="2" r="2" fill="#c4e7f2"/>
+      </g>`,
+    dragon: `
+      <g transform="translate(0, -2)">
+        <ellipse cx="0" cy="6" rx="14" ry="10" fill="#5a3a8a"/>
+        <ellipse cx="-8" cy="-4" rx="9" ry="9" fill="#5a3a8a"/>
+        <path d="M -16 -2 L -22 -10 L -14 -8 Z" fill="#7d3eb5"/>
+        <path d="M -10 -10 L -8 -16 L -6 -10 Z" fill="#3d1f5c"/>
+        <path d="M -6 -10 L -4 -16 L -2 -10 Z" fill="#3d1f5c"/>
+        <circle cx="-10" cy="-4" r="1.5" fill="#ffd97a"/>
+        <path d="M 10 4 L 18 -2 L 16 8 Z" fill="#7d3eb5"/>
+        <path d="M -2 12 L 2 18 L 6 14" stroke="#3d1f5c" stroke-width="2" fill="none"/>
+      </g>`,
+    castle: `
+      <g transform="translate(0, -2)">
+        <rect x="-12" y="-2" width="24" height="18" fill="#7d3eb5"/>
+        <rect x="-16" y="-8" width="6" height="24" fill="#5a2d8a"/>
+        <rect x="10" y="-8" width="6" height="24" fill="#5a2d8a"/>
+        <polygon points="-16,-8 -10,-8 -13,-14" fill="#e589b5"/>
+        <polygon points="10,-8 16,-8 13,-14" fill="#e589b5"/>
+        <rect x="-2" y="6" width="4" height="10" fill="#1a0d36"/>
+        <rect x="-12" y="-2" width="2" height="2" fill="#3d1f5c"/>
+        <rect x="-8" y="-2" width="2" height="2" fill="#3d1f5c"/>
+        <rect x="-4" y="-2" width="2" height="2" fill="#3d1f5c"/>
+        <rect x="2" y="-2" width="2" height="2" fill="#3d1f5c"/>
+        <rect x="6" y="-2" width="2" height="2" fill="#3d1f5c"/>
+        <rect x="10" y="-2" width="2" height="2" fill="#3d1f5c"/>
+      </g>`,
+  };
+
+  function renderMapNodes() {
+    const container = document.getElementById('map-nodes');
+    container.innerHTML = '';
+    const NS = 'http://www.w3.org/2000/svg';
+
+    let currentLevelId = null;
+    for (let id = 1; id <= 5; id++) {
+      const stars = state.progress.stars[id] || 0;
+      if (stars === 0) {
+        if (id === 1 || (state.progress.stars[id - 1] || 0) > 0) currentLevelId = id;
+        break;
+      }
+    }
+
+    Object.entries(LEVEL_DEFS).forEach(([idStr, def]) => {
+      const id = parseInt(idStr, 10);
+      const stars = state.progress.stars[id] || 0;
+      const prevStars = id === 1 ? 1 : (state.progress.stars[id - 1] || 0);
+      const isUnlocked = id === 1 || prevStars > 0;
+      const isDone = stars > 0;
+      const isCurrent = id === currentLevelId;
+
+      const g = document.createElementNS(NS, 'g');
+      g.setAttribute('class', 'level-node ' + (isUnlocked ? 'unlocked' : 'locked'));
+      g.setAttribute('data-level', id);
+      g.setAttribute('transform', `translate(${def.pos.x}, ${def.pos.y})`);
+
+      const inner = document.createElementNS(NS, 'g');
+      inner.setAttribute('class', 'node-inner');
+
+      const radius = id === 5 ? 55 : (isCurrent ? 58 : 50);
+      let fill, stroke;
+      if (isDone)            { fill = 'url(#nodeDone)';     stroke = '#3a7a25'; }
+      else if (isCurrent)    { fill = 'url(#nodeCurrent)';  stroke = '#c89540'; }
+      else if (isUnlocked)   { fill = 'url(#nodeUnlocked)'; stroke = '#c89540'; }
+      else                   { fill = 'url(#nodeLocked)';   stroke = '#7d3eb5'; }
+
+      inner.innerHTML = `
+        <circle r="${radius}" fill="${fill}" filter="url(#nodeShadow)" stroke="${stroke}" stroke-width="3" ${!isUnlocked ? 'opacity="0.7"' : ''}/>
+        ${isCurrent ? `<circle r="${radius + 10}" fill="none" stroke="#ffd97a" stroke-width="2" opacity="0.5" class="level-pulse"/>` : ''}
+        ${isUnlocked
+          ? (ICONS[def.icon] || '')
+          : '<text y="6" text-anchor="middle" font-size="32" fill="#fdf4dc" opacity="0.8">🔒</text>'}
+        ${isUnlocked
+          ? `<text x="0" y="${radius - 22}" text-anchor="middle" font-family="Cinzel Decorative" font-weight="700" font-size="13" fill="#3d1f5c">LEVEL ${id}</text>`
+          : ''}
+        <text x="0" y="${radius + 22}" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="16" fill="#fdf4dc" stroke="#1a0d36" stroke-width="3" paint-order="stroke" ${!isUnlocked ? 'opacity="0.7"' : ''}>${def.name}</text>
+        ${isDone ? renderNodeStars(stars, radius + 38) : ''}
+      `;
+      g.appendChild(inner);
+
+      g.addEventListener('click', () => {
+        if (!isUnlocked) {
+          sounds.wrong();
+          g.classList.remove('bumped');
+          void g.offsetWidth;
+          g.classList.add('bumped');
+          setTimeout(() => g.classList.remove('bumped'), 450);
+          return;
+        }
+        sounds.tap();
+        const levelDef = LEVEL_DEFS[id];
+        if (levelDef.story && levelDef.story.intro) {
+          showStory(levelDef.story.intro, () => startLevel(id));
+        } else {
+          startLevel(id);
+        }
+      });
+      container.appendChild(g);
+    });
+  }
+
+  function renderNodeStars(earned, y) {
+    let svg = `<g transform="translate(0, ${y})">`;
+    for (let i = 0; i < 3; i++) {
+      const x = (i - 1) * 16;
+      const filled = i < earned;
+      svg += `<path transform="translate(${x}, 0) scale(0.6)" d="M 0 -6 l 4 9 9 .6 -7 6 2.5 9 -8.5 -5 -8.5 5 2.5 -9 -7 -6 9 -.6 z" fill="${filled ? '#ffd97a' : '#3d1f5c'}" stroke="${filled ? '#c89540' : '#7d3eb5'}" stroke-width="1"/>`;
+    }
+    svg += '</g>';
+    return svg;
+  }
+
+  function refreshMapStars() {
+    let total = 0;
+    Object.values(state.progress.stars).forEach(s => total += s);
+    document.getElementById('total-stars').textContent = total;
+    renderMapNodes();
+  }
+
+  /* ---------- TOGGLES ---------- */
+  function setupToggles() {
+    const soundBtn = document.getElementById('sound-toggle');
+    const reflect = () => {
+      soundBtn.classList.toggle('off', !state.audioOn);
+      soundBtn.title = state.audioOn ? 'Sound on (tap to mute)' : 'Sound off (tap to enable)';
+    };
+    soundBtn.addEventListener('click', () => {
+      state.audioOn = !state.audioOn;
+      if (state.audioOn) {
+        ensureAudio();
+        startAmbientMusic();
+      } else {
+        stopAmbientMusic();
+      }
+      saveProgress();
+      reflect();
+    });
+    reflect();
+  }
+
+  /* ---------- WIRING ---------- */
+  function setup() {
+    loadProgress();
+    setupToggles();
+    refreshMapStars();
+    setupBuildSupplyStamps();
+
+    if (Object.keys(state.progress.stars).length > 0) {
+      document.getElementById('reset-btn').style.display = '';
+    }
+
+    document.getElementById('begin-btn').addEventListener('click', () => {
+      ensureAudio(); sounds.tap();
+      showStory(STORIES.setup, () => {
+        showScreen('map-screen'); refreshMapStars();
+      });
+    });
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      if (confirm("Start over? This will clear all your stars.")) {
+        state.progress.stars = {};
+        saveProgress();
+        refreshMapStars();
+        document.getElementById('reset-btn').style.display = 'none';
+      }
+    });
+    document.getElementById('map-back').addEventListener('click', () => {
+      sounds.tap();
+      showScreen('entry');
+      if (Object.keys(state.progress.stars).length > 0) {
+        document.getElementById('reset-btn').style.display = '';
+      }
+    });
+    document.getElementById('level-back').addEventListener('click', () => {
+      if (confirm("Leave this level? Your progress in this level won't be saved.")) {
+        showScreen('map-screen');
+      }
+    });
+    document.getElementById('build-check').addEventListener('click', checkBuildAnswer);
+    document.getElementById('trade-btn').addEventListener('click', performTrade);
+    document.getElementById('celeb-continue').addEventListener('click', () => {
+      sounds.tap();
+      document.getElementById('celebration').classList.remove('active');
+      const lvl = state.level;
+      const def = lvl ? LEVEL_DEFS[lvl.id] : null;
+      if (def && def.story && def.story.outro) {
+        showStory(def.story.outro, () => {
+          showScreen('map-screen'); refreshMapStars();
+        });
+      } else {
+        showScreen('map-screen'); refreshMapStars();
+      }
+    });
+    document.getElementById('celeb-replay').addEventListener('click', () => {
+      sounds.tap();
+      document.getElementById('celebration').classList.remove('active');
+      startLevel(state.level.id);
+    });
+
+    document.addEventListener('click', () => ensureAudio(), { once: true });
+  }
+
+  document.addEventListener('DOMContentLoaded', setup);
+})();
+</script>
+
+</body>
+</html>
