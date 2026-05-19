@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Book Picker — Jen, Keegan, Lauren & Lorien</title>
+<title>Book Picker — Jen, Keagan, Lauren & Lorien</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400;1,9..144,600;1,9..144,800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,6 +13,7 @@
     --cream-2: #FFEFE0;
     --ink: #2D2438;
     --ink-soft: #5C4F6E;
+    --ink-softer: #8A7E9C;
     --pink: #FFB5C5;
     --pink-deep: #FF8FA3;
     --mint: #B5E8D0;
@@ -25,10 +26,10 @@
     --peach-deep: #FF9F7A;
     --shadow-soft: 0 8px 24px rgba(91, 64, 110, 0.08);
     --shadow-pop: 0 12px 36px rgba(91, 64, 110, 0.16);
+    --danger: #E66B7D;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   html, body { min-height: 100%; }
 
   body {
@@ -46,7 +47,6 @@
     overflow-x: hidden;
   }
 
-  /* subtle grain overlay */
   body::before {
     content: '';
     position: fixed;
@@ -58,31 +58,16 @@
     z-index: 0;
   }
 
-  .wrap {
-    max-width: 1180px;
-    margin: 0 auto;
-    position: relative;
-    z-index: 1;
-  }
+  .wrap { max-width: 1180px; margin: 0 auto; position: relative; z-index: 1; }
 
-  header {
-    text-align: center;
-    margin-bottom: 36px;
-    padding: 0 12px;
-  }
+  /* Header */
+  header { text-align: center; margin-bottom: 36px; padding: 0 12px; }
 
   .eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 0.22em;
-    color: var(--ink-soft);
-    font-weight: 600;
-    margin-bottom: 14px;
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.22em;
+    color: var(--ink-soft); font-weight: 600; margin-bottom: 14px;
   }
-
   .eyebrow span.dot {
     width: 6px; height: 6px; border-radius: 50%;
     background: var(--pink-deep);
@@ -97,36 +82,31 @@
     letter-spacing: -0.02em;
     margin-bottom: 18px;
   }
-
   h1 .italic {
-    font-style: italic;
-    font-weight: 400;
+    font-style: italic; font-weight: 400;
     background: linear-gradient(120deg, var(--pink-deep), var(--lavender-deep) 50%, var(--mint-deep));
-    -webkit-background-clip: text;
-    background-clip: text;
+    -webkit-background-clip: text; background-clip: text;
     -webkit-text-fill-color: transparent;
   }
-
   .names {
-    font-family: 'Fraunces', serif;
-    font-style: italic;
+    font-family: 'Fraunces', serif; font-style: italic;
     font-size: clamp(0.95rem, 2vw, 1.15rem);
-    color: var(--ink-soft);
-    font-weight: 400;
+    color: var(--ink-soft); font-weight: 400;
   }
-
   .names .amp { color: var(--pink-deep); font-weight: 600; font-style: normal; padding: 0 4px; }
 
   /* Layout */
   .grid {
     display: grid;
-    grid-template-columns: minmax(280px, 380px) 1fr;
+    grid-template-columns: minmax(300px, 420px) 1fr;
     gap: 36px;
     align-items: start;
   }
+  .col-left { display: flex; flex-direction: column; gap: 24px; }
 
   @media (max-width: 880px) {
     .grid { grid-template-columns: 1fr; gap: 28px; }
+    body { padding: 20px 14px 40px; }
   }
 
   /* Card */
@@ -136,105 +116,64 @@
     -webkit-backdrop-filter: blur(10px);
     border: 1.5px solid rgba(255, 255, 255, 0.9);
     border-radius: 24px;
-    padding: 26px;
+    padding: 24px 26px;
     box-shadow: var(--shadow-soft);
   }
 
   .card-title {
-    font-family: 'Fraunces', serif;
-    font-weight: 600;
-    font-size: 1.35rem;
-    margin-bottom: 6px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    font-family: 'Fraunces', serif; font-weight: 600;
+    font-size: 1.3rem; margin-bottom: 4px; line-height: 1.2;
   }
-
   .card-sub {
-    font-size: 0.88rem;
-    color: var(--ink-soft);
-    margin-bottom: 20px;
+    font-size: 0.86rem; color: var(--ink-soft); margin-bottom: 18px;
   }
 
-  /* Inputs */
-  .book-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 16px;
+  /* Submit form */
+  .field { display: block; margin-bottom: 14px; }
+  .lbl {
+    display: block;
+    font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.12em;
+    font-weight: 600; color: var(--ink-soft); margin-bottom: 6px;
   }
 
-  .book-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    animation: slideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(-6px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .book-num {
-    width: 34px; height: 34px;
-    flex-shrink: 0;
-    border-radius: 50%;
-    display: grid; place-items: center;
-    font-family: 'Fraunces', serif;
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: var(--ink);
-  }
-
-  .book-num.c1 { background: var(--pink); }
-  .book-num.c2 { background: var(--mint); }
-  .book-num.c3 { background: var(--butter); }
-  .book-num.c4 { background: var(--lavender); }
-  .book-num.c5 { background: var(--peach); }
-
-  .book-input {
-    flex: 1;
-    min-width: 0;
+  .text-input, select.text-input {
+    width: 100%;
     border: 1.5px solid rgba(45, 36, 56, 0.08);
-    background: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.75);
     border-radius: 12px;
-    padding: 10px 14px;
-    font-family: inherit;
-    font-size: 0.98rem;
-    color: var(--ink);
+    padding: 11px 14px;
+    font-family: inherit; font-size: 0.98rem; color: var(--ink);
     transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
   }
-
-  .book-input::placeholder { color: rgba(92, 79, 110, 0.5); }
-
-  .book-input:focus {
+  .text-input::placeholder { color: rgba(92, 79, 110, 0.5); }
+  .text-input:focus, select.text-input:focus {
     outline: none;
     border-color: var(--lavender-deep);
     background: #fff;
     box-shadow: 0 0 0 4px rgba(155, 138, 212, 0.18);
   }
 
-  .remove-btn {
-    width: 32px; height: 32px;
-    flex-shrink: 0;
-    border-radius: 50%;
-    border: none;
-    background: rgba(45, 36, 56, 0.06);
-    color: var(--ink-soft);
-    font-size: 1.1rem;
-    line-height: 1;
-    cursor: pointer;
-    display: grid; place-items: center;
-    transition: background 0.15s, color 0.15s, transform 0.15s;
+  select.text-input {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%235C4F6E' stroke-width='2' stroke-linecap='round'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 38px;
   }
 
-  .remove-btn:hover { background: var(--pink); color: var(--ink); transform: rotate(90deg); }
-  .remove-btn:disabled { opacity: 0.25; cursor: not-allowed; }
-  .remove-btn:disabled:hover { background: rgba(45, 36, 56, 0.06); color: var(--ink-soft); transform: none; }
+  .hidden { display: none !important; }
 
-  .controls { display: flex; flex-direction: column; gap: 10px; }
+  .form-msg {
+    margin-top: 10px;
+    font-size: 0.88rem;
+    min-height: 1.2em;
+    text-align: center;
+  }
+  .form-msg.error { color: var(--danger); }
+  .form-msg.success { color: var(--mint-deep); }
 
+  /* Buttons */
   .btn {
     border: none;
     border-radius: 14px;
@@ -243,37 +182,126 @@
     font-weight: 600;
     font-size: 0.95rem;
     cursor: pointer;
-    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+    transition: transform 0.15s, box-shadow 0.15s, background 0.15s, opacity 0.15s;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
   }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
-  .btn-add {
-    background: var(--mint);
-    color: var(--ink);
-  }
+  .btn-add { background: var(--mint); color: var(--ink); width: 100%; }
   .btn-add:hover:not(:disabled) { background: var(--mint-deep); transform: translateY(-1px); box-shadow: var(--shadow-soft); }
-  .btn-add:disabled { opacity: 0.45; cursor: not-allowed; }
 
-  .btn-clear {
-    background: transparent;
+  .btn-primary { background: var(--ink); color: #fff; padding: 12px 24px; border-radius: 999px; }
+  .btn-primary:hover:not(:disabled) { background: var(--lavender-deep); transform: translateY(-1px); }
+
+  .btn-secondary { background: var(--cream-2); color: var(--ink); padding: 12px 24px; border-radius: 999px; }
+  .btn-secondary:hover:not(:disabled) { background: var(--butter); transform: translateY(-1px); }
+
+  .icon-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(45, 36, 56, 0.06);
+    border: none;
+    color: var(--ink-soft);
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: grid; place-items: center;
+    transition: background 0.15s, color 0.15s, transform 0.4s;
+    flex-shrink: 0;
+  }
+  .icon-btn:hover { background: var(--lavender); color: var(--ink); }
+  .icon-btn.spinning { transform: rotate(360deg); transition: transform 0.6s; }
+
+  /* List */
+  .list-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 12px; margin-bottom: 14px;
+  }
+  .list-header .card-sub { margin-bottom: 0; }
+
+  .book-list {
+    display: flex; flex-direction: column; gap: 8px;
+    max-height: 360px; overflow-y: auto;
+    padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--lavender) transparent;
+  }
+  .book-list::-webkit-scrollbar { width: 6px; }
+  .book-list::-webkit-scrollbar-thumb { background: var(--lavender); border-radius: 3px; }
+
+  .book-item {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(45, 36, 56, 0.05);
+    border-radius: 12px;
+    padding: 10px 12px;
+    animation: slideIn 0.25s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .color-chip {
+    width: 14px; height: 14px; flex-shrink: 0;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .book-idx {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
     color: var(--ink-soft);
     font-size: 0.85rem;
-    padding: 8px 12px;
-    text-decoration: underline;
-    text-decoration-style: dotted;
-    text-underline-offset: 3px;
+    min-width: 18px;
+    text-align: center;
   }
-  .btn-clear:hover { color: var(--pink-deep); }
+  .book-info { flex: 1; min-width: 0; }
+  .book-title-text {
+    font-weight: 600;
+    font-size: 0.96rem;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .book-meta {
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+    font-style: italic;
+    margin-top: 1px;
+  }
+  .del-btn {
+    width: 28px; height: 28px; flex-shrink: 0;
+    border-radius: 50%; border: none;
+    background: transparent;
+    color: var(--ink-softer);
+    font-size: 1rem; line-height: 1;
+    cursor: pointer;
+    display: grid; place-items: center;
+    transition: background 0.15s, color 0.15s, transform 0.15s, opacity 0.15s;
+    opacity: 0.4;
+  }
+  .book-item:hover .del-btn { opacity: 1; }
+  .del-btn:hover { background: var(--pink); color: var(--ink); transform: rotate(90deg); opacity: 1; }
 
-  /* Wheel area */
+  .empty-state {
+    text-align: center;
+    padding: 30px 14px;
+    color: var(--ink-soft);
+    font-style: italic;
+    font-size: 0.9rem;
+  }
+  .empty-state.error { color: var(--danger); }
+
+  /* Wheel */
   .wheel-stage {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 22px;
+    display: flex; flex-direction: column; align-items: center; gap: 22px;
+    position: sticky; top: 20px;
+  }
+  @media (max-width: 880px) {
+    .wheel-stage { position: static; }
   }
 
   .wheel-container {
@@ -284,41 +312,31 @@
   }
 
   .pointer {
-    position: absolute;
-    top: -6px;
-    left: 50%;
+    position: absolute; top: -6px; left: 50%;
     transform: translateX(-50%);
-    width: 36px;
-    height: 48px;
+    width: 36px; height: 48px;
     z-index: 5;
     filter: drop-shadow(0 4px 8px rgba(45, 36, 56, 0.2));
   }
-
   .pointer svg { width: 100%; height: 100%; display: block; }
 
   .wheel {
-    width: 100%;
-    height: 100%;
+    width: 100%; height: 100%;
     transition: transform 4.6s cubic-bezier(0.17, 0.67, 0.21, 0.99);
     transform-origin: center;
     filter: drop-shadow(0 14px 30px rgba(91, 64, 110, 0.18));
   }
 
   .wheel-hub {
-    position: absolute;
-    inset: 0;
-    margin: auto;
-    width: 22%;
-    height: 22%;
+    position: absolute; inset: 0; margin: auto;
+    width: 22%; height: 22%;
     border-radius: 50%;
     background: linear-gradient(135deg, #fff, var(--cream-2));
     box-shadow: inset 0 2px 6px rgba(255, 255, 255, 0.9), 0 4px 12px rgba(91, 64, 110, 0.15);
-    display: grid;
-    place-items: center;
+    display: grid; place-items: center;
     pointer-events: none;
     z-index: 3;
   }
-
   .wheel-hub::after {
     content: '';
     width: 12px; height: 12px;
@@ -341,14 +359,11 @@
     box-shadow: 0 8px 22px rgba(255, 143, 163, 0.4);
     transition: transform 0.18s, box-shadow 0.18s, opacity 0.18s;
   }
-
   .spin-btn:hover:not(:disabled) {
     transform: translateY(-2px) scale(1.02);
     box-shadow: 0 12px 28px rgba(255, 143, 163, 0.5);
   }
-
   .spin-btn:active:not(:disabled) { transform: translateY(0) scale(0.98); }
-
   .spin-btn:disabled {
     background: rgba(45, 36, 56, 0.15);
     color: rgba(45, 36, 56, 0.4);
@@ -364,33 +379,42 @@
     min-height: 1.2em;
   }
 
+  /* Slice text */
+  .slice-text {
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
+    fill: var(--ink);
+    pointer-events: none;
+    user-select: none;
+  }
+  .slice-num {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    fill: rgba(45, 36, 56, 0.55);
+    pointer-events: none;
+    user-select: none;
+  }
+
   /* Winner modal */
   .modal-overlay {
-    position: fixed;
-    inset: 0;
+    position: fixed; inset: 0;
     background: rgba(45, 36, 56, 0.35);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     display: none;
-    align-items: center;
-    justify-content: center;
+    align-items: center; justify-content: center;
     z-index: 100;
     padding: 20px;
     animation: fadeIn 0.3s ease;
   }
-
   .modal-overlay.show { display: flex; }
-
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
   .modal {
     background: #fff;
     border-radius: 28px;
-    padding: 40px 32px;
-    max-width: 460px;
+    padding: 40px 32px 32px;
+    max-width: 480px;
     width: 100%;
     text-align: center;
     box-shadow: var(--shadow-pop);
@@ -398,7 +422,6 @@
     position: relative;
     overflow: hidden;
   }
-
   .modal::before {
     content: '';
     position: absolute;
@@ -409,7 +432,6 @@
     border-radius: 50%;
     filter: blur(30px);
   }
-
   @keyframes popIn {
     from { opacity: 0; transform: scale(0.85) translateY(20px); }
     to { opacity: 1; transform: scale(1) translateY(0); }
@@ -424,7 +446,6 @@
     font-weight: 600;
     margin-bottom: 12px;
   }
-
   .modal-title {
     position: relative;
     font-family: 'Fraunces', serif;
@@ -432,66 +453,62 @@
     font-weight: 600;
     font-size: clamp(1.6rem, 5vw, 2.2rem);
     line-height: 1.2;
-    margin-bottom: 24px;
+    margin-bottom: 6px;
     color: var(--ink);
     word-wrap: break-word;
   }
-
+  .modal-submitter {
+    position: relative;
+    font-family: 'Fraunces', serif;
+    font-size: 1rem;
+    color: var(--ink-soft);
+    margin-bottom: 22px;
+  }
+  .modal-submitter .by { font-style: italic; }
+  .modal-prompt {
+    position: relative;
+    color: var(--ink-soft);
+    font-size: 0.92rem;
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
   .modal-actions {
     position: relative;
     display: flex;
-    gap: 12px;
+    gap: 10px;
     justify-content: center;
     flex-wrap: wrap;
   }
 
-  .btn-primary {
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(8px);
     background: var(--ink);
     color: #fff;
-    padding: 12px 24px;
+    padding: 12px 20px;
     border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    box-shadow: var(--shadow-pop);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s, transform 0.25s;
+    z-index: 200;
   }
-  .btn-primary:hover { background: var(--lavender-deep); transform: translateY(-1px); }
-
-  .btn-secondary {
-    background: var(--cream-2);
-    color: var(--ink);
-    padding: 12px 24px;
-    border-radius: 999px;
-  }
-  .btn-secondary:hover { background: var(--butter); transform: translateY(-1px); }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.error { background: var(--danger); }
 
   /* Confetti */
   .confetti-piece {
     position: fixed;
-    width: 10px;
-    height: 14px;
     top: -20px;
     z-index: 99;
     pointer-events: none;
     will-change: transform;
   }
 
-  /* Footer */
-  footer {
-    text-align: center;
-    margin-top: 50px;
-    font-size: 0.8rem;
-    color: var(--ink-soft);
-    opacity: 0.7;
-  }
-  footer .heart { color: var(--pink-deep); }
-
-  /* Wheel text */
-  .slice-text {
-    font-family: 'Quicksand', sans-serif;
-    font-weight: 600;
-    fill: var(--ink);
-    pointer-events: none;
-    user-select: none;
-  }
-
-  /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
     .wheel { transition: transform 1s ease-out; }
     *, *::before, *::after { animation-duration: 0.01ms !important; }
@@ -503,24 +520,53 @@
     <header>
       <div class="eyebrow"><span class="dot"></span> Book Club Edition</div>
       <h1>The Book <span class="italic">Wheel</span></h1>
-      <p class="names">for Jen <span class="amp">·</span> Keegan <span class="amp">·</span> Lauren <span class="amp">&amp;</span> Lorien</p>
+      <p class="names">for Jen <span class="amp">·</span> Keagan <span class="amp">·</span> Lauren <span class="amp">&amp;</span> Lorien</p>
     </header>
 
     <main class="grid">
-      <!-- Input panel -->
-      <section class="card" aria-label="Book entry">
-        <h2 class="card-title">Your books</h2>
-        <p class="card-sub">Add between 2 and 5 books. Saved automatically.</p>
+      <div class="col-left">
+        <!-- Submit form -->
+        <section class="card" aria-label="Add a book">
+          <h2 class="card-title">Add a book</h2>
+          <p class="card-sub">Anyone can submit. Up to 50 books on the wheel.</p>
+          <form id="submitForm" novalidate>
+            <div class="field">
+              <label class="lbl" for="submitterSelect">Your name</label>
+              <select id="submitterSelect" class="text-input" required>
+                <option value="" disabled selected>Choose your name…</option>
+                <option value="Jen">Jen</option>
+                <option value="Keagan">Keagan</option>
+                <option value="Lauren">Lauren</option>
+                <option value="Lorien">Lorien</option>
+                <option value="__other__">Other…</option>
+              </select>
+              <input type="text" id="submitterOther" class="text-input hidden" placeholder="Your name" maxlength="60" style="margin-top: 8px;">
+            </div>
+            <div class="field">
+              <label class="lbl" for="titleInput">Book title</label>
+              <input type="text" id="titleInput" class="text-input" placeholder="What should we read?" maxlength="200" required>
+            </div>
+            <button type="submit" class="btn btn-add" id="submitBtn">＋ Add to the wheel</button>
+            <div class="form-msg" id="formMsg" aria-live="polite"></div>
+          </form>
+        </section>
 
-        <div class="book-list" id="bookList"></div>
+        <!-- Book list -->
+        <section class="card" aria-label="Books on the wheel">
+          <div class="list-header">
+            <div>
+              <h2 class="card-title">On the wheel</h2>
+              <p class="card-sub" id="bookCount">Loading…</p>
+            </div>
+            <button class="icon-btn" id="refreshBtn" type="button" aria-label="Refresh list" title="Refresh">↻</button>
+          </div>
+          <div class="book-list" id="bookList">
+            <div class="empty-state">Loading books…</div>
+          </div>
+        </section>
+      </div>
 
-        <div class="controls">
-          <button class="btn btn-add" id="addBtn" type="button">＋ Add another book</button>
-          <button class="btn btn-clear" id="clearBtn" type="button">Clear all</button>
-        </div>
-      </section>
-
-      <!-- Wheel panel -->
+      <!-- Wheel -->
       <section class="wheel-stage" aria-label="Spin wheel">
         <div class="wheel-container">
           <div class="pointer" aria-hidden="true">
@@ -529,20 +575,14 @@
               <circle cx="18" cy="10" r="4" fill="#FFE8A3"/>
             </svg>
           </div>
-          <svg class="wheel" id="wheel" viewBox="-110 -110 220 220" xmlns="http://www.w3.org/2000/svg">
-            <!-- slices injected by JS -->
-          </svg>
+          <svg class="wheel" id="wheel" viewBox="-110 -110 220 220" xmlns="http://www.w3.org/2000/svg"></svg>
           <div class="wheel-hub"></div>
         </div>
 
         <button class="spin-btn" id="spinBtn" type="button">Spin the wheel</button>
-        <p class="hint" id="hint">Add at least 2 books to spin</p>
+        <p class="hint" id="hint">Loading…</p>
       </section>
     </main>
-
-    <footer>
-      Made with <span class="heart">♥</span> for book club nights
-    </footer>
   </div>
 
   <!-- Winner modal -->
@@ -550,22 +590,36 @@
     <div class="modal">
       <div class="modal-eyebrow">Tonight's read</div>
       <div class="modal-title" id="modalTitle">—</div>
+      <div class="modal-submitter" id="modalSubmitter"></div>
+      <div class="modal-prompt">Mark this book as read and remove it from the wheel?</div>
       <div class="modal-actions">
-        <button class="btn btn-primary" id="closeModal" type="button">Lovely!</button>
-        <button class="btn btn-secondary" id="spinAgain" type="button">Spin again</button>
+        <button class="btn btn-primary" id="markReadBtn" type="button">Mark as read &amp; remove</button>
+        <button class="btn btn-secondary" id="keepBtn" type="button">Keep on the wheel</button>
       </div>
     </div>
   </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
 
 <script>
 (function() {
   'use strict';
 
-  const STORAGE_KEY = 'bookPicker.books.v1';
-  const MIN_BOOKS = 2;
-  const MAX_BOOKS = 5;
+  // ============================================================
+  // CONFIGURATION
+  // ============================================================
+  // Paste your Google Apps Script Web app URL between the quotes below.
+  // See code.gs for full setup instructions.
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw3ubzI5StPflsA4w6MCGby73XmxYxvs2mdMVx9OHkrE2ZW02-RpbxoNgEexRZT1_gG3g/exec';
+  // ============================================================
 
-  // Pastel slice colors
+  const STORAGE_NAME_KEY = 'bookPicker.submitterName.v1';
+  const REFRESH_INTERVAL_MS = 30000;
+  const MIN_BOOKS_TO_SPIN = 2;
+  const MAX_BOOKS = 50;
+  const KNOWN_NAMES = ['Jen', 'Keagan', 'Lauren', 'Lorien'];
+
   const COLORS = [
     { bg: '#FFB5C5', deep: '#FF8FA3' }, // pink
     { bg: '#B5E8D0', deep: '#6DD3B0' }, // mint
@@ -575,155 +629,345 @@
   ];
 
   // State
-  let books = loadBooks();
+  let books = [];
   let isSpinning = false;
   let currentRotation = 0;
+  let lastChosen = null;
+  let refreshTimer = null;
+  let initialLoadDone = false;
 
   // DOM
-  const bookListEl = document.getElementById('bookList');
-  const addBtn = document.getElementById('addBtn');
-  const clearBtn = document.getElementById('clearBtn');
-  const spinBtn = document.getElementById('spinBtn');
+  const submitForm = document.getElementById('submitForm');
+  const submitterSelect = document.getElementById('submitterSelect');
+  const submitterOther = document.getElementById('submitterOther');
+  const titleInput = document.getElementById('titleInput');
+  const submitBtn = document.getElementById('submitBtn');
+  const formMsg = document.getElementById('formMsg');
+  const bookList = document.getElementById('bookList');
+  const bookCount = document.getElementById('bookCount');
+  const refreshBtn = document.getElementById('refreshBtn');
   const wheelEl = document.getElementById('wheel');
+  const spinBtn = document.getElementById('spinBtn');
   const hintEl = document.getElementById('hint');
   const modal = document.getElementById('modal');
   const modalTitle = document.getElementById('modalTitle');
-  const closeModalBtn = document.getElementById('closeModal');
-  const spinAgainBtn = document.getElementById('spinAgain');
+  const modalSubmitter = document.getElementById('modalSubmitter');
+  const markReadBtn = document.getElementById('markReadBtn');
+  const keepBtn = document.getElementById('keepBtn');
+  const toastEl = document.getElementById('toast');
 
-  // Init
-  if (books.length < MIN_BOOKS) {
-    while (books.length < MIN_BOOKS) books.push('');
-  }
-  renderBookList();
-  renderWheel();
-  updateControls();
+  // ============================================================
+  // INITIALIZATION
+  // ============================================================
+  init();
 
-  // Event listeners
-  addBtn.addEventListener('click', () => {
-    if (books.length >= MAX_BOOKS) return;
-    books.push('');
-    saveBooks();
-    renderBookList();
-    renderWheel();
-    updateControls();
-    // focus the new input
-    const inputs = bookListEl.querySelectorAll('.book-input');
-    if (inputs.length) inputs[inputs.length - 1].focus();
-  });
-
-  clearBtn.addEventListener('click', () => {
-    if (!confirm('Clear all books?')) return;
-    books = ['', ''];
-    saveBooks();
-    renderBookList();
-    renderWheel();
-    updateControls();
-  });
-
-  spinBtn.addEventListener('click', spin);
-
-  closeModalBtn.addEventListener('click', closeModal);
-  spinAgainBtn.addEventListener('click', () => {
-    closeModal();
-    setTimeout(spin, 300);
-  });
-
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) closeModal();
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modal.classList.contains('show')) closeModal();
-  });
-
-  // Functions
-  function loadBooks() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) return parsed.slice(0, MAX_BOOKS);
+  function init() {
+    // Restore last-used submitter name
+    const savedName = localStorage.getItem(STORAGE_NAME_KEY);
+    if (savedName) {
+      if (KNOWN_NAMES.indexOf(savedName) !== -1) {
+        submitterSelect.value = savedName;
+      } else {
+        submitterSelect.value = '__other__';
+        submitterOther.value = savedName;
+        submitterOther.classList.remove('hidden');
       }
-    } catch (e) { /* ignore */ }
-    return [];
+    }
+
+    setupEventListeners();
+    loadBooks(true);
+    startAutoRefresh();
   }
 
-  function saveBooks() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(books));
-    } catch (e) { /* ignore quota or disabled storage */ }
-  }
+  function setupEventListeners() {
+    submitterSelect.addEventListener('change', function() {
+      if (submitterSelect.value === '__other__') {
+        submitterOther.classList.remove('hidden');
+        submitterOther.focus();
+      } else {
+        submitterOther.classList.add('hidden');
+      }
+    });
 
-  function getValidBooks() {
-    return books.map(b => (b || '').trim()).filter(b => b.length > 0);
-  }
+    submitForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      handleSubmit();
+    });
 
-  function renderBookList() {
-    bookListEl.innerHTML = '';
-    books.forEach((title, i) => {
-      const row = document.createElement('div');
-      row.className = 'book-row';
-
-      const num = document.createElement('div');
-      num.className = `book-num c${i + 1}`;
-      num.textContent = i + 1;
-
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.className = 'book-input';
-      input.placeholder = `Book ${i + 1} title…`;
-      input.value = title;
-      input.maxLength = 80;
-      input.setAttribute('aria-label', `Book ${i + 1} title`);
-      input.addEventListener('input', (e) => {
-        books[i] = e.target.value;
-        saveBooks();
-        renderWheel();
-        updateControls();
+    refreshBtn.addEventListener('click', function() {
+      refreshBtn.classList.add('spinning');
+      loadBooks().finally(function() {
+        setTimeout(function() { refreshBtn.classList.remove('spinning'); }, 400);
       });
+    });
 
-      const removeBtn = document.createElement('button');
-      removeBtn.type = 'button';
-      removeBtn.className = 'remove-btn';
-      removeBtn.innerHTML = '×';
-      removeBtn.setAttribute('aria-label', `Remove book ${i + 1}`);
-      removeBtn.disabled = books.length <= MIN_BOOKS;
-      removeBtn.addEventListener('click', () => {
-        if (books.length <= MIN_BOOKS) return;
-        books.splice(i, 1);
-        saveBooks();
-        renderBookList();
-        renderWheel();
-        updateControls();
-      });
+    spinBtn.addEventListener('click', spin);
 
-      row.appendChild(num);
-      row.appendChild(input);
-      row.appendChild(removeBtn);
-      bookListEl.appendChild(row);
+    markReadBtn.addEventListener('click', handleMarkRead);
+    keepBtn.addEventListener('click', function() {
+      closeModal();
+      lastChosen = null;
+    });
+
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        closeModal();
+        lastChosen = null;
+      }
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && modal.classList.contains('show')) {
+        closeModal();
+        lastChosen = null;
+      }
+    });
+
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden) loadBooks();
     });
   }
 
+  function startAutoRefresh() {
+    if (refreshTimer) clearInterval(refreshTimer);
+    refreshTimer = setInterval(function() {
+      if (!document.hidden && !isSpinning && !modal.classList.contains('show')) {
+        loadBooks();
+      }
+    }, REFRESH_INTERVAL_MS);
+  }
+
+  // ============================================================
+  // API
+  // ============================================================
+  // Apps Script web apps don't handle CORS preflight, so we send POSTs
+  // as text/plain (a "simple request" that bypasses preflight).
+  async function apiCall(method, body) {
+    const options = { method: method, redirect: 'follow' };
+    if (body) {
+      options.headers = { 'Content-Type': 'text/plain;charset=utf-8' };
+      options.body = JSON.stringify(body);
+    }
+    const resp = await fetch(SCRIPT_URL, options);
+    if (!resp.ok) throw new Error('Network error (' + resp.status + ')');
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error || 'Request failed');
+    return data;
+  }
+
+  async function loadBooks(showLoading) {
+    if (showLoading) {
+      bookList.innerHTML = '<div class="empty-state">Loading books…</div>';
+      bookCount.textContent = 'Loading…';
+    }
+    try {
+      const data = await apiCall('GET');
+      books = data.books || [];
+      initialLoadDone = true;
+      renderBookList();
+      renderWheel();
+      updateControls();
+    } catch (err) {
+      console.error('loadBooks failed:', err);
+      if (!initialLoadDone) {
+        bookList.innerHTML = '<div class="empty-state error">Couldn\'t reach the server. Try refreshing in a moment.</div>';
+        bookCount.textContent = 'Connection error';
+        hintEl.textContent = 'Can\'t reach the server';
+      } else {
+        showToast('Couldn\'t refresh — showing last known list', true);
+      }
+    }
+  }
+
+  async function handleSubmit() {
+    const submitter = submitterSelect.value === '__other__'
+      ? submitterOther.value.trim()
+      : submitterSelect.value;
+    const title = titleInput.value.trim();
+
+    formMsg.textContent = '';
+    formMsg.className = 'form-msg';
+
+    if (!submitter) {
+      formMsg.textContent = 'Please pick your name.';
+      formMsg.className = 'form-msg error';
+      return;
+    }
+    if (!title) {
+      formMsg.textContent = 'Enter a book title.';
+      formMsg.className = 'form-msg error';
+      return;
+    }
+    if (books.length >= MAX_BOOKS) {
+      formMsg.textContent = 'The wheel is full (' + MAX_BOOKS + ' books). Spin first.';
+      formMsg.className = 'form-msg error';
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Adding…';
+
+    try {
+      const data = await apiCall('POST', {
+        action: 'add',
+        submitter: submitter,
+        title: title
+      });
+      localStorage.setItem(STORAGE_NAME_KEY, submitter);
+
+      books.push(data.book);
+      titleInput.value = '';
+      formMsg.textContent = '✓ Added!';
+      formMsg.className = 'form-msg success';
+      renderBookList();
+      renderWheel();
+      updateControls();
+
+      setTimeout(function() {
+        if (formMsg.textContent === '✓ Added!') formMsg.textContent = '';
+      }, 2500);
+    } catch (err) {
+      formMsg.textContent = err.message || 'Could not add book.';
+      formMsg.className = 'form-msg error';
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '＋ Add to the wheel';
+    }
+  }
+
+  async function handleMarkRead() {
+    if (!lastChosen) { closeModal(); return; }
+    markReadBtn.disabled = true;
+    keepBtn.disabled = true;
+    markReadBtn.textContent = 'Removing…';
+    try {
+      await apiCall('POST', { action: 'remove', id: lastChosen.id });
+      books = books.filter(function(b) { return b.id !== lastChosen.id; });
+      renderBookList();
+      renderWheel();
+      updateControls();
+      closeModal();
+      showToast('Marked as read — happy reading!');
+    } catch (err) {
+      showToast(err.message || 'Could not remove book', true);
+    } finally {
+      markReadBtn.disabled = false;
+      keepBtn.disabled = false;
+      markReadBtn.textContent = 'Mark as read & remove';
+      lastChosen = null;
+    }
+  }
+
+  async function handleDelete(id, title) {
+    if (!confirm('Remove "' + title + '" from the wheel?')) return;
+    try {
+      await apiCall('POST', { action: 'remove', id: id });
+      books = books.filter(function(b) { return b.id !== id; });
+      renderBookList();
+      renderWheel();
+      updateControls();
+      showToast('Removed');
+    } catch (err) {
+      showToast(err.message || 'Could not remove', true);
+    }
+  }
+
+  // ============================================================
+  // RENDERING
+  // ============================================================
+  function renderBookList() {
+    if (books.length === 0) {
+      bookList.innerHTML = '<div class="empty-state">No books yet — be the first to add one!</div>';
+      bookCount.textContent = '0 books';
+      return;
+    }
+    bookCount.textContent = books.length + (books.length === 1 ? ' book' : ' books');
+
+    bookList.innerHTML = '';
+    books.forEach(function(book, i) {
+      const color = COLORS[i % COLORS.length];
+      const item = document.createElement('div');
+      item.className = 'book-item';
+
+      item.innerHTML =
+        '<span class="color-chip" style="background:' + color.bg + '"></span>' +
+        '<span class="book-idx">' + (i + 1) + '</span>' +
+        '<div class="book-info">' +
+          '<div class="book-title-text"></div>' +
+          '<div class="book-meta"></div>' +
+        '</div>' +
+        '<button class="del-btn" type="button" aria-label="Remove">×</button>';
+
+      item.querySelector('.book-title-text').textContent = book.title;
+      item.querySelector('.book-meta').textContent = 'by ' + book.submitter;
+      item.querySelector('.del-btn').addEventListener('click', function() {
+        handleDelete(book.id, book.title);
+      });
+
+      bookList.appendChild(item);
+    });
+  }
+
+  function renderWheelEmpty(msg) {
+    const ns = 'http://www.w3.org/2000/svg';
+    wheelEl.innerHTML = '';
+    const ring = document.createElementNS(ns, 'circle');
+    ring.setAttribute('cx', '0'); ring.setAttribute('cy', '0');
+    ring.setAttribute('r', '100');
+    ring.setAttribute('fill', 'rgba(255, 255, 255, 0.5)');
+    ring.setAttribute('stroke', 'rgba(45, 36, 56, 0.08)');
+    ring.setAttribute('stroke-width', '1');
+    ring.setAttribute('stroke-dasharray', '4 6');
+    wheelEl.appendChild(ring);
+
+    const text = document.createElementNS(ns, 'text');
+    text.setAttribute('x', '0'); text.setAttribute('y', '0');
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('dominant-baseline', 'middle');
+    text.setAttribute('font-family', 'Fraunces, serif');
+    text.setAttribute('font-style', 'italic');
+    text.setAttribute('font-size', '11');
+    text.setAttribute('fill', 'rgba(92, 79, 110, 0.8)');
+    text.textContent = msg;
+    wheelEl.appendChild(text);
+  }
+
   function renderWheel() {
-    const valid = getValidBooks();
-    // For display purposes, show all entered slots even if blank (using placeholders),
-    // but valid count drives spin eligibility.
-    const display = books.map((b, i) => (b || '').trim() || `Book ${i + 1}`);
-    const n = display.length;
+    const n = books.length;
+    if (n === 0) { renderWheelEmpty('Add books to spin'); return; }
 
     const ns = 'http://www.w3.org/2000/svg';
     wheelEl.innerHTML = '';
-
-    if (n === 0) return;
-
     const R = 100;
-    const sliceAngle = 360 / n;
 
-    // background ring
+    if (n === 1) {
+      const color = COLORS[0];
+      const circle = document.createElementNS(ns, 'circle');
+      circle.setAttribute('cx', '0'); circle.setAttribute('cy', '0');
+      circle.setAttribute('r', R);
+      circle.setAttribute('fill', color.bg);
+      circle.setAttribute('stroke', '#FFF8F0');
+      circle.setAttribute('stroke-width', '2');
+      wheelEl.appendChild(circle);
+
+      const text = document.createElementNS(ns, 'text');
+      text.setAttribute('class', 'slice-text');
+      text.setAttribute('x', '0'); text.setAttribute('y', '-30');
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('dominant-baseline', 'middle');
+      text.setAttribute('font-size', '10');
+      text.textContent = books[0].title.slice(0, 24) + (books[0].title.length > 24 ? '…' : '');
+      wheelEl.appendChild(text);
+      return;
+    }
+
+    const sliceAngle = 360 / n;
+    const showTitle = n <= 5;
+    const showNumber = n > 5 && n <= 30;
+
+    // Background ring
     const ring = document.createElementNS(ns, 'circle');
-    ring.setAttribute('cx', '0');
-    ring.setAttribute('cy', '0');
+    ring.setAttribute('cx', '0'); ring.setAttribute('cy', '0');
     ring.setAttribute('r', R + 6);
     ring.setAttribute('fill', '#FFF8F0');
     ring.setAttribute('stroke', 'rgba(45, 36, 56, 0.08)');
@@ -732,8 +976,7 @@
 
     for (let i = 0; i < n; i++) {
       const color = COLORS[i % COLORS.length];
-      // angles measured from 12 o'clock, clockwise
-      const startA = i * sliceAngle - 90; // shift so first slice starts at top
+      const startA = i * sliceAngle - 90;
       const endA = (i + 1) * sliceAngle - 90;
       const startRad = (startA * Math.PI) / 180;
       const endRad = (endA * Math.PI) / 180;
@@ -745,62 +988,55 @@
       const largeArc = sliceAngle > 180 ? 1 : 0;
 
       const path = document.createElementNS(ns, 'path');
-      if (n === 1) {
-        // full circle (edge case, shouldn't happen but safety)
-        path.setAttribute('d', `M ${R} 0 A ${R} ${R} 0 1 1 ${-R} 0 A ${R} ${R} 0 1 1 ${R} 0 Z`);
-      } else {
-        path.setAttribute('d', `M 0 0 L ${x1} ${y1} A ${R} ${R} 0 ${largeArc} 1 ${x2} ${y2} Z`);
-      }
+      path.setAttribute('d', 'M 0 0 L ' + x1 + ' ' + y1 + ' A ' + R + ' ' + R + ' 0 ' + largeArc + ' 1 ' + x2 + ' ' + y2 + ' Z');
       path.setAttribute('fill', color.bg);
       path.setAttribute('stroke', '#FFF8F0');
-      path.setAttribute('stroke-width', '2');
+      path.setAttribute('stroke-width', n > 20 ? 1 : 2);
       path.setAttribute('stroke-linejoin', 'round');
       wheelEl.appendChild(path);
 
-      // text along radius, centered in slice
       const midA = startA + sliceAngle / 2;
       const midRad = (midA * Math.PI) / 180;
-      const textRadius = R * 0.62;
-      const tx = textRadius * Math.cos(midRad);
-      const ty = textRadius * Math.sin(midRad);
 
-      const text = document.createElementNS(ns, 'text');
-      text.setAttribute('class', 'slice-text');
-      text.setAttribute('x', tx);
-      text.setAttribute('y', ty);
-      text.setAttribute('text-anchor', 'middle');
-      text.setAttribute('dominant-baseline', 'middle');
-      // rotate text so it reads outward along the slice
-      text.setAttribute('transform', `rotate(${midA + 90} ${tx} ${ty})`);
-
-      // Choose font size based on slice count
-      const fontSize = n <= 2 ? 10 : n <= 3 ? 9 : n <= 4 ? 8.5 : 8;
-      text.setAttribute('font-size', fontSize);
-
-      // Wrap / truncate book titles
-      const label = display[i];
-      const lines = wrapText(label, n);
-      lines.forEach((line, li) => {
-        const tspan = document.createElementNS(ns, 'tspan');
-        tspan.setAttribute('x', tx);
-        tspan.setAttribute('dy', li === 0 ? `${-(lines.length - 1) * 0.5}em` : '1.05em');
-        tspan.textContent = line;
-        text.appendChild(tspan);
-      });
-
-      // Style blank entries differently
-      if (!books[i] || !books[i].trim()) {
-        text.setAttribute('opacity', '0.42');
-        text.setAttribute('font-style', 'italic');
+      if (showTitle) {
+        const textRadius = R * 0.62;
+        const tx = textRadius * Math.cos(midRad);
+        const ty = textRadius * Math.sin(midRad);
+        const text = document.createElementNS(ns, 'text');
+        text.setAttribute('class', 'slice-text');
+        text.setAttribute('x', tx); text.setAttribute('y', ty);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('dominant-baseline', 'middle');
+        text.setAttribute('transform', 'rotate(' + (midA + 90) + ' ' + tx + ' ' + ty + ')');
+        const fontSize = n <= 2 ? 10 : n <= 3 ? 9 : n <= 4 ? 8.5 : 8;
+        text.setAttribute('font-size', fontSize);
+        const lines = wrapText(books[i].title, n);
+        lines.forEach(function(line, li) {
+          const tspan = document.createElementNS(ns, 'tspan');
+          tspan.setAttribute('x', tx);
+          tspan.setAttribute('dy', li === 0 ? (-(lines.length - 1) * 0.5) + 'em' : '1.05em');
+          tspan.textContent = line;
+          text.appendChild(tspan);
+        });
+        wheelEl.appendChild(text);
+      } else if (showNumber) {
+        const textRadius = R * 0.78;
+        const tx = textRadius * Math.cos(midRad);
+        const ty = textRadius * Math.sin(midRad);
+        const text = document.createElementNS(ns, 'text');
+        text.setAttribute('class', 'slice-num');
+        text.setAttribute('x', tx); text.setAttribute('y', ty);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('dominant-baseline', 'middle');
+        text.setAttribute('transform', 'rotate(' + (midA + 90) + ' ' + tx + ' ' + ty + ')');
+        text.setAttribute('font-size', n <= 12 ? 9 : n <= 20 ? 8 : 7);
+        text.textContent = (i + 1);
+        wheelEl.appendChild(text);
       }
-
-      wheelEl.appendChild(text);
     }
 
-    // outer rim
     const rim = document.createElementNS(ns, 'circle');
-    rim.setAttribute('cx', '0');
-    rim.setAttribute('cy', '0');
+    rim.setAttribute('cx', '0'); rim.setAttribute('cy', '0');
     rim.setAttribute('r', R);
     rim.setAttribute('fill', 'none');
     rim.setAttribute('stroke', 'rgba(45, 36, 56, 0.12)');
@@ -809,10 +1045,8 @@
   }
 
   function wrapText(text, sliceCount) {
-    // Different max lengths depending on slice geometry
     const maxCharsPerLine = sliceCount <= 2 ? 18 : sliceCount === 3 ? 14 : sliceCount === 4 ? 12 : 10;
     const maxLines = sliceCount <= 2 ? 3 : 2;
-
     const words = text.split(/\s+/);
     const lines = [];
     let line = '';
@@ -823,7 +1057,6 @@
       } else {
         if (line) lines.push(line);
         if (w.length > maxCharsPerLine) {
-          // long single word, hard truncate
           lines.push(w.slice(0, maxCharsPerLine - 1) + '…');
           line = '';
         } else {
@@ -833,7 +1066,6 @@
       }
     }
     if (line && lines.length < maxLines) lines.push(line);
-    // Truncate to maxLines, add ellipsis if needed
     if (lines.length >= maxLines && words.join(' ').length > lines.join(' ').length) {
       const last = lines[maxLines - 1];
       if (last.length > maxCharsPerLine - 1) {
@@ -846,70 +1078,57 @@
   }
 
   function updateControls() {
-    const valid = getValidBooks();
-    addBtn.disabled = books.length >= MAX_BOOKS;
-    addBtn.textContent = books.length >= MAX_BOOKS ? `Max ${MAX_BOOKS} books` : '＋ Add another book';
-
-    if (valid.length < MIN_BOOKS) {
+    if (books.length < MIN_BOOKS_TO_SPIN) {
       spinBtn.disabled = true;
-      hintEl.textContent = `Enter at least ${MIN_BOOKS} book titles to spin`;
+      hintEl.textContent = books.length === 0
+        ? 'Add some books to begin'
+        : 'Need at least ' + MIN_BOOKS_TO_SPIN + ' books to spin';
     } else {
       spinBtn.disabled = false;
-      hintEl.textContent = `Ready! ${valid.length} book${valid.length === 1 ? '' : 's'} on the wheel`;
+      hintEl.textContent = 'Ready to spin — ' + books.length + ' books';
     }
-
     if (isSpinning) {
       spinBtn.disabled = true;
       hintEl.textContent = 'Spinning…';
     }
   }
 
+  // ============================================================
+  // SPIN
+  // ============================================================
   function spin() {
     if (isSpinning) return;
-    const valid = getValidBooks();
-    if (valid.length < MIN_BOOKS) return;
-
-    // We spin based on slot indices that have valid books
-    const validIndices = books
-      .map((b, i) => ({ b: (b || '').trim(), i }))
-      .filter(o => o.b.length > 0)
-      .map(o => o.i);
-
-    const chosenSlotIndex = validIndices[Math.floor(Math.random() * validIndices.length)];
+    if (books.length < MIN_BOOKS_TO_SPIN) return;
 
     const n = books.length;
     const sliceAngle = 360 / n;
-    // We want chosen slice to end at top (pointer at 0deg). Slice i is centered
-    // at angle: i*sliceAngle + sliceAngle/2 (measured from top, clockwise) before rotation.
-    // After rotation R (clockwise), the center is at i*sliceAngle + sliceAngle/2 + R.
-    // We want that == 360 (i.e. 0 mod 360, the pointer position at top).
-    // So R = -(i*sliceAngle + sliceAngle/2) mod 360.
-    const targetCenter = chosenSlotIndex * sliceAngle + sliceAngle / 2;
-    let targetRotation = (360 - targetCenter) % 360;
+    const chosenIndex = Math.floor(Math.random() * n);
+    lastChosen = books[chosenIndex];
 
-    // Add some random offset within the slice so it doesn't always land on exact center
+    const targetCenter = chosenIndex * sliceAngle + sliceAngle / 2;
+    let targetRotation = (360 - targetCenter) % 360;
     const jitter = (Math.random() - 0.5) * (sliceAngle * 0.6);
     targetRotation += jitter;
 
-    // Add several full rotations for drama
-    const fullSpins = 5 + Math.floor(Math.random() * 3); // 5-7
+    const fullSpins = 5 + Math.floor(Math.random() * 3);
     const finalRotation = currentRotation + fullSpins * 360 + ((targetRotation - (currentRotation % 360) + 360) % 360);
 
     isSpinning = true;
     updateControls();
 
-    wheelEl.style.transform = `rotate(${finalRotation}deg)`;
+    wheelEl.style.transform = 'rotate(' + finalRotation + 'deg)';
     currentRotation = finalRotation;
 
-    setTimeout(() => {
+    setTimeout(function() {
       isSpinning = false;
-      showWinner(books[chosenSlotIndex].trim());
+      showWinner(lastChosen);
       updateControls();
     }, 4700);
   }
 
-  function showWinner(title) {
-    modalTitle.textContent = title;
+  function showWinner(book) {
+    modalTitle.textContent = book.title;
+    modalSubmitter.innerHTML = '<span class="by">suggested by</span> ' + escapeHtml(book.submitter);
     modal.classList.add('show');
     launchConfetti();
   }
@@ -918,7 +1137,15 @@
     modal.classList.remove('show');
   }
 
-  // Confetti
+  function escapeHtml(s) {
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+  }
+
+  // ============================================================
+  // CONFETTI
+  // ============================================================
   function launchConfetti() {
     const confettiColors = ['#FFB5C5', '#FF8FA3', '#B5E8D0', '#6DD3B0', '#FFE8A3', '#F5C842', '#D4C5F9', '#9B8AD4', '#FFCAB5', '#FF9F7A'];
     const shapes = ['rect', 'circle'];
@@ -947,18 +1174,30 @@
       document.body.appendChild(piece);
 
       const animation = piece.animate([
-        { transform: `translate(0, -20px) rotate(0deg)`, opacity: 1 },
-        { transform: `translate(${endX - startX}px, ${window.innerHeight + 40}px) rotate(${rotation}deg)`, opacity: 1, offset: 0.9 },
-        { transform: `translate(${endX - startX}px, ${window.innerHeight + 80}px) rotate(${rotation}deg)`, opacity: 0 }
+        { transform: 'translate(0, -20px) rotate(0deg)', opacity: 1 },
+        { transform: 'translate(' + (endX - startX) + 'px, ' + (window.innerHeight + 40) + 'px) rotate(' + rotation + 'deg)', opacity: 1, offset: 0.9 },
+        { transform: 'translate(' + (endX - startX) + 'px, ' + (window.innerHeight + 80) + 'px) rotate(' + rotation + 'deg)', opacity: 0 }
       ], {
         duration: duration,
         delay: delay,
         easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
         fill: 'forwards'
       });
-
-      animation.onfinish = () => piece.remove();
+      animation.onfinish = function() { piece.remove(); };
     }
+  }
+
+  // ============================================================
+  // TOAST
+  // ============================================================
+  let toastTimer = null;
+  function showToast(msg, isError) {
+    toastEl.textContent = msg;
+    toastEl.className = 'toast show' + (isError ? ' error' : '');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function() {
+      toastEl.classList.remove('show');
+    }, 2800);
   }
 })();
 </script>
