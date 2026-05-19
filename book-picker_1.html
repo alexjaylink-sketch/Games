@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book Picker — Jen, Keagan, Lauren & Lorien</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400;1,9..144,600;1,9..144,800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FFF8F0;
+    --cream-2: #FFEFE0;
+    --ink: #2D2438;
+    --ink-soft: #5C4F6E;
+    --pink: #FFB5C5;
+    --pink-deep: #FF8FA3;
+    --mint: #B5E8D0;
+    --mint-deep: #6DD3B0;
+    --butter: #FFE8A3;
+    --butter-deep: #F5C842;
+    --lavender: #D4C5F9;
+    --lavender-deep: #9B8AD4;
+    --peach: #FFCAB5;
+    --peach-deep: #FF9F7A;
+    --shadow-soft: 0 8px 24px rgba(91, 64, 110, 0.08);
+    --shadow-pop: 0 12px 36px rgba(91, 64, 110, 0.16);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { min-height: 100%; }
+
+  body {
+    font-family: 'Quicksand', system-ui, sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(ellipse at 15% 10%, rgba(255, 181, 197, 0.45), transparent 50%),
+      radial-gradient(ellipse at 85% 20%, rgba(212, 197, 249, 0.4), transparent 50%),
+      radial-gradient(ellipse at 75% 90%, rgba(181, 232, 208, 0.4), transparent 55%),
+      radial-gradient(ellipse at 10% 85%, rgba(255, 232, 163, 0.45), transparent 55%),
+      var(--cream);
+    background-attachment: fixed;
+    min-height: 100vh;
+    padding: 32px 20px 60px;
+    overflow-x: hidden;
+  }
+
+  /* subtle grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.4'/></svg>");
+    opacity: 0.18;
+    mix-blend-mode: multiply;
+    z-index: 0;
+  }
+
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 36px;
+    padding: 0 12px;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--ink-soft);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+
+  .eyebrow span.dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--pink-deep);
+    box-shadow: 0 0 0 4px rgba(255, 143, 163, 0.18);
+  }
+
+  h1 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 800;
+    font-size: clamp(2.4rem, 6vw, 4.4rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 18px;
+  }
+
+  h1 .italic {
+    font-style: italic;
+    font-weight: 400;
+    background: linear-gradient(120deg, var(--pink-deep), var(--lavender-deep) 50%, var(--mint-deep));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .names {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: clamp(0.95rem, 2vw, 1.15rem);
+    color: var(--ink-soft);
+    font-weight: 400;
+  }
+
+  .names .amp { color: var(--pink-deep); font-weight: 600; font-style: normal; padding: 0 4px; }
+
+  /* Layout */
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(280px, 380px) 1fr;
+    gap: 36px;
+    align-items: start;
+  }
+
+  @media (max-width: 880px) {
+    .grid { grid-template-columns: 1fr; gap: 28px; }
+  }
+
+  /* Card */
+  .card {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1.5px solid rgba(255, 255, 255, 0.9);
+    border-radius: 24px;
+    padding: 26px;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .card-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.35rem;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .card-sub {
+    font-size: 0.88rem;
+    color: var(--ink-soft);
+    margin-bottom: 20px;
+  }
+
+  /* Inputs */
+  .book-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .book-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .book-num {
+    width: 34px; height: 34px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--ink);
+  }
+
+  .book-num.c1 { background: var(--pink); }
+  .book-num.c2 { background: var(--mint); }
+  .book-num.c3 { background: var(--butter); }
+  .book-num.c4 { background: var(--lavender); }
+  .book-num.c5 { background: var(--peach); }
+
+  .book-input {
+    flex: 1;
+    min-width: 0;
+    border: 1.5px solid rgba(45, 36, 56, 0.08);
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-family: inherit;
+    font-size: 0.98rem;
+    color: var(--ink);
+    transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+  }
+
+  .book-input::placeholder { color: rgba(92, 79, 110, 0.5); }
+
+  .book-input:focus {
+    outline: none;
+    border-color: var(--lavender-deep);
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(155, 138, 212, 0.18);
+  }
+
+  .remove-btn {
+    width: 32px; height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: none;
+    background: rgba(45, 36, 56, 0.06);
+    color: var(--ink-soft);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    display: grid; place-items: center;
+    transition: background 0.15s, color 0.15s, transform 0.15s;
+  }
+
+  .remove-btn:hover { background: var(--pink); color: var(--ink); transform: rotate(90deg); }
+  .remove-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+  .remove-btn:disabled:hover { background: rgba(45, 36, 56, 0.06); color: var(--ink-soft); transform: none; }
+
+  .controls { display: flex; flex-direction: column; gap: 10px; }
+
+  .btn {
+    border: none;
+    border-radius: 14px;
+    padding: 12px 18px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-add {
+    background: var(--mint);
+    color: var(--ink);
+  }
+  .btn-add:hover:not(:disabled) { background: var(--mint-deep); transform: translateY(-1px); box-shadow: var(--shadow-soft); }
+  .btn-add:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .btn-clear {
+    background: transparent;
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+    padding: 8px 12px;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 3px;
+  }
+  .btn-clear:hover { color: var(--pink-deep); }
+
+  /* Wheel area */
+  .wheel-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+  }
+
+  .wheel-container {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    aspect-ratio: 1;
+  }
+
+  .pointer {
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 48px;
+    z-index: 5;
+    filter: drop-shadow(0 4px 8px rgba(45, 36, 56, 0.2));
+  }
+
+  .pointer svg { width: 100%; height: 100%; display: block; }
+
+  .wheel {
+    width: 100%;
+    height: 100%;
+    transition: transform 4.6s cubic-bezier(0.17, 0.67, 0.21, 0.99);
+    transform-origin: center;
+    filter: drop-shadow(0 14px 30px rgba(91, 64, 110, 0.18));
+  }
+
+  .wheel-hub {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 22%;
+    height: 22%;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fff, var(--cream-2));
+    box-shadow: inset 0 2px 6px rgba(255, 255, 255, 0.9), 0 4px 12px rgba(91, 64, 110, 0.15);
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  .wheel-hub::after {
+    content: '';
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--ink);
+    opacity: 0.18;
+  }
+
+  .spin-btn {
+    background: linear-gradient(135deg, var(--pink-deep), var(--lavender-deep));
+    color: #fff;
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.15rem;
+    letter-spacing: 0.02em;
+    padding: 16px 44px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 8px 22px rgba(255, 143, 163, 0.4);
+    transition: transform 0.18s, box-shadow 0.18s, opacity 0.18s;
+  }
+
+  .spin-btn:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 12px 28px rgba(255, 143, 163, 0.5);
+  }
+
+  .spin-btn:active:not(:disabled) { transform: translateY(0) scale(0.98); }
+
+  .spin-btn:disabled {
+    background: rgba(45, 36, 56, 0.15);
+    color: rgba(45, 36, 56, 0.4);
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  .hint {
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    text-align: center;
+    font-style: italic;
+    min-height: 1.2em;
+  }
+
+  /* Winner modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(45, 36, 56, 0.35);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .modal-overlay.show { display: flex; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .modal {
+    background: #fff;
+    border-radius: 28px;
+    padding: 40px 32px;
+    max-width: 460px;
+    width: 100%;
+    text-align: center;
+    box-shadow: var(--shadow-pop);
+    animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .modal::before {
+    content: '';
+    position: absolute;
+    top: -40px; left: -40px; right: -40px;
+    height: 120px;
+    background: linear-gradient(135deg, var(--pink), var(--lavender), var(--mint));
+    opacity: 0.4;
+    border-radius: 50%;
+    filter: blur(30px);
+  }
+
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.85) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .modal-eyebrow {
+    position: relative;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink-soft);
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .modal-title {
+    position: relative;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: clamp(1.6rem, 5vw, 2.2rem);
+    line-height: 1.2;
+    margin-bottom: 24px;
+    color: var(--ink);
+    word-wrap: break-word;
+  }
+
+  .modal-actions {
+    position: relative;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    background: var(--ink);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 999px;
+  }
+  .btn-primary:hover { background: var(--lavender-deep); transform: translateY(-1px); }
+
+  .btn-secondary {
+    background: var(--cream-2);
+    color: var(--ink);
+    padding: 12px 24px;
+    border-radius: 999px;
+  }
+  .btn-secondary:hover { background: var(--butter); transform: translateY(-1px); }
+
+  /* Confetti */
+  .confetti-piece {
+    position: fixed;
+    width: 10px;
+    height: 14px;
+    top: -20px;
+    z-index: 99;
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    margin-top: 50px;
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    opacity: 0.7;
+  }
+  footer .heart { color: var(--pink-deep); }
+
+  /* Wheel text */
+  .slice-text {
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
+    fill: var(--ink);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .wheel { transition: transform 1s ease-out; }
+    *, *::before, *::after { animation-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="eyebrow"><span class="dot"></span> Book Club Edition</div>
+      <h1>The Book <span class="italic">Wheel</span></h1>
+      <p class="names">for Jen <span class="amp">·</span> Keagan <span class="amp">·</span> Lauren <span class="amp">&amp;</span> Lorien</p>
+    </header>
+
+    <main class="grid">
+      <!-- Input panel -->
+      <section class="card" aria-label="Book entry">
+        <h2 class="card-title">Your books</h2>
+        <p class="card-sub">Add between 2 and 5 books. Saved automatically.</p>
+
+        <div class="book-list" id="bookList"></div>
+
+        <div class="controls">
+          <button class="btn btn-add" id="addBtn" type="button">＋ Add another book</button>
+          <button class="btn btn-clear" id="clearBtn" type="button">Clear all</button>
+        </div>
+      </section>
+
+      <!-- Wheel panel -->
+      <section class="wheel-stage" aria-label="Spin wheel">
+        <div class="wheel-container">
+          <div class="pointer" aria-hidden="true">
+            <svg viewBox="0 0 36 48" xmlns="http://www.w3.org/2000/svg">
+              <path d="M 18 46 L 4 8 Q 18 0 32 8 Z" fill="#2D2438"/>
+              <circle cx="18" cy="10" r="4" fill="#FFE8A3"/>
+            </svg>
+          </div>
+          <svg class="wheel" id="wheel" viewBox="-110 -110 220 220" xmlns="http://www.w3.org/2000/svg">
+            <!-- slices injected by JS -->
+          </svg>
+          <div class="wheel-hub"></div>
+        </div>
+
+        <button class="spin-btn" id="spinBtn" type="button">Spin the wheel</button>
+        <p class="hint" id="hint">Add at least 2 books to spin</p>
+      </section>
+    </main>
+
+  </div>
+
+  <!-- Winner modal -->
+  <div class="modal-overlay" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <div class="modal-eyebrow">Tonight's read</div>
+      <div class="modal-title" id="modalTitle">—</div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="closeModal" type="button">Lovely!</button>
+        <button class="btn btn-secondary" id="spinAgain" type="button">Spin again</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function() {
+  'use strict';
+
+  const STORAGE_KEY = 'bookPicker.books.v1';
+  const MIN_BOOKS = 2;
+  const MAX_BOOKS = 5;
+
+  // Pastel slice colors
+  const COLORS = [
+    { bg: '#FFB5C5', deep: '#FF8FA3' }, // pink
+    { bg: '#B5E8D0', deep: '#6DD3B0' }, // mint
+    { bg: '#FFE8A3', deep: '#F5C842' }, // butter
+    { bg: '#D4C5F9', deep: '#9B8AD4' }, // lavender
+    { bg: '#FFCAB5', deep: '#FF9F7A' }, // peach
+  ];
+
+  // State
+  let books = loadBooks();
+  let isSpinning = false;
+  let currentRotation = 0;
+
+  // DOM
+  const bookListEl = document.getElementById('bookList');
+  const addBtn = document.getElementById('addBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const spinBtn = document.getElementById('spinBtn');
+  const wheelEl = document.getElementById('wheel');
+  const hintEl = document.getElementById('hint');
+  const modal = document.getElementById('modal');
+  const modalTitle = document.getElementById('modalTitle');
+  const closeModalBtn = document.getElementById('closeModal');
+  const spinAgainBtn = document.getElementById('spinAgain');
+
+  // Init
+  if (books.length < MIN_BOOKS) {
+    while (books.length < MIN_BOOKS) books.push('');
+  }
+  renderBookList();
+  renderWheel();
+  updateControls();
+
+  // Event listeners
+  addBtn.addEventListener('click', () => {
+    if (books.length >= MAX_BOOKS) return;
+    books.push('');
+    saveBooks();
+    renderBookList();
+    renderWheel();
+    updateControls();
+    // focus the new input
+    const inputs = bookListEl.querySelectorAll('.book-input');
+    if (inputs.length) inputs[inputs.length - 1].focus();
+  });
+
+  clearBtn.addEventListener('click', () => {
+    if (!confirm('Clear all books?')) return;
+    books = ['', ''];
+    saveBooks();
+    renderBookList();
+    renderWheel();
+    updateControls();
+  });
+
+  spinBtn.addEventListener('click', spin);
+
+  closeModalBtn.addEventListener('click', closeModal);
+  spinAgainBtn.addEventListener('click', () => {
+    closeModal();
+    setTimeout(spin, 300);
+  });
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('show')) closeModal();
+  });
+
+  // Functions
+  function loadBooks() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed.slice(0, MAX_BOOKS);
+      }
+    } catch (e) { /* ignore */ }
+    return [];
+  }
+
+  function saveBooks() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(books));
+    } catch (e) { /* ignore quota or disabled storage */ }
+  }
+
+  function getValidBooks() {
+    return books.map(b => (b || '').trim()).filter(b => b.length > 0);
+  }
+
+  function renderBookList() {
+    bookListEl.innerHTML = '';
+    books.forEach((title, i) => {
+      const row = document.createElement('div');
+      row.className = 'book-row';
+
+      const num = document.createElement('div');
+      num.className = `book-num c${i + 1}`;
+      num.textContent = i + 1;
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'book-input';
+      input.placeholder = `Book ${i + 1} title…`;
+      input.value = title;
+      input.maxLength = 80;
+      input.setAttribute('aria-label', `Book ${i + 1} title`);
+      input.addEventListener('input', (e) => {
+        books[i] = e.target.value;
+        saveBooks();
+        renderWheel();
+        updateControls();
+      });
+
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'remove-btn';
+      removeBtn.innerHTML = '×';
+      removeBtn.setAttribute('aria-label', `Remove book ${i + 1}`);
+      removeBtn.disabled = books.length <= MIN_BOOKS;
+      removeBtn.addEventListener('click', () => {
+        if (books.length <= MIN_BOOKS) return;
+        books.splice(i, 1);
+        saveBooks();
+        renderBookList();
+        renderWheel();
+        updateControls();
+      });
+
+      row.appendChild(num);
+      row.appendChild(input);
+      row.appendChild(removeBtn);
+      bookListEl.appendChild(row);
+    });
+  }
+
+  function renderWheel() {
+    const valid = getValidBooks();
+    // For display purposes, show all entered slots even if blank (using placeholders),
+    // but valid count drives spin eligibility.
+    const display = books.map((b, i) => (b || '').trim() || `Book ${i + 1}`);
+    const n = display.length;
+
+    const ns = 'http://www.w3.org/2000/svg';
+    wheelEl.innerHTML = '';
+
+    if (n === 0) return;
+
+    const R = 100;
+    const sliceAngle = 360 / n;
+
+    // background ring
+    const ring = document.createElementNS(ns, 'circle');
+    ring.setAttribute('cx', '0');
+    ring.setAttribute('cy', '0');
+    ring.setAttribute('r', R + 6);
+    ring.setAttribute('fill', '#FFF8F0');
+    ring.setAttribute('stroke', 'rgba(45, 36, 56, 0.08)');
+    ring.setAttribute('stroke-width', '1');
+    wheelEl.appendChild(ring);
+
+    for (let i = 0; i < n; i++) {
+      const color = COLORS[i % COLORS.length];
+      // angles measured from 12 o'clock, clockwise
+      const startA = i * sliceAngle - 90; // shift so first slice starts at top
+      const endA = (i + 1) * sliceAngle - 90;
+      const startRad = (startA * Math.PI) / 180;
+      const endRad = (endA * Math.PI) / 180;
+
+      const x1 = R * Math.cos(startRad);
+      const y1 = R * Math.sin(startRad);
+      const x2 = R * Math.cos(endRad);
+      const y2 = R * Math.sin(endRad);
+      const largeArc = sliceAngle > 180 ? 1 : 0;
+
+      const path = document.createElementNS(ns, 'path');
+      if (n === 1) {
+        // full circle (edge case, shouldn't happen but safety)
+        path.setAttribute('d', `M ${R} 0 A ${R} ${R} 0 1 1 ${-R} 0 A ${R} ${R} 0 1 1 ${R} 0 Z`);
+      } else {
+        path.setAttribute('d', `M 0 0 L ${x1} ${y1} A ${R} ${R} 0 ${largeArc} 1 ${x2} ${y2} Z`);
+      }
+      path.setAttribute('fill', color.bg);
+      path.setAttribute('stroke', '#FFF8F0');
+      path.setAttribute('stroke-width', '2');
+      path.setAttribute('stroke-linejoin', 'round');
+      wheelEl.appendChild(path);
+
+      // text along radius, centered in slice
+      const midA = startA + sliceAngle / 2;
+      const midRad = (midA * Math.PI) / 180;
+      const textRadius = R * 0.62;
+      const tx = textRadius * Math.cos(midRad);
+      const ty = textRadius * Math.sin(midRad);
+
+      const text = document.createElementNS(ns, 'text');
+      text.setAttribute('class', 'slice-text');
+      text.setAttribute('x', tx);
+      text.setAttribute('y', ty);
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('dominant-baseline', 'middle');
+      // rotate text so it reads outward along the slice
+      text.setAttribute('transform', `rotate(${midA + 90} ${tx} ${ty})`);
+
+      // Choose font size based on slice count
+      const fontSize = n <= 2 ? 10 : n <= 3 ? 9 : n <= 4 ? 8.5 : 8;
+      text.setAttribute('font-size', fontSize);
+
+      // Wrap / truncate book titles
+      const label = display[i];
+      const lines = wrapText(label, n);
+      lines.forEach((line, li) => {
+        const tspan = document.createElementNS(ns, 'tspan');
+        tspan.setAttribute('x', tx);
+        tspan.setAttribute('dy', li === 0 ? `${-(lines.length - 1) * 0.5}em` : '1.05em');
+        tspan.textContent = line;
+        text.appendChild(tspan);
+      });
+
+      // Style blank entries differently
+      if (!books[i] || !books[i].trim()) {
+        text.setAttribute('opacity', '0.42');
+        text.setAttribute('font-style', 'italic');
+      }
+
+      wheelEl.appendChild(text);
+    }
+
+    // outer rim
+    const rim = document.createElementNS(ns, 'circle');
+    rim.setAttribute('cx', '0');
+    rim.setAttribute('cy', '0');
+    rim.setAttribute('r', R);
+    rim.setAttribute('fill', 'none');
+    rim.setAttribute('stroke', 'rgba(45, 36, 56, 0.12)');
+    rim.setAttribute('stroke-width', '1.5');
+    wheelEl.appendChild(rim);
+  }
+
+  function wrapText(text, sliceCount) {
+    // Different max lengths depending on slice geometry
+    const maxCharsPerLine = sliceCount <= 2 ? 18 : sliceCount === 3 ? 14 : sliceCount === 4 ? 12 : 10;
+    const maxLines = sliceCount <= 2 ? 3 : 2;
+
+    const words = text.split(/\s+/);
+    const lines = [];
+    let line = '';
+    for (const w of words) {
+      const test = line ? line + ' ' + w : w;
+      if (test.length <= maxCharsPerLine) {
+        line = test;
+      } else {
+        if (line) lines.push(line);
+        if (w.length > maxCharsPerLine) {
+          // long single word, hard truncate
+          lines.push(w.slice(0, maxCharsPerLine - 1) + '…');
+          line = '';
+        } else {
+          line = w;
+        }
+        if (lines.length >= maxLines) break;
+      }
+    }
+    if (line && lines.length < maxLines) lines.push(line);
+    // Truncate to maxLines, add ellipsis if needed
+    if (lines.length >= maxLines && words.join(' ').length > lines.join(' ').length) {
+      const last = lines[maxLines - 1];
+      if (last.length > maxCharsPerLine - 1) {
+        lines[maxLines - 1] = last.slice(0, maxCharsPerLine - 1) + '…';
+      } else {
+        lines[maxLines - 1] = last + '…';
+      }
+    }
+    return lines.length ? lines : [''];
+  }
+
+  function updateControls() {
+    const valid = getValidBooks();
+    addBtn.disabled = books.length >= MAX_BOOKS;
+    addBtn.textContent = books.length >= MAX_BOOKS ? `Max ${MAX_BOOKS} books` : '＋ Add another book';
+
+    if (valid.length < MIN_BOOKS) {
+      spinBtn.disabled = true;
+      hintEl.textContent = `Enter at least ${MIN_BOOKS} book titles to spin`;
+    } else {
+      spinBtn.disabled = false;
+      hintEl.textContent = `Ready! ${valid.length} book${valid.length === 1 ? '' : 's'} on the wheel`;
+    }
+
+    if (isSpinning) {
+      spinBtn.disabled = true;
+      hintEl.textContent = 'Spinning…';
+    }
+  }
+
+  function spin() {
+    if (isSpinning) return;
+    const valid = getValidBooks();
+    if (valid.length < MIN_BOOKS) return;
+
+    // We spin based on slot indices that have valid books
+    const validIndices = books
+      .map((b, i) => ({ b: (b || '').trim(), i }))
+      .filter(o => o.b.length > 0)
+      .map(o => o.i);
+
+    const chosenSlotIndex = validIndices[Math.floor(Math.random() * validIndices.length)];
+
+    const n = books.length;
+    const sliceAngle = 360 / n;
+    // We want chosen slice to end at top (pointer at 0deg). Slice i is centered
+    // at angle: i*sliceAngle + sliceAngle/2 (measured from top, clockwise) before rotation.
+    // After rotation R (clockwise), the center is at i*sliceAngle + sliceAngle/2 + R.
+    // We want that == 360 (i.e. 0 mod 360, the pointer position at top).
+    // So R = -(i*sliceAngle + sliceAngle/2) mod 360.
+    const targetCenter = chosenSlotIndex * sliceAngle + sliceAngle / 2;
+    let targetRotation = (360 - targetCenter) % 360;
+
+    // Add some random offset within the slice so it doesn't always land on exact center
+    const jitter = (Math.random() - 0.5) * (sliceAngle * 0.6);
+    targetRotation += jitter;
+
+    // Add several full rotations for drama
+    const fullSpins = 5 + Math.floor(Math.random() * 3); // 5-7
+    const finalRotation = currentRotation + fullSpins * 360 + ((targetRotation - (currentRotation % 360) + 360) % 360);
+
+    isSpinning = true;
+    updateControls();
+
+    wheelEl.style.transform = `rotate(${finalRotation}deg)`;
+    currentRotation = finalRotation;
+
+    setTimeout(() => {
+      isSpinning = false;
+      showWinner(books[chosenSlotIndex].trim());
+      updateControls();
+    }, 4700);
+  }
+
+  function showWinner(title) {
+    modalTitle.textContent = title;
+    modal.classList.add('show');
+    launchConfetti();
+  }
+
+  function closeModal() {
+    modal.classList.remove('show');
+  }
+
+  // Confetti
+  function launchConfetti() {
+    const confettiColors = ['#FFB5C5', '#FF8FA3', '#B5E8D0', '#6DD3B0', '#FFE8A3', '#F5C842', '#D4C5F9', '#9B8AD4', '#FFCAB5', '#FF9F7A'];
+    const shapes = ['rect', 'circle'];
+    const count = window.innerWidth < 600 ? 60 : 110;
+
+    for (let i = 0; i < count; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+
+      const color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+      const shape = shapes[Math.floor(Math.random() * shapes.length)];
+      const size = 6 + Math.random() * 8;
+      const startX = Math.random() * window.innerWidth;
+      const endX = startX + (Math.random() - 0.5) * 240;
+      const duration = 2200 + Math.random() * 1800;
+      const delay = Math.random() * 600;
+      const rotation = Math.random() * 720 - 360;
+
+      piece.style.left = startX + 'px';
+      piece.style.width = size + 'px';
+      piece.style.height = (shape === 'circle' ? size : size * 1.4) + 'px';
+      piece.style.background = color;
+      piece.style.borderRadius = shape === 'circle' ? '50%' : '2px';
+      piece.style.opacity = '0';
+
+      document.body.appendChild(piece);
+
+      const animation = piece.animate([
+        { transform: `translate(0, -20px) rotate(0deg)`, opacity: 1 },
+        { transform: `translate(${endX - startX}px, ${window.innerHeight + 40}px) rotate(${rotation}deg)`, opacity: 1, offset: 0.9 },
+        { transform: `translate(${endX - startX}px, ${window.innerHeight + 80}px) rotate(${rotation}deg)`, opacity: 0 }
+      ], {
+        duration: duration,
+        delay: delay,
+        easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        fill: 'forwards'
+      });
+
+      animation.onfinish = () => piece.remove();
+    }
+  }
+})();
+</script>
+</body>
+</html>
