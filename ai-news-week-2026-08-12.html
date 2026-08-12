@@ -1,0 +1,1012 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The AI Week — 5–12 August 2026</title>
+<style>
+/* ── Design tokens ──────────────────────────────────────────────────────────
+   Light is the base definition; dark is redefined under both the OS media
+   query and an explicit [data-theme="dark"] stamp so a toggle wins either way. */
+:root {
+  color-scheme: light;
+
+  --page:            #f9f9f7;
+  --surface-1:       #fcfcfb;
+  --text-primary:    #0b0b0b;
+  --text-secondary:  #52514e;
+  --text-muted:      #898781;
+  --gridline:        #e1e0d9;
+  --baseline:        #c3c2b7;
+  --border:          rgba(11, 11, 11, 0.10);
+  --wash:            rgba(11, 11, 11, 0.035);
+
+  --series-1:        #2a78d6;   /* categorical slot 1 — the only series hue used */
+  --series-1-soft:   #cde2fb;
+
+  --good:            #0ca30c;
+  --warning:         #fab219;
+  --critical:        #d03b3b;
+  --good-text:       #006300;
+
+  --maxw: 1120px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page:           #0d0d0d;
+    --surface-1:      #1a1a19;
+    --text-primary:   #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted:     #898781;
+    --gridline:       #2c2c2a;
+    --baseline:       #383835;
+    --border:         rgba(255, 255, 255, 0.10);
+    --wash:           rgba(255, 255, 255, 0.045);
+    --series-1:       #3987e5;
+    --series-1-soft:  #184f95;
+    --good-text:      #0ca30c;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page:           #0d0d0d;
+  --surface-1:      #1a1a19;
+  --text-primary:   #ffffff;
+  --text-secondary: #c3c2b7;
+  --text-muted:     #898781;
+  --gridline:       #2c2c2a;
+  --baseline:       #383835;
+  --border:         rgba(255, 255, 255, 0.10);
+  --wash:           rgba(255, 255, 255, 0.045);
+  --series-1:       #3987e5;
+  --series-1-soft:  #184f95;
+  --good-text:      #0ca30c;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px 96px; }
+
+/* ── Masthead ─────────────────────────────────────────────────────────────── */
+.masthead { padding: 56px 0 40px; border-bottom: 1px solid var(--baseline); }
+.eyebrow {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--text-muted); margin: 0 0 14px;
+}
+.masthead h1 {
+  margin: 0 0 12px;
+  font-size: clamp(38px, 6.5vw, 62px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+}
+.dek {
+  margin: 0; max-width: 62ch;
+  font-size: clamp(16px, 2vw, 19px);
+  color: var(--text-secondary);
+}
+.masthead-meta {
+  margin-top: 22px; display: flex; flex-wrap: wrap; gap: 10px 20px;
+  font-size: 13px; color: var(--text-muted);
+}
+
+/* ── Section scaffolding ──────────────────────────────────────────────────── */
+section { padding-top: 56px; }
+.sec-head { margin-bottom: 22px; }
+.sec-num {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 8px;
+}
+.sec-head h2 {
+  margin: 0 0 8px; font-size: clamp(23px, 3.2vw, 30px);
+  letter-spacing: -0.02em; font-weight: 650; line-height: 1.15;
+}
+.sec-head p { margin: 0; max-width: 68ch; color: var(--text-secondary); font-size: 15px; }
+
+.card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 26px;
+}
+
+/* ── Hero figure ──────────────────────────────────────────────────────────── */
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 32px; align-items: center; }
+@media (max-width: 760px) { .hero { grid-template-columns: 1fr; gap: 20px; } }
+.hero-figure {
+  font-size: clamp(64px, 12vw, 116px);
+  font-weight: 680;
+  letter-spacing: -0.045em;
+  line-height: 0.92;
+  color: var(--series-1);
+  margin: 0 0 6px;
+  /* proportional figures on purpose — tabular-nums looks loose at display sizes */
+}
+.hero-label { font-size: 15px; color: var(--text-secondary); margin: 0; max-width: 34ch; }
+.hero-body p { margin: 0 0 14px; color: var(--text-secondary); font-size: 15.5px; }
+.hero-body p:last-child { margin-bottom: 0; }
+.hero-body strong { color: var(--text-primary); font-weight: 620; }
+
+.pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.pill {
+  font-size: 12.5px; font-weight: 550; color: var(--text-secondary);
+  border: 1px solid var(--border); border-radius: 999px; padding: 5px 12px;
+  background: var(--wash);
+}
+
+/* ── Stat tiles ───────────────────────────────────────────────────────────── */
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 900px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .tiles { grid-template-columns: 1fr; } }
+.tile { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.tile-label { font-size: 12.5px; color: var(--text-muted); margin: 0 0 10px; font-weight: 550; }
+.tile-value { font-size: 36px; font-weight: 660; letter-spacing: -0.03em; line-height: 1; margin: 0 0 10px; }
+.tile-note { font-size: 13px; color: var(--text-secondary); margin: 0; }
+.delta { font-size: 13px; font-weight: 600; color: var(--good-text); }
+
+/* ── Charts ───────────────────────────────────────────────────────────────── */
+.chart-card {
+  background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px;
+  padding: 26px 26px 20px;
+  --val-gutter: 64px;   /* space reserved for the direct value label at the bar tip */
+}
+.chart-title { margin: 0 0 4px; font-size: 17px; font-weight: 620; letter-spacing: -0.01em; }
+.chart-sub { margin: 0 0 26px; font-size: 13.5px; color: var(--text-secondary); }
+
+.bars { display: flex; flex-direction: column; gap: 14px; }
+
+/* one row = label + track; the whole row is the hit target (>=24px tall) */
+.bar-row {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  min-height: 28px;
+  cursor: default;
+  outline: none;
+  border-radius: 6px;
+}
+@media (max-width: 620px) { .bar-row { grid-template-columns: 1fr; gap: 5px; } }
+.bar-row:hover, .bar-row:focus-visible { background: var(--wash); }
+.bar-row:focus-visible { box-shadow: 0 0 0 2px var(--series-1); }
+
+.bar-name { font-size: 13.5px; color: var(--text-primary); font-weight: 550; line-height: 1.25; }
+.bar-name small { display: block; color: var(--text-muted); font-weight: 450; font-size: 11.5px; letter-spacing: 0.01em; }
+
+/* The value gutter reserves room at the tip end so a full-width bar's label is
+   never clipped by the card. Bars resolve their % against the reduced content
+   box; gridlines and axis ticks are inset by the same amount so they stay
+   aligned with the plot area. */
+.track {
+  position: relative; height: 24px; display: flex; align-items: center;
+  padding-right: var(--val-gutter);
+}
+.gridlines { position: absolute; top: 0; bottom: 0; left: 0; right: var(--val-gutter); pointer-events: none; }
+.gridlines i {
+  position: absolute; top: -4px; bottom: -4px; width: 1px;
+  background: var(--gridline);   /* hairline, solid, recessive */
+}
+.bar {
+  position: relative;
+  height: 24px;                   /* capped mark thickness */
+  background: var(--series-1);
+  border-radius: 0 4px 4px 0;     /* rounded data-end, square at the baseline */
+  min-width: 3px;
+}
+.bar-value {
+  position: absolute; left: calc(100% + 10px); top: 50%; transform: translateY(-50%);
+  font-size: 13px; font-weight: 600; color: var(--text-primary); white-space: nowrap;
+  /* value at the tip, outside the bar — never clipped by the mark */
+}
+.axis {
+  position: relative; height: 22px; margin-top: 10px;
+  border-top: 1px solid var(--baseline);
+}
+.axis-row { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 16px; }
+.axis-plot { padding-right: var(--val-gutter); }
+@media (max-width: 620px) { .axis-row { grid-template-columns: 1fr; } .axis-row .axis-spacer { display: none; } }
+.axis i {
+  position: absolute; top: 6px; transform: translateX(-50%);
+  font-size: 11.5px; color: var(--text-muted); font-style: normal;
+  font-variant-numeric: tabular-nums;   /* ticks align vertically */
+}
+.axis-title { text-align: center; font-size: 11.5px; color: var(--text-muted); margin-top: 4px; }
+
+.chart-foot { margin-top: 18px; border-top: 1px solid var(--gridline); padding-top: 14px; }
+.chart-note { font-size: 12.5px; color: var(--text-muted); margin: 0 0 10px; }
+details.table-view summary {
+  cursor: pointer; font-size: 12.5px; font-weight: 560; color: var(--text-secondary);
+  list-style: none; display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 0;
+}
+details.table-view summary::-webkit-details-marker { display: none; }
+details.table-view summary::before { content: "▸"; font-size: 10px; color: var(--text-muted); }
+details.table-view[open] summary::before { content: "▾"; }
+table { border-collapse: collapse; width: 100%; margin-top: 12px; font-size: 13px; }
+th, td { text-align: left; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--gridline); }
+th { color: var(--text-muted); font-weight: 560; font-size: 12px; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* tooltip — enhances, never gates: every value is direct-labeled and in the table */
+#tip {
+  position: fixed; z-index: 50; pointer-events: none; opacity: 0;
+  transition: opacity .12s ease;
+  background: var(--surface-1); color: var(--text-primary);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 9px 12px; font-size: 12.5px; line-height: 1.45;
+  box-shadow: 0 6px 24px rgba(0,0,0,.16); max-width: 280px;
+}
+#tip b { display: block; font-size: 13px; margin-bottom: 2px; }
+#tip span { color: var(--text-secondary); }
+
+/* ── Timeline ─────────────────────────────────────────────────────────────── */
+.timeline { border-left: 1px solid var(--baseline); margin-left: 8px; padding-left: 0; list-style: none; }
+.tl-item { position: relative; padding: 0 0 30px 30px; }
+.tl-item:last-child { padding-bottom: 4px; }
+.tl-item::before {
+  content: ""; position: absolute; left: -5px; top: 7px;
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--series-1);
+  box-shadow: 0 0 0 3px var(--page);   /* surface ring keeps the dot legible on the rule */
+}
+.tl-date {
+  font-size: 12px; font-weight: 640; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-muted); margin: 0 0 5px;
+}
+.tl-head { margin: 0 0 5px; font-size: 16.5px; font-weight: 600; letter-spacing: -0.01em; }
+.tl-body { margin: 0; font-size: 14.5px; color: var(--text-secondary); max-width: 74ch; }
+.tl-body strong { color: var(--text-primary); font-weight: 600; }
+
+/* ── Model cards ──────────────────────────────────────────────────────────── */
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 900px) { .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .grid-3 { grid-template-columns: 1fr; } }
+.grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 820px) { .grid-2 { grid-template-columns: 1fr; } }
+
+.model-card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; }
+.model-vendor { font-size: 11.5px; font-weight: 620; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 6px; }
+.model-name { margin: 0 0 4px; font-size: 18px; font-weight: 640; letter-spacing: -0.015em; }
+.model-date { margin: 0 0 12px; font-size: 12.5px; color: var(--text-muted); }
+.model-desc { margin: 0 0 14px; font-size: 14px; color: var(--text-secondary); flex: 1; }
+.spec { display: flex; justify-content: space-between; gap: 12px; font-size: 12.5px; padding: 6px 0; border-top: 1px solid var(--gridline); }
+.spec dt { color: var(--text-muted); margin: 0; }
+.spec dd { margin: 0; font-weight: 580; font-variant-numeric: tabular-nums; text-align: right; }
+
+/* ── Status rows (icon + label, never colour alone) ───────────────────────── */
+.status-list { list-style: none; margin: 0; padding: 0; }
+.status-row { display: flex; gap: 14px; padding: 15px 0; border-bottom: 1px solid var(--gridline); align-items: flex-start; }
+.status-row:last-child { border-bottom: 0; }
+.status-icon {
+  flex: none; width: 22px; height: 22px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 12px; font-weight: 700; color: #fff; margin-top: 1px;
+}
+.is-live   { background: var(--good); }
+.is-soon   { background: var(--warning); color: #0b0b0b; }
+.is-later  { background: var(--text-muted); }
+.status-text { flex: 1; min-width: 0; }
+.status-text h4 { margin: 0 0 3px; font-size: 15px; font-weight: 610; }
+.status-text p { margin: 0; font-size: 13.5px; color: var(--text-secondary); }
+.status-tag { font-size: 11.5px; font-weight: 620; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); white-space: nowrap; margin-top: 3px; }
+
+/* ── Callout ──────────────────────────────────────────────────────────────── */
+.callout {
+  border: 1px solid var(--border); border-left: 3px solid var(--series-1);
+  border-radius: 0 10px 10px 0; padding: 18px 22px; background: var(--surface-1);
+  font-size: 14.5px; color: var(--text-secondary);
+}
+.callout strong { color: var(--text-primary); }
+
+/* ── Sources & footer ─────────────────────────────────────────────────────── */
+.sources { columns: 2; column-gap: 32px; font-size: 13px; color: var(--text-secondary); }
+@media (max-width: 700px) { .sources { columns: 1; } }
+.sources li { margin-bottom: 9px; break-inside: avoid; }
+.sources a { color: var(--series-1); text-decoration: none; }
+.sources a:hover { text-decoration: underline; }
+footer { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--baseline); font-size: 12.5px; color: var(--text-muted); }
+
+/* ── Theme toggle ─────────────────────────────────────────────────────────── */
+.theme-btn {
+  position: fixed; top: 16px; right: 16px; z-index: 60;
+  background: var(--surface-1); color: var(--text-secondary);
+  border: 1px solid var(--border); border-radius: 999px;
+  padding: 8px 14px; font: inherit; font-size: 12.5px; font-weight: 550;
+  cursor: pointer;
+}
+.theme-btn:hover { color: var(--text-primary); }
+
+@media print { .theme-btn { display: none; } }
+</style>
+</head>
+<body>
+
+<button class="theme-btn" id="themeBtn" type="button" aria-pressed="false">Dark</button>
+<div id="tip" role="status" aria-live="polite"></div>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">Weekly infographic · Artificial intelligence</p>
+    <h1>The week compute<br>became collateral</h1>
+    <p class="dek">
+      Five to twelve August 2026. In seven days the AI industry lined up half a trillion
+      dollars of debt capacity, handed a hacking model to the defence side of the security
+      industry, and started living under the EU's first enforceable transparency rules.
+    </p>
+    <div class="masthead-meta">
+      <span>Covering 5–12 August 2026</span>
+      <span>Compiled 12 August 2026</span>
+      <span>All figures as reported by the sources listed at the end</span>
+    </div>
+  </header>
+
+  <!-- ── 01 · HERO ────────────────────────────────────────────────────────── -->
+  <section id="money">
+    <div class="sec-head">
+      <span class="sec-num">01 — The headline number</span>
+      <h2>Nvidia turned AI compute into an asset class</h2>
+    </div>
+
+    <div class="card hero">
+      <div>
+        <p class="hero-figure">$500B</p>
+        <p class="hero-label">
+          Third-party capital Nvidia and six financial groups intend to mobilise for AI
+          infrastructure, announced 10–11 August.
+        </p>
+      </div>
+      <div class="hero-body">
+        <p>
+          Nvidia signed a memorandum of understanding with <strong>Apollo, BlackRock,
+          Blackstone, Brookfield, Goldman Sachs and KKR</strong> to stand up independent
+          computing-financing platforms — dedicated pools of capital that lend across
+          Nvidia's ecosystem of AI labs, enterprises and cloud providers.
+        </p>
+        <p>
+          The mechanism is the story: financing is <strong>collateralised by compute
+          itself</strong>, structured through private offerings and bonds issued by
+          special-purpose entities able to raise tens of billions at a time. Part of the
+          intent is to let smaller AI startups borrow to buy GPU capacity rather than
+          fund it from equity. Jensen Huang framed AI compute as an
+          "investable asset class" of <em>AI factories</em>.
+        </p>
+        <div class="pill-row">
+          <span class="pill">MoU — subject to definitive agreements</span>
+          <span class="pill">Compute as collateral</span>
+          <span class="pill">6 financial partners</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 02 · TILES ───────────────────────────────────────────────────────── -->
+  <section id="numbers">
+    <div class="sec-head">
+      <span class="sec-num">02 — The week in four numbers</span>
+      <h2>Scoreboard</h2>
+    </div>
+
+    <div class="tiles">
+      <div class="tile">
+        <p class="tile-label">Anthropic run-rate revenue</p>
+        <p class="tile-value">$30B</p>
+        <p class="tile-note">
+          <span class="delta">▲ from ~$9B</span> at the end of 2025. Customers spending
+          over $1M annualised passed 1,000 — a figure that doubled in under two months.
+        </p>
+      </div>
+      <div class="tile">
+        <p class="tile-label">Cyber completion rate</p>
+        <p class="tile-value">95.0%</p>
+        <p class="tile-note">
+          On OpenAI's internal Advanced Cybersecurity Completion Rate eval, against
+          1.5% for the general-purpose GPT-5.6 Sol.
+        </p>
+      </div>
+      <div class="tile">
+        <p class="tile-label">EU AI Act penalty ceiling</p>
+        <p class="tile-value">€15M</p>
+        <p class="tile-note">
+          Or 3% of worldwide annual turnover, whichever is higher, for breaching the
+          transparency duties now being enforced.
+        </p>
+      </div>
+      <div class="tile">
+        <p class="tile-label">Unitree Shanghai listing</p>
+        <p class="tile-value">¥6.1B</p>
+        <p class="tile-note">
+          About $904M sought by the humanoid-robot maker as it scales its G1, H1 and
+          R1 lines.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 03 · TIMELINE ────────────────────────────────────────────────────── -->
+  <section id="timeline">
+    <div class="sec-head">
+      <span class="sec-num">03 — Chronology</span>
+      <h2>How the week ran</h2>
+      <p>Two threads dominate: capital formation around compute, and the first real
+         enforcement scaffolding for frontier models on both sides of the Atlantic.</p>
+    </div>
+
+    <ol class="timeline">
+      <li class="tl-item">
+        <p class="tl-date">Tue 4 August · Washington</p>
+        <h3 class="tl-head">White House convenes the frontier labs on safety testing</h3>
+        <p class="tl-body">
+          Executives from <strong>OpenAI, Anthropic, Google and Meta</strong> met White House
+          officials to review a finalised framework for <strong>voluntary</strong> safety
+          testing of advanced models. It grows out of a June executive order on AI
+          cybersecurity and offers government early access to certain frontier models for
+          <strong>up to 30 days</strong> — explicitly opt-in, and explicitly barred from
+          becoming a licensing or preclearance regime. Officials had not published the test
+          metrics or said whether results will be made public.
+        </p>
+      </li>
+      <li class="tl-item">
+        <p class="tl-date">Thu 6 August · Menlo Park</p>
+        <h3 class="tl-head">Meta ships Muse Spark 1.2; Hadrian raises $1.37B</h3>
+        <p class="tl-body">
+          Meta released <strong>Muse Spark 1.2</strong>, and separately fielded a 30B-parameter
+          agent designed to run on a single GPU. Defence-manufacturing firm
+          <strong>Hadrian</strong> closed a $1.37B Series D at a $7.87B valuation.
+        </p>
+      </li>
+      <li class="tl-item">
+        <p class="tl-date">Fri 7 August · Hangzhou</p>
+        <h3 class="tl-head">Unitree doubles down on embodied AI ahead of its IPO</h3>
+        <p class="tl-body">
+          The humanoid-robotics company said it would keep concentrating R&amp;D on
+          <strong>large embodied-AI models, reinforcement learning, self-developed core
+          components and high-performance actuators</strong>, as it prepares a Shanghai
+          listing seeking roughly <strong>¥6.1B ($904M)</strong>.
+        </p>
+      </li>
+      <li class="tl-item">
+        <p class="tl-date">Sat 8 August · Beijing</p>
+        <h3 class="tl-head">ByteDance releases Seedance 2.5</h3>
+        <p class="tl-body">
+          The latest iteration of ByteDance's video-generation family, one of five models
+          logged by release trackers in the first ten days of August.
+        </p>
+      </li>
+      <li class="tl-item">
+        <p class="tl-date">Mon 10 August · San Francisco &amp; New York</p>
+        <h3 class="tl-head">Theseus Infrastructure launches; OpenAI ships an offence-grade security model</h3>
+        <p class="tl-body">
+          <strong>Anthropic, Macquarie Asset Management and GIC</strong> announced
+          <strong>Theseus Infrastructure</strong>, a platform that will develop, own and
+          lease purpose-built data centres back to Anthropic under long-term agreements,
+          with Macquarie and GIC funding the majority of the equity per project and an
+          initial focus on the United States. Anthropic committed to paying
+          <strong>100% of grid-upgrade costs</strong> and to covering consumer electricity
+          price increases attributable to its demand. The same day, OpenAI released
+          <strong>GPT-5.6-Cyber</strong>, and reporting emerged of Nvidia's financing alliance.
+        </p>
+      </li>
+      <li class="tl-item">
+        <p class="tl-date">Tue 11 August · Global</p>
+        <h3 class="tl-head">Nvidia's $500B alliance, Anthropic's $30B run-rate, and the EU's Android order</h3>
+        <p class="tl-body">
+          Nvidia's six-partner financing package was confirmed. Anthropic disclosed
+          <strong>$30B run-rate revenue</strong> and expanded its compute partnership with
+          <strong>Google and Broadcom</strong> for multiple gigawatts of next-generation
+          capacity — most of it sited in the US, extending the $50B American infrastructure
+          commitment it made in November 2025. In Brussels, the DMA produced an order
+          requiring <strong>Google to open Android to rival assistants</strong> such as
+          Claude and ChatGPT by August 2027.
+        </p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ── 04 · CHARTS ──────────────────────────────────────────────────────── -->
+  <section id="charts">
+    <div class="sec-head">
+      <span class="sec-num">04 — Where the money went</span>
+      <h2>Private capital, one week</h2>
+      <p>Nvidia's $500B facility is a financing commitment, not a raise, so it sits
+         apart from the equity rounds below rather than flattening them on one scale.</p>
+    </div>
+
+    <div class="grid-2">
+
+      <!-- Chart 1 -->
+      <div class="chart-card">
+        <h3 class="chart-title">Largest venture rounds announced</h3>
+        <p class="chart-sub">Week of 10 August 2026 · US, UK and Europe · billions of dollars</p>
+
+        <div class="bars" id="chart-rounds">
+          <div class="bar-row" tabindex="0"
+               data-tip-title="Firmus Grid — $2.00B"
+               data-tip-body="AI training and inference infrastructure. Backed by Nvidia, Coatue and Blackstone at a $10.5B valuation.">
+            <div class="bar-name">Firmus Grid<small>AI infrastructure</small></div>
+            <div class="track">
+              <div class="gridlines" data-gridlines></div>
+              <div class="bar" style="width: 100%"><span class="bar-value">$2.00B</span></div>
+            </div>
+          </div>
+
+          <div class="bar-row" tabindex="0"
+               data-tip-title="Hadrian — $1.37B"
+               data-tip-body="Series D for automated defence manufacturing, at a $7.87B valuation. Announced 6 August.">
+            <div class="bar-name">Hadrian<small>Defence manufacturing</small></div>
+            <div class="track">
+              <div class="gridlines" data-gridlines></div>
+              <div class="bar" style="width: 68.5%"><span class="bar-value">$1.37B</span></div>
+            </div>
+          </div>
+
+          <div class="bar-row" tabindex="0"
+               data-tip-title="ICEYE — $1.16B"
+               data-tip-body="Series F led by EQT and General Atlantic at an $11.57B valuation. Synthetic-aperture-radar satellite imagery.">
+            <div class="bar-name">ICEYE<small>SAR satellite imagery</small></div>
+            <div class="track">
+              <div class="gridlines" data-gridlines></div>
+              <div class="bar" style="width: 57.8%"><span class="bar-value">$1.16B</span></div>
+            </div>
+          </div>
+
+          <div class="bar-row" tabindex="0"
+               data-tip-title="Whatnot — $0.55B"
+               data-tip-body="Series G for the live-shopping marketplace, at a $20B valuation.">
+            <div class="bar-name">Whatnot<small>Live commerce</small></div>
+            <div class="track">
+              <div class="gridlines" data-gridlines></div>
+              <div class="bar" style="width: 27.3%"><span class="bar-value">$0.55B</span></div>
+            </div>
+          </div>
+
+          <div class="bar-row" tabindex="0"
+               data-tip-title="Function Health — $0.45B"
+               data-tip-body="Raised from General Catalyst for its consumer health platform.">
+            <div class="bar-name">Function Health<small>Consumer health</small></div>
+            <div class="track">
+              <div class="gridlines" data-gridlines></div>
+              <div class="bar" style="width: 22.5%"><span class="bar-value">$0.45B</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="axis-row">
+          <div class="axis-spacer"></div>
+          <div class="axis-plot">
+            <div class="axis" data-axis='["0","0.5","1.0","1.5","2.0"]'></div>
+            <p class="axis-title">Round size ($B)</p>
+          </div>
+        </div>
+
+        <div class="chart-foot">
+          <p class="chart-note">
+            Volta, an AI cloud-infrastructure company, also emerged from stealth with a
+            Series A at a $2.4B valuation led by Azora, Andreessen Horowitz, Altimeter and
+            Nvidia; the round size was not disclosed, so it is omitted from the bars.
+            Weekly trackers counted 53 rounds across the US, UK and India.
+          </p>
+          <details class="table-view">
+            <summary>Table view</summary>
+            <table>
+              <thead>
+                <tr><th>Company</th><th>Sector</th><th class="num">Amount ($B)</th><th class="num">Valuation ($B)</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Firmus Grid</td><td>AI infrastructure</td><td class="num">2.00</td><td class="num">10.50</td></tr>
+                <tr><td>Hadrian</td><td>Defence manufacturing</td><td class="num">1.37</td><td class="num">7.87</td></tr>
+                <tr><td>ICEYE</td><td>SAR satellite imagery</td><td class="num">1.16</td><td class="num">11.57</td></tr>
+                <tr><td>Whatnot</td><td>Live commerce</td><td class="num">0.55</td><td class="num">20.00</td></tr>
+                <tr><td>Function Health</td><td>Consumer health</td><td class="num">0.45</td><td class="num">—</td></tr>
+                <tr><td>Volta</td><td>AI cloud infrastructure</td><td class="num">undisclosed</td><td class="num">2.40</td></tr>
+              </tbody>
+            </table>
+          </details>
+        </div>
+      </div>
+
+      <!-- Chart 2 -->
+      <div class="chart-card">
+        <h3 class="chart-title">Advanced Cybersecurity Completion Rate</h3>
+        <p class="chart-sub">Share of advanced security requests completed · OpenAI internal evaluation</p>
+
+        <div class="bars" id="chart-cyber">
+          <div class="bar-row" tabindex="0"
+               data-tip-title="GPT-5.6-Cyber — 95.0%"
+               data-tip-body="Trained on cybersecurity workflows and tuned to reduce refusals on dual-use security work. Gated behind the Daybreak Red access tier.">
+            <div class="bar-name">GPT-5.6-Cyber<small>Daybreak Red tier</small></div>
+            <div class="track">
+              <div class="gridlines" data-gridlines></div>
+              <div class="bar" style="width: 95%"><span class="bar-value">95.0%</span></div>
+            </div>
+          </div>
+
+          <div class="bar-row" tabindex="0"
+               data-tip-title="GPT-5.6 Sol — 1.5%"
+               data-tip-body="The general-purpose flagship that GPT-5.6-Cyber is built on. Its refusal behaviour is unchanged.">
+            <div class="bar-name">GPT-5.6 Sol<small>General availability</small></div>
+            <div class="track">
+              <div class="gridlines" data-gridlines></div>
+              <div class="bar" style="width: 1.5%"><span class="bar-value">1.5%</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="axis-row">
+          <div class="axis-spacer"></div>
+          <div class="axis-plot">
+            <div class="axis" data-axis='["0","25","50","75","100"]'></div>
+            <p class="axis-title">Completion rate (%)</p>
+          </div>
+        </div>
+
+        <div class="chart-foot">
+          <p class="chart-note">
+            A vendor-run internal evaluation, not an independent benchmark — it measures
+            willingness to answer, not capability. OpenAI reports using the model to find
+            two previously unknown vulnerabilities in V8, Chrome's JavaScript engine,
+            since patched by Google as CVE-2026-15903.
+          </p>
+          <details class="table-view">
+            <summary>Table view</summary>
+            <table>
+              <thead>
+                <tr><th>Model</th><th>Availability</th><th class="num">Completion rate</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>GPT-5.6-Cyber</td><td>Daybreak Red (vetted)</td><td class="num">95.0%</td></tr>
+                <tr><td>GPT-5.6 Sol</td><td>General</td><td class="num">1.5%</td></tr>
+              </tbody>
+            </table>
+          </details>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── 05 · MODELS ──────────────────────────────────────────────────────── -->
+  <section id="models">
+    <div class="sec-head">
+      <span class="sec-num">05 — Shipped</span>
+      <h2>Models that landed</h2>
+      <p>Release trackers logged five models in the first ten days of August. Benchmark
+         figures below are vendor-reported and generally run on the vendor's own harness.</p>
+    </div>
+
+    <div class="grid-3">
+
+      <article class="model-card">
+        <p class="model-vendor">OpenAI</p>
+        <h3 class="model-name">GPT-5.6-Cyber</h3>
+        <p class="model-date">10 August 2026</p>
+        <p class="model-desc">
+          A GPT-5.6 Sol variant trained for cybersecurity work — vulnerability discovery
+          and exploit-chain development — and deliberately tuned to refuse less on
+          dual-use security tasks. Distribution is the control: it ships only through the
+          new <em>Daybreak Red</em> tier to vetted defenders including Accenture, IBM,
+          Capgemini, Cognizant, EY, KPMG, PwC, NCC Group and SpecterOps, plus security
+          vendors such as Palo Alto Networks, CrowdStrike, Cisco, Sophos, Akamai,
+          Fortinet and Cloudflare.
+        </p>
+        <dl>
+          <div class="spec"><dt>Completion rate</dt><dd>95.0%</dd></div>
+          <div class="spec"><dt>Access</dt><dd>Vetted only</dd></div>
+          <div class="spec"><dt>Found in the wild</dt><dd>CVE-2026-15903</dd></div>
+        </dl>
+      </article>
+
+      <article class="model-card">
+        <p class="model-vendor">DeepSeek</p>
+        <h3 class="model-name">V4 Flash</h3>
+        <p class="model-date">Released late July, benchmarked through August</p>
+        <p class="model-desc">
+          The week's price story. An MIT-licensed 284B-parameter coding model that lands
+          near frontier performance at roughly 1% of comparable output cost, and runs
+          locally on two networked Nvidia DGX Spark units at 20–30 tokens/second. Text
+          only — no native vision, which limits it against multimodal rivals.
+        </p>
+        <dl>
+          <div class="spec"><dt>Context</dt><dd>1M tokens</dd></div>
+          <div class="spec"><dt>Input / output</dt><dd>~$0.02 / $0.30 per M</dd></div>
+          <div class="spec"><dt>Terminal Bench 2.1</dt><dd>82.7</dd></div>
+          <div class="spec"><dt>DeepSWE</dt><dd>54.4</dd></div>
+        </dl>
+      </article>
+
+      <article class="model-card">
+        <p class="model-vendor">ByteDance · Meta · Alibaba</p>
+        <h3 class="model-name">Seedance 2.5, Muse Spark 1.2, Qwen Image 3.0 Pro</h3>
+        <p class="model-date">2–8 August 2026</p>
+        <p class="model-desc">
+          The generative-media tier kept its cadence: ByteDance shipped Seedance 2.5 on
+          8 August, Meta shipped Muse Spark 1.2 on 6 August, and Alibaba's Qwen line
+          added Image 3.0 Pro after Qwen3.8 Max on 2 August. Meta separately released a
+          30B-parameter agent sized to run on a single GPU.
+        </p>
+        <dl>
+          <div class="spec"><dt>Models logged in August</dt><dd>5</dd></div>
+          <div class="spec"><dt>Modalities</dt><dd>Video, image, agentic</dd></div>
+        </dl>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ── 06 · POLICY ──────────────────────────────────────────────────────── -->
+  <section id="policy">
+    <div class="sec-head">
+      <span class="sec-num">06 — Rules</span>
+      <h2>The EU AI Act starts biting — selectively</h2>
+      <p>Enforcement by the Commission's AI Office and national authorities began on
+         2 August 2026. What actually applies now is narrower than the headline suggests:
+         the transparency layer is live, while most high-risk obligations slipped by
+         seventeen months or more.</p>
+    </div>
+
+    <div class="card">
+      <ul class="status-list">
+        <li class="status-row">
+          <span class="status-icon is-live" aria-hidden="true">✓</span>
+          <div class="status-text">
+            <h4>Transparency obligations — in force</h4>
+            <p>Chatbots and interactive AI systems must tell users they are not human.
+               Deepfakes — generated or altered image, video and audio — must be labelled.
+               Non-compliance carries fines up to €15M or 3% of worldwide annual turnover,
+               whichever is higher.</p>
+          </div>
+          <span class="status-tag">2 Aug 2026 · Live</span>
+        </li>
+        <li class="status-row">
+          <span class="status-icon is-soon" aria-hidden="true">!</span>
+          <div class="status-text">
+            <h4>Annex III stand-alone high-risk systems — deferred</h4>
+            <p>Recruitment tools, credit scoring, education, law enforcement, border
+               control and critical infrastructure now face full compliance on
+               2 December 2027 — a seventeen-month extension on the original date.</p>
+          </div>
+          <span class="status-tag">2 Dec 2027</span>
+        </li>
+        <li class="status-row">
+          <span class="status-icon is-later" aria-hidden="true">→</span>
+          <div class="status-text">
+            <h4>Annex I embedded AI — deferred further</h4>
+            <p>AI inside products already covered by EU product-safety law — medical
+               devices, machinery, toys — moves out to 2 August 2028.</p>
+          </div>
+          <span class="status-tag">2 Aug 2028</span>
+        </li>
+      </ul>
+    </div>
+
+    <div style="height:16px"></div>
+
+    <div class="callout">
+      <strong>Two regimes, two philosophies.</strong> Brussels is enforcing disclosure
+      duties with turnover-scaled fines while postponing its hardest obligations. Washington
+      spent the same week finalising the opposite instrument: a voluntary, opt-in testing
+      framework offering up to 30 days of early government access to frontier models,
+      with a statutory bar on turning it into licensing or preclearance. The EU's separate
+      DMA order — requiring Google to open Android to rival assistants including Claude
+      and ChatGPT by August 2027 — shows the third lever, competition law, arriving before
+      either safety regime fully lands.
+    </div>
+  </section>
+
+  <!-- ── 07 · INFRASTRUCTURE ──────────────────────────────────────────────── -->
+  <section id="infra">
+    <div class="sec-head">
+      <span class="sec-num">07 — The pattern</span>
+      <h2>Labs stopped owning their buildings</h2>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3 class="chart-title">Theseus Infrastructure</h3>
+        <p class="chart-sub">Anthropic · Macquarie Asset Management · GIC — 10 August</p>
+        <p style="margin:0 0 14px; font-size:14.5px; color:var(--text-secondary)">
+          A platform that develops, operates and leases purpose-built data centres to
+          Anthropic under long-term agreements. Macquarie-managed funds and GIC own the
+          platform and fund the majority of equity per project. Anthropic gets capacity
+          matched to its needs without carrying the build on its own balance sheet — the
+          same structure Nvidia's financing alliance is generalising across the industry.
+        </p>
+        <dl>
+          <div class="spec"><dt>Initial focus</dt><dd>United States</dd></div>
+          <div class="spec"><dt>Grid-upgrade costs</dt><dd>100% paid by Anthropic</dd></div>
+          <div class="spec"><dt>Consumer bill increases</dt><dd>Covered by Anthropic</dd></div>
+          <div class="spec"><dt>Standing US commitment</dt><dd>$50B</dd></div>
+        </dl>
+      </div>
+
+      <div class="card">
+        <h3 class="chart-title">Google · Broadcom · Anthropic</h3>
+        <p class="chart-sub">Compute partnership expansion — 11 August</p>
+        <p style="margin:0 0 14px; font-size:14.5px; color:var(--text-secondary)">
+          Anthropic deepened its arrangement with Google Cloud and Broadcom for multiple
+          gigawatts of next-generation compute, the vast majority sited in the United
+          States. It extends the $50B American infrastructure commitment made in
+          November 2025, and lands the same week the company disclosed that run-rate
+          revenue passed $30B and that customers spending over $1M annualised topped
+          1,000 — a count that doubled in under two months.
+        </p>
+        <dl>
+          <div class="spec"><dt>Run-rate revenue</dt><dd>$30B</dd></div>
+          <div class="spec"><dt>End-2025 run-rate</dt><dd>~$9B</dd></div>
+          <div class="spec"><dt>$1M+ customers</dt><dd>1,000+</dd></div>
+          <div class="spec"><dt>Scale</dt><dd>Multiple gigawatts</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 08 · CAVEATS ─────────────────────────────────────────────────────── -->
+  <section id="caveats">
+    <div class="sec-head">
+      <span class="sec-num">08 — Read with care</span>
+      <h2>What these numbers are not</h2>
+    </div>
+    <div class="callout">
+      Nvidia's $500B is a <strong>memorandum of understanding subject to definitive
+      agreements</strong>, not committed capital. Anthropic's $30B is a
+      <strong>run-rate</strong> — annualised from a recent period, not trailing revenue.
+      Model benchmark scores here are <strong>vendor-reported</strong>, frequently run on
+      the vendor's own harness, and DeepSeek's agentic-coding comparisons in particular
+      are not apples-to-apples with rivals tested elsewhere. The 95% cyber completion
+      rate measures <strong>willingness to answer</strong> on an internal eval, not
+      demonstrated capability. Round sizes and valuations are as announced by the
+      companies and their investors.
+    </div>
+  </section>
+
+  <!-- ── SOURCES ──────────────────────────────────────────────────────────── -->
+  <section id="sources">
+    <div class="sec-head">
+      <span class="sec-num">09 — Sources</span>
+      <h2>Where this came from</h2>
+    </div>
+    <ol class="sources">
+      <li><a href="https://www.cnbc.com/2026/08/10/nvidia-wall-street-asset-managers-500-billion-ai-push.html">CNBC — Nvidia lines up $500 billion in financing</a></li>
+      <li><a href="https://www.cnn.com/2026/08/11/business/nvidia-wall-street-500-billion-financing-intl">CNN Business — Nvidia and Wall Street's $500 billion bet</a></li>
+      <li><a href="https://www.axios.com/2026/08/10/nvidia-financing-ai-goldman-sachs-blackrock">Axios — Nvidia, Wall Street partner on $500B AI financing</a></li>
+      <li><a href="https://www.axios.com/2026/08/10/openai-gpt-astra-restrictions-safety-hacking-defenders">Axios — OpenAI unveils GPT-5.6-Cyber</a></li>
+      <li><a href="https://www.bleepingcomputer.com/news/security/openai-releases-chatgpt-56-cyber-but-its-only-for-approved-users/">BleepingComputer — GPT-5.6-Cyber, approved users only</a></li>
+      <li><a href="https://www.forbes.com/sites/jonmarkman/2026/08/11/openai-ships-gpt-56-cyber-its-first-offense-grade-hacking-model/">Forbes — OpenAI's first "offense-grade" hacking model</a></li>
+      <li><a href="https://www.anthropic.com/news/google-broadcom-partnership-compute">Anthropic — Google and Broadcom compute partnership</a></li>
+      <li><a href="https://www.macquarie.com/au/en/about/news/2026/anthropic-mam-gic-data-centre-infrastructure-partnership.html">Macquarie Group — Anthropic, MAM and GIC data-centre partnership</a></li>
+      <li><a href="https://www.datacenterdynamics.com/en/news/gic-and-macquarie-form-theseus-infrastructure-to-serve-anthropics-data-center-needs/">DataCenterDynamics — Theseus Infrastructure formed</a></li>
+      <li><a href="https://ec.europa.eu/commission/presscorner/detail/en/ip_26_1714">European Commission — Enforcing AI Act rules from 2 August</a></li>
+      <li><a href="https://www.aljazeera.com/news/2026/8/6/what-came-into-force-with-the-eus-ai-act-this-week-and-what-didnt">Al Jazeera — What came into force with the AI Act, and what didn't</a></li>
+      <li><a href="https://www.cooley.com/news/insight/2026/2026-08-03-eu-ai-act-transparency-obligations-take-effect-2-august-2026">Cooley — AI Act transparency obligations take effect</a></li>
+      <li><a href="https://www.cnbc.com/2026/08/03/white-house-ai-companies-voluntary-framework-meeting.html">CNBC — White House hosts AI companies on model testing</a></li>
+      <li><a href="https://www.cnn.com/2026/08/03/tech/white-house-meet-with-top-ai-companies-big-regulation-push">CNN Business — White House meets top AI companies</a></li>
+      <li><a href="https://techstartups.com/2026/08/10/venture-capital-startup-funding-roundup-august-10-2026-accel-coatue-management-general-atlantic-khosla-ventures-sequoia-capital-more/">Tech Startups — VC funding roundup, 10 August 2026</a></li>
+      <li><a href="https://news.crunchbase.com/venture/biggest-funding-rounds-billion-dollar-raises-manufacturing-energy-ai/">Crunchbase News — The week's ten biggest funding rounds</a></li>
+      <li><a href="https://www.digitimes.com/news/a20260807PD256/robot-ceo-robotics-development-market.html">DigiTimes — Unitree CEO on embodied AI and expansion</a></li>
+      <li><a href="https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash">Hugging Face — DeepSeek-V4-Flash model card</a></li>
+      <li><a href="https://en.wikipedia.org/wiki/GPT-5.6">Wikipedia — GPT-5.6</a></li>
+      <li><a href="https://llmgateway.io/timeline">LLM Gateway — August 2026 model release timeline</a></li>
+    </ol>
+
+    <footer>
+      Built as a static, self-contained page — no external assets, no tracking, no network
+      calls. Charts follow a single-series categorical palette validated for colour-vision
+      deficiency and for contrast against both the light and dark chart surfaces; every
+      plotted value is also available as text in the table views. Reporting compiled from
+      the sources above on 12 August 2026; figures were accurate as reported at that time.
+    </footer>
+  </section>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ── Axis ticks + gridlines ──────────────────────────────────────────────
+     Ticks are rendered from the data-axis attribute so the gridline positions
+     and the tick labels can never drift apart. */
+  document.querySelectorAll("[data-axis]").forEach(function (axis) {
+    var ticks = JSON.parse(axis.getAttribute("data-axis"));
+    ticks.forEach(function (label, i) {
+      var pct = (i / (ticks.length - 1)) * 100;
+      var el = document.createElement("i");
+      el.textContent = label;
+      el.style.left = pct + "%";
+      axis.appendChild(el);
+    });
+    // paint matching gridlines into every track of this chart
+    var card = axis.closest(".chart-card");
+    card.querySelectorAll("[data-gridlines]").forEach(function (g) {
+      ticks.forEach(function (_, i) {
+        var pct = (i / (ticks.length - 1)) * 100;
+        var line = document.createElement("i");
+        line.style.left = pct + "%";
+        g.appendChild(line);
+      });
+    });
+  });
+
+  /* ── Tooltip layer ───────────────────────────────────────────────────────
+     Enhances only: every value is direct-labelled on the mark and repeated in
+     the table view, so nothing is gated behind hover. Keyboard focus shows the
+     same content as the pointer. */
+  var tip = document.getElementById("tip");
+
+  function showTip(row, x, y) {
+    tip.innerHTML = "";
+    var b = document.createElement("b");
+    b.textContent = row.getAttribute("data-tip-title");
+    var s = document.createElement("span");
+    s.textContent = row.getAttribute("data-tip-body");
+    tip.appendChild(b);
+    tip.appendChild(s);
+    tip.style.opacity = "1";
+    positionTip(x, y);
+  }
+
+  function positionTip(x, y) {
+    var r = tip.getBoundingClientRect();
+    var left = Math.min(x + 14, window.innerWidth - r.width - 12);
+    var top = y + 18 + r.height > window.innerHeight ? y - r.height - 14 : y + 18;
+    tip.style.left = Math.max(12, left) + "px";
+    tip.style.top = Math.max(12, top) + "px";
+  }
+
+  function hideTip() { tip.style.opacity = "0"; }
+
+  document.querySelectorAll(".bar-row[data-tip-title]").forEach(function (row) {
+    row.addEventListener("mouseenter", function (e) { showTip(row, e.clientX, e.clientY); });
+    row.addEventListener("mousemove", function (e) { positionTip(e.clientX, e.clientY); });
+    row.addEventListener("mouseleave", hideTip);
+    row.addEventListener("focus", function () {
+      var r = row.getBoundingClientRect();
+      showTip(row, r.left + 40, r.top);
+    });
+    row.addEventListener("blur", hideTip);
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") hideTip();
+  });
+
+  /* ── Theme toggle ────────────────────────────────────────────────────────
+     Dark is a selected set of steps, not an inverted light theme. */
+  var btn = document.getElementById("themeBtn");
+  var root = document.documentElement;
+
+  function prefersDark() {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+  function isDark() {
+    var stamped = root.getAttribute("data-theme");
+    return stamped ? stamped === "dark" : prefersDark();
+  }
+  function sync() {
+    var dark = isDark();
+    btn.textContent = dark ? "Light" : "Dark";
+    btn.setAttribute("aria-pressed", String(dark));
+    btn.setAttribute("aria-label", dark ? "Switch to light theme" : "Switch to dark theme");
+  }
+
+  btn.addEventListener("click", function () {
+    root.setAttribute("data-theme", isDark() ? "light" : "dark");
+    sync();
+  });
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", sync);
+  sync();
+})();
+</script>
+
+</body>
+</html>
