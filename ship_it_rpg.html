@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#0d1119">
 <title>SHIP IT</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap');
 :root{
   --bg:#0d1119;
   --panel:#161d2a;
@@ -23,6 +23,7 @@
   --danger:#e5484d;
   --warn:#f5a524;
   --ok:#3ecf8e;
+  --serif:'IBM Plex Serif',Georgia,'Times New Roman',serif;
   --sans:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
   --sh:0 4px 0 rgba(0,0,0,.4);
@@ -232,6 +233,80 @@ button{font-family:inherit;color:inherit}
 }
 @keyframes fly{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-42px)}}
 
+/* ============ INTRO: THE OFFER ============ */
+#intro{position:fixed;inset:0;z-index:110;display:flex;flex-direction:column;background:#0a0e15}
+#intro.off{display:none}
+#mailbar{
+  flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:10px 14px;
+  background:var(--panel);border-bottom:1px solid var(--edge);
+  font-family:var(--mono);font-size:10px;letter-spacing:.5px;color:var(--dim);
+}
+#mailbar .dot{width:7px;height:7px;border-radius:50%;background:var(--brand);flex:0 0 auto}
+#mailbar .grow{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#mailscroll{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px 8px;position:relative}
+.mail{max-width:62ch;margin:0 auto}
+.mailhead{display:flex;gap:11px;align-items:flex-start;padding-bottom:13px;border-bottom:1px solid var(--edge)}
+.mailhead .av{
+  flex:0 0 auto;width:42px;height:42px;border-radius:50%;
+  background:linear-gradient(150deg,#3f5f9e,#22304a);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:14px;font-weight:600;color:#cfe0ff;border:1px solid var(--edge2);
+}
+.mailhead .meta{flex:1;min-width:0;font-size:12px;line-height:1.55}
+.mailhead .nm{color:var(--ink);font-weight:600;font-size:13px}
+.mailhead .ad{color:var(--dim);font-family:var(--mono);font-size:10.5px;word-break:break-all}
+.mailhead .sub{margin-top:6px;color:var(--brand);font-size:13px;font-weight:500}
+.mailhead .stamp{
+  display:inline-block;margin-top:7px;font-family:var(--mono);font-size:9px;letter-spacing:1px;
+  color:var(--warn);border:1px solid #4a3a1c;background:#231a0c;border-radius:3px;padding:2px 6px;
+}
+.letter{font-family:var(--serif);font-size:15.5px;line-height:1.72;color:#dae2ee;padding-top:16px}
+.letter p{margin:0 0 15px}
+.letter em{font-style:italic;color:#f2f6fb}
+.letter strong{font-weight:600;color:#fff}
+.merge{
+  font-family:var(--mono);font-size:.84em;color:#c9a227;
+  background:rgba(201,162,39,.12);border:1px dashed rgba(201,162,39,.45);
+  border-radius:3px;padding:0 4px;
+}
+.sig{margin-top:22px;padding-top:14px;border-top:1px solid var(--edge)}
+.sig .who{font-family:var(--serif);font-size:17px;color:#fff}
+.sig .role{font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.7;margin-top:5px}
+.ps{margin-top:18px;font-family:var(--serif);font-size:13.5px;color:var(--dim);font-style:italic;line-height:1.68}
+#mailacts{
+  flex:0 0 auto;display:flex;gap:9px;padding:11px 16px 15px;
+  background:var(--panel);border-top:1px solid var(--edge);
+}
+#mailacts button{
+  flex:1;padding:14px 10px;font-size:13px;border-radius:9px;
+  border:1px solid var(--edge2);background:var(--panel2);box-shadow:var(--sh);
+}
+#mailacts button.p{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600;flex:1.7}
+#mailacts button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.4)}
+#skipIntro{
+  position:fixed;left:50%;transform:translateX(-50%);bottom:30px;z-index:113;
+  font-family:var(--mono);font-size:10px;color:var(--dim);
+  background:rgba(10,14,21,.92);border:1px solid var(--edge);border-radius:5px;padding:7px 10px;
+}
+#skipIntro.off{display:none}
+
+/* ============ INTRO: COLD OPEN ============ */
+#cold{
+  position:fixed;inset:0;z-index:112;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:34px 28px;background:#07090e;text-align:center;
+}
+#cold.off{display:none}
+#coldTxt{
+  font-family:var(--serif);font-size:19px;line-height:1.7;color:#e8eef7;
+  max-width:27ch;margin:0;opacity:0;transition:opacity .65s ease;text-wrap:balance;
+}
+#coldTxt.in{opacity:1}
+#coldSub{
+  font-family:var(--mono);font-size:10px;letter-spacing:2px;color:#4d5a70;
+  margin-top:28px;opacity:0;transition:opacity .5s ease .4s;
+}
+#coldSub.in{opacity:.9}
+
 /* ============ TITLE ============ */
 #title{
   position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;
@@ -325,6 +400,75 @@ body.fighting #hud, body.fighting #pad{display:none}
 
     <div id="flash"></div>
     <div id="toast"></div>
+
+    <!-- INTRO: THE OFFER -->
+    <div id="intro" class="off">
+      <div id="mailbar">
+        <span class="dot"></span>
+        <span class="grow">VANTA Mail — Inbox (1)</span>
+        <span>Sat 11:48pm</span>
+      </div>
+      <div id="mailscroll">
+        <div class="mail">
+          <div class="mailhead">
+            <div class="av">RV</div>
+            <div class="meta">
+              <div class="nm">Rand Voss</div>
+              <div class="ad">rand@vanta.dynamics &rarr; you</div>
+              <div class="sub">you said yes</div>
+              <div class="stamp">SENT FROM A MOVING VEHICLE</div>
+            </div>
+          </div>
+          <div class="letter">
+            <p>Dear <span class="merge">{{FIRST_NAME}}</span>,</p>
+
+            <p>I don't write these anymore. I'm writing this one.</p>
+
+            <p>Somewhere in year four I stopped thinking of VANTA as a company. A company builds a thing and sells it. What we are building here is closer to <em>weather</em>. Closer to a correction at the level of the species.</p>
+
+            <p>I won't insult you with numbers. You've seen the numbers. Everyone has seen the numbers. The numbers were never the point, which is why I no longer discuss them publicly, with the board, or in the state of Delaware.</p>
+
+            <p>Understand this before your first day. <strong>Autonomy is solved.</strong> I solved it. It has been solved for six years. What remains is regulatory, cultural, and &mdash; I'll be candid, because you're one of us now &mdash; a small and shrinking number of edge cases involving pedestrians.</p>
+
+            <p>People ask what keeps me up at night. Nothing keeps me up at night. I sleep four hours in a room with no windows and I wake up <em>correct</em>.</p>
+
+            <p>On compensation: your offer is below market. This is deliberate. Market rate attracts people who want a job, and I am not staffing a job. I am assembling the last cohort that will remember what came before.</p>
+
+            <p>On equity: you have been granted units. The units vest. Upon a liquidity event, subject to the preference stack, the units may convert. I am told this is standard. I have never read it. Neither should you.</p>
+
+            <p>We don't do work&ndash;life balance at VANTA. We do work&ndash;life <em>integration</em>, which is the same hours arranged more honestly.</p>
+
+            <p>You are joining <strong>Project Lighthouse</strong>. Lighthouse is the reason I still come to work, on the days that I come to work. When they write about this decade &mdash; and <span class="merge">{{FIRST_NAME}}</span>, they will write about this decade &mdash; Lighthouse is the part they will get wrong, because they will make it sound inevitable.</p>
+
+            <p>It was not inevitable. It was me.</p>
+
+            <p>Welcome aboard. History is a queue, and you have just been moved to the front of it.</p>
+
+            <div class="sig">
+              <div class="who">Rand Voss</div>
+              <div class="role">
+                Founder &middot; Chief Visionary Officer<br>
+                Interim CEO (3rd term)<br>
+                VANTA Dynamics &mdash; <em>Building the Future, Responsibly&trade;</em>
+              </div>
+            </div>
+
+            <div class="ps">P.S. &mdash; Do not reply to this address. It is not monitored. Nothing I send is monitored. That is the arrangement.</div>
+          </div>
+        </div>
+      </div>
+      <div id="mailacts">
+        <button class="p" id="btnAccept">Accept Offer</button>
+        <button id="btnDecline">Decline</button>
+      </div>
+    </div>
+
+    <!-- INTRO: COLD OPEN -->
+    <div id="cold" class="off">
+      <p id="coldTxt"></p>
+      <div id="coldSub">TAP TO CONTINUE</div>
+    </div>
+    <button id="skipIntro" class="off">SKIP INTRO</button>
 
     <!-- TITLE -->
     <div id="title">
@@ -1335,6 +1479,7 @@ function openMenu(){
     {l:'Bag', s:'Consumables you are carrying', f:showBag},
     {l:'Equipment', s:'Setup and defenses', f:showEquip},
     {l:'Abilities', s:'What you can do in a meeting', f:showSkills},
+    {l:'Offer Letter', s:'From Rand Voss. Still in your inbox.', f:openLetter},
     {l:'Save', s:'Step into a phone booth to save', f:()=>toast('Find a phone booth on the west side of the floor.')},
     {l:'Quit to title', s:'Your last save is kept', f:quitToTitle}
   ].forEach(o=>{
@@ -1480,16 +1625,18 @@ async function interact(){
   if(k==='vend'){ mode='shop'; return openShop(); }
   if(k==='tv'){
     return say('The Screen',[
-      'The founder is on stage at a conference. The caption reads: BUILDING THE FUTURE, RESPONSIBLY.',
+      'Rand Voss is on stage at a conference. The caption reads: BUILDING THE FUTURE, RESPONSIBLY.',
       'He explains that autonomy is solved. It has been solved for six years. It will be solved next year.',
       'He explains that this is not about money. Behind him, a slide shows the money.',
+      'He says the word Lighthouse eleven times in four minutes. He does not say what it does.',
       'The video loops. Nobody on this floor has ever once looked at it.'
     ]);
   }
   if(k==='elev'){
     return say(null,[
       'The elevator. Your badge opens Floor 3, the lobby, and a supply closet nobody has been able to explain.',
-      'Floors 4 and above require a different badge. You have not been told what is on them.'
+      'Floors 4 and above need a different badge. Lighthouse is on 6.',
+      'You press 6 anyway. The panel thinks about it, and returns you to 3.'
     ]);
   }
   if(k==='board'){
@@ -1514,13 +1661,18 @@ async function npcTalk(n){
     if(!F.briefed){
       F.briefed = 1;
       await say(n.name,[
-        'You must be the new engineer. Your laptop is provisioned, your badge opens two of the four doors, and you already have a feature assigned.',
-        'It is a settings toggle. It has been in the backlog for eleven months. It is estimated at two points.',
-        'To ship anything on this floor you need three sign-offs: Code Review, Security Review, and Design Review.',
-        'Priya does code review. Marcus does security. Kai does design. When you have all three, you take it to the Roadmap Review in VELOCITY — the glass room, northeast.',
-        'A word of advice: don’t cross the open floor unless you have to. People see you walking and it reminds them they have questions.'
+        'You must be the new engineer. Welcome! Laptop’s provisioned, badge opens two of the four doors.',
+        'You’re the Lighthouse hire, right? The letter?',
+        'Right. So. Slight thing.',
+        'Lighthouse is fully staffed. It has been fully staffed since before your req went out. I don’t know why the req went out.',
+        'You’re on Platform. Platform is where we put people while we work out where to put them. It is not a demotion, it is a placement.',
+        'Your first ticket is a settings toggle. It has been in the backlog eleven months and it is estimated at two points.',
+        'Ship it and you’re real. Nobody on this floor is real until they have shipped something.',
+        'To ship anything here you need three sign-offs: Code Review, Security Review, Design Review. Priya, Marcus, Kai.',
+        'When you have all three, you take it to the Roadmap Review in VELOCITY — the glass room, northeast.',
+        'And don’t cross the open floor unless you have to. People see you walking and it reminds them they have questions.'
       ]);
-      toast('Objective: collect three sign-offs.');
+      toast('Objective: ship one toggle. Three sign-offs first.');
     } else if(allApprovals()){
       await say(n.name,[
         'All three? On day one?',
@@ -1530,14 +1682,23 @@ async function npcTalk(n){
         'Good luck. That is a real thing I am saying, not a scheduled check-in.'
       ]);
     } else {
-      await say(n.name,['Still need sign-offs? Priya, Marcus, Kai. In whatever order they’re free, which is none.','You’re doing great. That’s not feedback, that’s just something I say.']);
+      await say(n.name,[
+        'Still need sign-offs? Priya, Marcus, Kai. In whatever order they’re free, which is none.',
+        'And no, I can’t get you onto Lighthouse. I have asked. On my own behalf, twice.',
+        'You’re doing great. That’s not feedback, that’s just something I say.'
+      ]);
     }
     return done();
   }
 
   if(n.id==='priya'){
     if(S.approvals.code){
-      await say(n.name,['Your diff is approved. I left one comment. It is a nit. Ignore it.','I will not re-litigate the nit.']);
+      await say(n.name,[
+        'Your diff is approved. I left one comment. It is a nit. Ignore it. I will not re-litigate the nit.',
+        'You keep saying Lighthouse like it’s a building.',
+        'Lighthouse is four engineers and a closed test track. The track is immaculate. The demo runs on the track.',
+        'It has never run anywhere that isn’t the track. That is not a secret. It is just not in the letter.'
+      ]);
       return done();
     }
     if(F.jordan_done){
@@ -1589,7 +1750,13 @@ async function npcTalk(n){
 
   if(n.id==='marcus'){
     if(S.approvals.sec){
-      await say(n.name,['Your review stands. We do not talk about the bucket.']);
+      await say(n.name,[
+        'Your review stands. We do not talk about the bucket.',
+        '...You want to know what was in it.',
+        'Six years of Lighthouse telemetry. Every disengagement. Every intervention. Every time a human took the wheel back.',
+        'It is the most complete dataset I have ever seen.',
+        'Nobody has ever asked me for it. Not once. Think about that on your way out.'
+      ]);
       return done();
     }
     await say(n.name,[
@@ -1616,7 +1783,12 @@ async function npcTalk(n){
 
   if(n.id==='kai'){
     if(S.approvals.design){
-      await say(n.name,['Approved. Your toggle is on the right, where toggles go, for reasons I could defend for an hour.']);
+      await say(n.name,[
+        'Approved. Your toggle is on the right, where toggles go, for reasons I could defend for an hour.',
+        'I have designed the Lighthouse launch page three times. Three complete design systems.',
+        'There has never been a Lighthouse launch.',
+        'The pages are good, though. I show them at conferences. People assume they shipped, and I let them.'
+      ]);
       return done();
     }
     if(F.ctf_done){
@@ -1641,7 +1813,11 @@ async function npcTalk(n){
 
   if(n.id==='brooke'){
     if(F.ctf_done){
-      await say(n.name,['Great energy today. Truly. We’re doing an escape room in November and attendance is optional in the same way this was.']);
+      await say(n.name,[
+        'Great energy today. Truly. We’re doing an escape room in November, and attendance is optional in the same way this was.',
+        'Lighthouse has their own offsite. Separate budget line. I don’t plan it and I’m not invited.',
+        'Which is fine. It’s fine. I have a lot going on.'
+      ]);
       return done();
     }
     await say(n.name,[
@@ -1673,7 +1849,11 @@ async function npcTalk(n){
       ]);
       toast('Received: Swag Hoodie. Equip it in the portal.');
     } else {
-      await say(n.name,['Machine’s on the wall. Take what you can afford.','If the monitor request bounces, resubmit it with a different justification. Any different one.']);
+      await say(n.name,[
+        'Machine’s on the wall. Take what you can afford.',
+        'If the monitor request bounces, resubmit it with a different justification. Any different one.',
+        'Badge question? No. Yours doesn’t open Lighthouse. Mine doesn’t either, and I make the badges.'
+      ]);
     }
     return done();
   }
@@ -1681,7 +1861,9 @@ async function npcTalk(n){
   if(n.id==='devon'){
     await say(n.name,[
       'Third re-org this year. I’ve had four managers. Two of them were the same person, before and after.',
-      'I don’t know what my team does now. I know what it did. I ship the old thing. Nobody has stopped me.'
+      'I don’t know what my team does now. I know what it did. I ship the old thing. Nobody has stopped me.',
+      'You got the letter, huh. The weather one. “Closer to weather.”',
+      'We all got that letter. Every single person on this floor got that letter.'
     ]);
     return done();
   }
@@ -1689,7 +1871,10 @@ async function npcTalk(n){
     await say(n.name,[
       'Six years. They call me foundational.',
       'Foundational means the thing I built is load-bearing and I am not on the roadmap.',
-      'Good luck with your toggle. I mean that. I built a toggle once. It’s still there.'
+      'I wrote the first Lighthouse. 2019. Two of us, one winter.',
+      'It is still in there, underneath. They have renamed it four times and rewritten the top of it twice. The bottom is mine.',
+      'He says it was not inevitable, that it was him. He is half right. It was not inevitable.',
+      'Good luck with your toggle. I mean that. I built a toggle once. It’s still there too.'
     ]);
     return done();
   }
@@ -1701,7 +1886,9 @@ async function npcTalk(n){
       'So — I’ve been thinking about your toggle.',
       'What if it isn’t a toggle. What if it’s a surface.',
       'What if it’s AI. I’m not saying what part. I’m saying the word because the word tests well.',
-      'Let’s align.'
+      'And listen — the Lighthouse thing. I hear you have been asking.',
+      'Lighthouse isn’t a program. Lighthouse is a narrative. Programs get cancelled. Narratives get renewed.',
+      'That’s not cynical, that’s just the actual job. Now. Let’s align.'
     ]);
     const r = await startBattle(['brayden'], {boss:1, noFlee:1, title:'Q3 Roadmap Review — VELOCITY',
       intro:'Brayden shares his screen. It is a document titled "Vision (WIP)". It is eleven pages.'});
@@ -1734,16 +1921,94 @@ async function ending(){
     'Nobody notices.',
     'On Monday it is announced at the all-hands as an AI-powered personalisation surface. Brayden presents it.',
     'He does a good job. He is genuinely good at this part.',
-    'Your name is not in the deck.',
-    'Six months later you are promoted, for something else.'
+    'Your name is not in the deck.'
   ]);
   await say(null,[
-    'END OF VERTICAL SLICE.',
+    'Project Lighthouse is announced in the spring.',
+    'It is announced again the following spring.',
+    'You never work on it. In three years at VANTA you will not meet one person who does.',
+    'Mara is laid off in a reorganisation described internally as a sharpening of focus. The bottom of Lighthouse is still hers. Nobody renames that part, because nobody knows it is there.',
+    'Rand Voss says the word autonomy on a stage in Lisbon. Solved, he says. Six years.',
+    'You are promoted, eventually, for something else.'
+  ]);
+  await say(null,[
+    'The letter is still in your inbox.',
+    'You have never replied to it. It is not monitored. That is the arrangement.',
+    'You have not deleted it either, and you could not tell anyone why.'
+  ]);
+  await say(null,[
+    'END OF CHAPTER ONE.',
     'You finished on day one at ' + clockStr() + ', as ' + title() + ', with ' + S.credits + ' perk credits and one toggle in production.',
     'Thank you for shipping.'
   ]);
   S.flags.finished = 1; saveGame();
   quitToTitle();
+}
+
+/* ==========================================================================
+   INTRO — the offer, then the walk in
+   ========================================================================== */
+let skipAll = false, curResolve = null;
+
+function coldBeat(text){
+  return new Promise(res=>{
+    if(skipAll) return res();
+    const t = $('coldTxt'), sub = $('coldSub'), pane = $('cold');
+    pane.classList.remove('off');
+    t.classList.remove('in'); sub.classList.remove('in');
+    t.textContent = text;
+    requestAnimationFrame(()=>{ t.classList.add('in'); sub.classList.add('in'); });
+    const go = ()=>{ pane.removeEventListener('click', go); curResolve = null; res(); };
+    curResolve = go;
+    setTimeout(()=>{ if(curResolve===go) pane.addEventListener('click', go); }, 500);
+  });
+}
+
+function showLetter(){
+  return new Promise(res=>{
+    if(skipAll) return res(false);
+    $('mailscroll').scrollTop = 0;
+    $('intro').classList.remove('off');
+    const done = (declined)=>{
+      $('btnAccept').onclick = null; $('btnDecline').onclick = null;
+      curResolve = null; res(declined);
+    };
+    curResolve = ()=>done(false);
+    $('btnAccept').onclick  = ()=>done(false);
+    $('btnDecline').onclick = ()=>done(true);
+  });
+}
+
+async function runIntro(){
+  skipAll = false;
+  const declined = await showLetter();
+  $('intro').classList.add('off');
+  $('skipIntro').classList.remove('off');
+  if(declined){
+    await coldBeat('Your decline has been received and logged as a negotiation posture.');
+    await coldBeat('Your start date is Monday.');
+  }
+  await coldBeat('Monday. 8:51am.');
+  await coldBeat('The lobby of VANTA Dynamics is four storeys of glass and one receptionist who does not look up.');
+  await coldBeat('They photograph you before you have decided what your face is doing. It will be on your badge for as long as you work here.');
+  await coldBeat('On the far wall a screen loops the founder, explaining that autonomy is solved.');
+  await coldBeat('Nobody in the lobby is watching it.');
+  await coldBeat('The elevator opens on Floor 3.');
+  $('skipIntro').classList.add('off');
+  $('cold').classList.add('off');
+  $('intro').classList.add('off');
+}
+
+/* the letter stays in your inbox; you can re-read it from the portal */
+function openLetter(){
+  $('mailscroll').scrollTop = 0;
+  $('intro').classList.remove('off');
+  const acts = $('mailacts');
+  acts.innerHTML = '';
+  const b = document.createElement('button');
+  b.className = 'p'; b.textContent = 'Close';
+  b.onclick = ()=>{ $('intro').classList.add('off'); };
+  acts.appendChild(b);
 }
 
 /* ==========================================================================
@@ -1802,7 +2067,13 @@ function begin(state){
   resize();
   if(!S.flags.briefed) setTimeout(()=>{ toast('Talk to Dee — press A when facing her.'); }, 700);
 }
-$('btnNew').addEventListener('click', ()=>{
+$('skipIntro').addEventListener('click', ()=>{
+  skipAll = true;
+  if(curResolve) curResolve();
+});
+$('btnNew').addEventListener('click', async ()=>{
+  $('title').classList.add('off');
+  await runIntro();
   begin(newGame());
 });
 $('btnCont').addEventListener('click', ()=>{
