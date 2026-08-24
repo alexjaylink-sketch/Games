@@ -58,7 +58,7 @@ button{font-family:inherit;color:inherit}
   font-family:var(--mono);font-size:10px;letter-spacing:.5px;color:var(--brand);
   border:1px solid var(--edge2);border-radius:4px;padding:3px 6px;white-space:nowrap;
 }
-.meter{flex:0 1 96px;min-width:56px}
+.meter{flex:0 1 78px;min-width:48px}
 .meter .lab{display:flex;justify-content:space-between;font-size:9px;color:var(--dim);letter-spacing:.6px;margin-bottom:2px}
 .meter .trk{height:7px;background:#080b11;border-radius:4px;overflow:hidden;border:1px solid var(--edge)}
 .meter .fil{height:100%;width:100%;border-radius:3px;transition:width .3s ease}
@@ -414,7 +414,7 @@ button{font-family:inherit;color:inherit}
 body.titling #hud, body.titling #pad{visibility:hidden}
 body.fighting #hud, body.fighting #pad{display:none}
 #toast{
-  position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:70;
+  position:absolute;left:50%;top:58px;transform:translateX(-50%);z-index:70;
   background:var(--panel);border:1px solid var(--brand);border-radius:8px;
   padding:9px 14px;font-size:12px;opacity:0;transition:opacity .25s;pointer-events:none;
   max-width:90%;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.6);
@@ -640,6 +640,9 @@ const TILE = {
   'o':{solid:0,kind:'carpet',enc:1},
   'D':{solid:1,kind:'desk'},
   'Y':{solid:1,kind:'mydesk'},
+  'm':{solid:1,kind:'printout'},
+  'L':{solid:1,kind:'laptop'},
+  'z':{solid:1,kind:'pager'},
   'c':{solid:1,kind:'cube'},
   'p':{solid:1,kind:'plant'},
   'k':{solid:1,kind:'counter'},
@@ -654,22 +657,22 @@ const TILE = {
 
 const FLOOR3 = `
 ##################################
-#kkkkkkkk#....TT......g__________#
+#kkkkmkkk#....TT......g__________#
 #........#............g____w_____#
 #.tt..tt.#...p....p...g__tttt____#
 #.tt..tt.#............g__tttt____#
-#........#....ee......g__________#
+#........m....ee......g__________#
 #p......p#............g__________#
 ####-##########--#####g####-######
 #................................#
 #oooooooooooooooooooooooooooooooo#
 #oDDYDDDooDDDDDDooDDDDDDooDDDDDDo#
+#omcccccooccccccooccccccoocccccco#
+#oooooooooooooooooooooooooooooooo#
+#oDDDDDDooDDDLDDooDDDDDDooDDDDDDo#
 #occccccooccccccooccccccoocccccco#
 #oooooooooooooooooooooooooooooooo#
-#oDDDDDDooDDDDDDooDDDDDDooDDDDDDo#
-#occccccooccccccooccccccoocccccco#
-#oooooooooooooooooooooooooooooooo#
-#oDDDDDDooDDDDDDooDDDDDDooDDDDDDo#
+#oDDDDDDooDDDDDDooDDDDDDooDDDDDzo#
 #occccccooccccccooccccccoocccccco#
 #oooooooooooooooooooooooooooooooo#
 #................................#
@@ -679,7 +682,7 @@ const FLOOR3 = `
 #........#............#..........#
 #..pp..p.#...w....w...#..........#
 #........#............#..DDDD....#
-#........#..ss....ss..#..........#
+#........#..sm....ss..#..........#
 #........#............#...pp.....#
 #........#............#..........#
 ##################################
@@ -694,6 +697,7 @@ const MAP = {
 
 /* ---------- progression ---------- */
 const TITLES = ['SDE I','SDE II','SDE II (Senior-Track)','Senior Engineer','Senior Engineer II','Staff Engineer'];
+const BADGES = ['SDE I','SDE II','SDE II·ST','SR ENG','SR ENG II','STAFF'];
 const XPCURVE = [0,35,85,155,255,390];
 
 /* ---------- skills ---------- */
@@ -737,6 +741,7 @@ const ITEMS = {
   laptop:  {name:'Company Laptop (2019)', type:'weapon', price:0, atk:0, desc:'Issued. Fans audible. Refresh cycle is under review.'},
   keeb:    {name:'Mechanical Keyboard',type:'weapon',price:110,atk:6,    desc:'Blues. Your podmates have filed no formal complaint.'},
   monitor: {name:'Second Monitor',     type:'weapon',price:225,atk:12,   desc:'Approved after four weeks. Productivity, allegedly, doubles.'},
+  runbook: {name:'The Runbook',        type:'armor',price:0,   def:9,     desc:'Forty pages, handwritten, found taped under a desk. Everything anyone knew.'},
   lanyard: {name:'Lanyard',            type:'armor', price:0, def:0,     desc:'Badge. Photo taken before you understood the job.'}
 };
 
@@ -816,6 +821,14 @@ const ENEMIES = {
     moves:[
       {t:'atk',p:1.0,txt:'{E} is captured. Points are awarded to a team you were not told you were on.'},
       {t:'skip',p:0,txt:'{E} sits there. It is a flag.'}
+    ]}),
+  thing3am: E({name:'The Thing That Pages At 3AM', art:'📟', hp:200, atk:16, def:12, sp:75, cr:85, boss:1, healPct:0.05,
+    moves:[
+      {t:'atk',p:1.0,txt:'{E} fires. It is 3:07am. It is always 3:07am.'},
+      {t:'atk',p:1.15,txt:'{E} has no runbook, no dashboard, and no owner, and it has never once been wrong.'},
+      {t:'atk',p:1.1,txt:'The alert text is a single word. The word is "again".'},
+      {t:'status',p:0.4,st:'switch',txt:'{E} pages four people at once. Three of them no longer work here.'},
+      {t:'heal',p:0.1,txt:'{E} restarts itself. It has been restarting itself since 2019.'}
     ]}),
   brayden: E({name:'Brayden, Product Manager', art:'🧢', hp:350, atk:22, def:10, sp:220, cr:180, boss:1, healPct:0.06,
     weak:'scope',
@@ -905,6 +918,35 @@ const MEETINGS = [
   ]}
 ];
 
+/* ---------- side quests ---------- */
+const PAGES = {
+  '5,1':  {n:'I', ttl:'On Speed',
+    body:'"Speed is not haste. Haste is what slow people call speed. When I move quickly it is not because I am rushing. It is because I have already thought about it, in the past, at a level you were not present for."',
+    note:'Someone has written in the margin: "what"'},
+  '9,5':  {n:'IV', ttl:'On Failure',
+    body:'"There is no failure at VANTA. There is only data. Data is not failure. Therefore VANTA has never failed, and any account of a failure is, on inspection, an account of data."',
+    note:'Underneath, in biro: "we failed in march"'},
+  '2,11': {n:'VII', ttl:'On the Customer',
+    body:'"The customer does not know what they want. I know what they want. I want you to sit with the discomfort of that sentence until it reads as service rather than arrogance, because that is what it is."',
+    note:'Someone has drawn a small dog next to this paragraph. It is a good dog.'},
+  '13,26':{n:'XI', ttl:'On Legacy',
+    body:'"When I am gone — and I want to be clear that I will not be gone — the work continues. The work does not require me. It requires only that everything I have decided remains decided."',
+    note:'In different handwriting, pressed hard enough to tear: "he means the layoffs"'}
+};
+
+const SIDEQUESTS = [
+  {k:'own',    ttl:'Ownership',            giver:'Devon',
+   steps:['Ask around about checkout-svc','Tell Devon what you found']},
+  {k:'mani',   ttl:'The VANTA Doctrine',   giver:'a printout',
+   steps:['Find the pages pinned around Floor 3']},
+  {k:'laptop', ttl:'The Unattended Laptop',giver:'an empty desk',
+   steps:['Decide what to do about it']},
+  {k:'mon',    ttl:'A Different Justification', giver:'Sandeep',
+   steps:['Get a justification that carries weight','Take it back to Sandeep']},
+  {k:'thing',  ttl:'The Thing In The Corner',   giver:'Mara',
+   steps:['Find whatever is paging at 3am','Deal with it']}
+];
+
 const ENCOUNTERS = ['replyall','flaky','merge','creep','quickq','recruiter','legacy','standup'];
 
 /* ==========================================================================
@@ -932,6 +974,7 @@ function newGame(){
     bag:{snack:2, brew:1},
     owned:{laptop:1, lanyard:1},
     flags:{},
+    side:{}, pages:{}, asked:{},
     build:0,
     approvals:{code:0, sec:0, design:0},
     minutes:0
@@ -1042,6 +1085,28 @@ function drawTile(k,px,py,x,y){
       cx.fillRect(px+s*0.22,py+s*0.44,s*0.24,2);
       cx.fillStyle=S.build>=100?'#3ecf8e':'#e9b44c';
       cx.fillRect(px+s*0.06,py+s*0.66,s*0.2,s*0.09);
+      break; }
+    case 'printout': {
+      cx.fillStyle='#39435a'; cx.fillRect(px,py,s,s);
+      cx.fillStyle='#e9edf3'; cx.fillRect(px+s*0.2,py+s*0.14,s*0.6,s*0.66);
+      cx.fillStyle='#b9c2d0';
+      for(let i=0;i<5;i++) cx.fillRect(px+s*0.26,py+s*(0.22+i*0.11),s*(i===4?0.28:0.48),1.5);
+      cx.fillStyle='#e5484d'; cx.fillRect(px+s*0.47,py+s*0.11,s*0.06,s*0.06);
+      break; }
+    case 'laptop': {
+      cx.fillStyle='#28313f'; cx.fillRect(px,py,s,s);
+      cx.fillStyle='#6f5b43'; cx.fillRect(px,py+s*0.12,s,s*0.76);
+      cx.fillStyle='#39435a'; cx.fillRect(px+s*0.2,py+s*0.24,s*0.6,s*0.4);
+      cx.fillStyle='rgba(233,180,76,'+(0.55+0.35*Math.sin(Date.now()/430))+')';
+      cx.fillRect(px+s*0.24,py+s*0.28,s*0.52,s*0.3);
+      break; }
+    case 'pager': {
+      cx.fillStyle='#28313f'; cx.fillRect(px,py,s,s);
+      cx.fillStyle='#5a4f43'; cx.fillRect(px,py+s*0.12,s,s*0.76);
+      cx.fillStyle='#05070b'; cx.fillRect(px+s*0.16,py+s*0.18,s*0.68,s*0.46);
+      const beat = 0.35+0.55*Math.abs(Math.sin(Date.now()/700));
+      cx.fillStyle='rgba(229,72,77,'+beat+')';
+      for(let i=0;i<4;i++) cx.fillRect(px+s*0.2,py+s*(0.24+i*0.1),s*0.6,2);
       break; }
     case 'cube':
       cx.fillStyle='#28313f'; cx.fillRect(px,py,s,s);
@@ -1339,6 +1404,7 @@ async function flash(){
 const pAtk = ()=> S.atk + (ITEMS[S.weapon].atk||0);
 const pDef = ()=> S.def + (ITEMS[S.armor].def||0);
 const title = ()=> TITLES[Math.min(S.lv-1, TITLES.length-1)];
+const badge = ()=> BADGES[Math.min(S.lv-1, BADGES.length-1)];
 const allApprovals = ()=> S.approvals.code && S.approvals.sec && S.approvals.design;
 const readyToShip  = ()=> allApprovals() && S.build >= 100;
 
@@ -1358,18 +1424,18 @@ function capBlocker(){
 }
 function nextStep(){
   if(!S) return '';
-  if(readyToShip())              return 'Next: VELOCITY — Roadmap Review';
-  if(S.build < buildCap())       return 'Next: your desk — build to ' + buildCap() + '%';
-  if(!S.approvals.code)          return 'Next: Priya — code review';
-  if(!S.approvals.sec)           return 'Next: Marcus — security review';
-  if(!S.approvals.design)        return 'Next: Kai — design review';
-  return 'Next: VELOCITY — Roadmap Review';
+  if(readyToShip())        return '→ VELOCITY';
+  if(S.build < buildCap()) return '→ Desk · ' + buildCap() + '%';
+  if(!S.approvals.code)    return '→ Priya · review';
+  if(!S.approvals.sec)     return '→ Marcus · security';
+  if(!S.approvals.design)  return '→ Kai · design';
+  return '→ VELOCITY';
 }
 
 function syncHUD(){
   if(!S) return;
-  $('hLevel').textContent = title();
-  $('bLevel').textContent = title();
+  $('hLevel').textContent = badge();
+  $('bLevel').textContent = badge();
   $('hLoc').textContent = nextStep();
   const f = Math.max(0,S.focus)/S.maxFocus*100, c = Math.max(0,S.caf)/S.maxCaf*100;
   $('hFocus').style.width = f+'%'; $('bFocus').style.width = f+'%';
@@ -1971,6 +2037,21 @@ function openMenu(){
     step('7. Roadmap review',    false, readyToShip() ? 'VELOCITY is open' : 'locked');
   body.appendChild(q);
 
+  const open = SIDEQUESTS.filter(q=>sq(q.k) > 0);
+  if(open.length){
+    const sqc = document.createElement('div'); sqc.className='card';
+    sqc.innerHTML = '<h3>Side Work</h3>' + open.map(q=>{
+      let st;
+      if(q.k==='mani')        st = pageCount() >= 4 ? 'DONE' : pageCount() + ' of 4 pages';
+      else if(q.k==='own')    st = sq('own')>=2 ? 'DONE' : ['Priya','Sandeep','Mara'].filter(x=>!S.asked[x.toLowerCase()]).join(', ') || 'tell Devon';
+      else if(q.k==='laptop') st = sq('laptop')===1 ? 'LOCKED IT' : 'POSTED';
+      else if(q.k==='mon')    st = sq('mon')>=2 ? 'DONE' : (S.flags.justif ? 'take it to Sandeep' : 'ask Jordan');
+      else                    st = sq('thing')>=2 ? 'DONE' : 'north-east corner';
+      return kv(q.ttl, st);
+    }).join('');
+    body.appendChild(sqc);
+  }
+
   [
     {l:'Bag', s:'Consumables you are carrying', f:showBag},
     {l:'Equipment', s:'Setup and defenses', f:showEquip},
@@ -2074,8 +2155,31 @@ function loadGame(){
   try{
     const raw = localStorage.getItem(SAVEKEY); if(!raw) return null;
     const o = JSON.parse(raw);
-    return Object.assign(newGame(), o);
+    const g = Object.assign(newGame(), o);
+    g.side = g.side || {}; g.pages = g.pages || {}; g.asked = g.asked || {};
+    return g;
   }catch(e){ return null; }
+}
+
+/* ==========================================================================
+   SIDE QUESTS
+   ========================================================================== */
+const sq  = (k)=> (S.side && S.side[k]) || 0;
+const setSq = (k,v)=>{ S.side[k] = v; syncHUD(); };
+const pageCount = ()=> Object.keys(S.pages||{}).length;
+
+async function reward(r){
+  const held = mode;
+  const bits = [];
+  if(r.cr){ S.credits += r.cr; bits.push('+' + r.cr + ' perk credits'); }
+  if(r.xp){ S.xp += r.xp; bits.push('+' + r.xp + ' story points'); }
+  if(r.focus){ S.maxFocus += r.focus; S.focus = S.maxFocus; bits.push('+' + r.focus + ' max Focus'); }
+  if(r.caf){ S.maxCaf += r.caf; S.caf = S.maxCaf; bits.push('+' + r.caf + ' max Caffeine'); }
+  if(r.item){ S.bag[r.item] = (S.bag[r.item]||0)+1; bits.push(ITEMS[r.item].name); }
+  if(r.gear){ S.owned[r.gear] = 1; bits.push(ITEMS[r.gear].name + ' — equip it in the portal'); }
+  syncHUD();
+  if(r.xp) await gainLevels(toast);
+  if(bits.length){ mode = held; await say(null, bits.join('. ') + '.'); mode = held; }
 }
 
 /* ==========================================================================
@@ -2123,6 +2227,102 @@ async function interact(){
     mode = 'field';
     return startDesk();
   }
+  if(k==='printout'){
+    const key = tx + ',' + ty, pg = PAGES[key];
+    mode = 'dialogue';
+    try{
+    if(S.pages[key]){
+      await say('The VANTA Doctrine — ' + pg.n, [pg.body, pg.note]);
+      mode = 'field';
+      return;
+    }
+    S.pages[key] = 1;
+    if(!sq('mani')) setSq('mani', 1);
+    const got = pageCount();
+    await say('The VANTA Doctrine — ' + pg.n + '. ' + pg.ttl, [
+      'A page of the founder\u2019s manifesto, printed out and left where people are.',
+      pg.body,
+      pg.note
+    ]);
+    if(got >= 4){
+      setSq('mani', 2);
+      await say(null, [
+        'That is all of it. Eleven sections, four of which somebody thought were worth printing.',
+        'You have now read the entire VANTA Doctrine, including the margins, which are the better half.',
+        'Nothing anyone says in this building can surprise you again.'
+      ]);
+      await reward({caf:8, cr:70, xp:30});
+    } else {
+      toast('Doctrine page ' + got + ' of 4.');
+    }
+    } finally { mode = 'field'; }
+    return;
+  }
+
+  if(k==='laptop'){
+    if(sq('laptop')) return say(null,'Devon\u2019s desk. The laptop is locked now. There is a sticky note on it that says THANK YOU.');
+    mode = 'dialogue';
+    try{
+    await say(null,[
+      'An empty desk. The laptop is open, unlocked, and logged in.',
+      'There is a half-written message in the box. It begins "honestly".',
+      'Office custom on Floor 3 is extremely clear about what you are supposed to do here.'
+    ]);
+    const c = await choose('The laptop is unlocked.', [
+      {label:'Lock it',                 note:'boring'},
+      {label:'Post something in #social', note:'custom'},
+      {label:'Walk away',               note:'—'}
+    ]);
+    if(c === 0){
+      setSq('laptop', 1);
+      await say('Devon',[
+        'Oh — that was mine. You locked it.',
+        'Do you know how long I have worked here? Every single time. A horse. Somebody always posts a horse.',
+        'Here. Take this. I have four and I do not drink them.'
+      ]);
+      await reward({cr:80, xp:25, item:'brew'});
+    } else if(c === 1){
+      setSq('laptop', 2);
+      await say(null,[
+        'You post, from Devon\u2019s account, that Devon has decided to go by "Big Devon" effective immediately.',
+        'It gets nine reactions in under a minute. One of them is from Brayden, who does not know it is a joke.',
+        'Devon returns, reads it, and says nothing at all. Devon has been here a long time.'
+      ]);
+      await say(null,'Three weeks from now, somebody in Payments will refer to him as Big Devon in a design review, sincerely.');
+      await reward({cr:35, xp:12});
+    } else {
+      await say(null,'You walk away. Somewhere behind you, a horse is being posted by somebody else.');
+    }
+    } finally { mode = 'field'; }
+    return;
+  }
+
+  if(k==='pager'){
+    if(sq('thing') >= 2)
+      return say(null,'The terminal in the corner. Quiet now. The runbook is gone from under the desk, because you have it.');
+    if(sq('thing') < 1)
+      return say(null,['A terminal at an empty desk in the far corner. It is on. It is warm.','Something on it is running, and nothing on the floor plan says what.']);
+    mode = 'dialogue';
+    await say(null,[
+      'The terminal in the corner. The screen is a wall of alerts, and every one of them is the same alert.',
+      'Under the desk, taped to the underside, there is a runbook. Forty pages. Handwritten.',
+      'You touch the keyboard. The screen wakes all the way up.'
+    ]);
+    const r = await startBattle(['thing3am'], {boss:1, noFlee:1, title:'PAGE — 03:07 (recurring since 2019)',
+      intro:'It has been paging for six years. Tonight, for the first time, somebody is looking at it.'});
+    if(r === 'win'){
+      setSq('thing', 2);
+      await say(null,[
+        'You read the runbook. You find the loop. You fix the loop. It takes nine minutes.',
+        'Six years, and it takes nine minutes, because nobody was ever assigned nine minutes.',
+        'You keep the runbook. Whoever wrote it is not here to want it back.'
+      ]);
+      await reward({gear:'runbook', cr:120, xp:70});
+    }
+    mode = 'field';
+    return;
+  }
+
   if(k==='counter'){
     if(S.focus>=S.maxFocus && S.caf>=S.maxCaf)
       return say(null,'The micro-kitchen. You are as restored as this floor can make you.');
@@ -2168,15 +2368,30 @@ async function interact(){
 /* ==========================================================================
    NPCS
    ========================================================================== */
+async function offerMonitor(n){
+  if(sq('mon') || S.owned.monitor) return;
+  setSq('mon', 1);
+  await say(n.name,[
+    'One more thing, while you are standing there. Your second monitor request bounced. "Insufficient justification."',
+    'It is not about the monitor. Nobody reads it. It has to be phrased in a way the form recognises.',
+    'Go and ask Jordan how to phrase it. Jordan has a standing desk, two monitors, and a chair that cost more than my first car.'
+  ]);
+  toast('Side quest: ask Jordan how to phrase a requisition.');
+}
+
 async function npcTalk(n){
   mode = 'dialogue';
   const F = S.flags;
+  /* say() restores whatever mode preceded it, so a chain of says inside one
+     conversation would briefly drop back to 'field' and let the player walk off.
+     Hold it for the whole exchange instead. */
+  const hold = ()=>{ if(mode === 'field') mode = 'dialogue'; };
   const done = ()=>{ mode = 'field'; syncHUD(); };   /* approvals change the next step */
 
   if(n.id==='dee'){
     if(!F.briefed){
       F.briefed = 1;
-      await say(n.name,[
+      hold(); await say(n.name,[
         'You must be the new engineer. Welcome! Laptop’s provisioned, badge opens two of the four doors.',
         'You’re the Lighthouse hire, right? The letter?',
         'Right. So. Slight thing.',
@@ -2194,7 +2409,7 @@ async function npcTalk(n){
       ]);
       toast('Go to your desk — the pod behind Dee.');
     } else if(readyToShip()){
-      await say(n.name,[
+      hold(); await say(n.name,[
         'All three? On day one?',
         'VELOCITY is open. Brayden is already in there. He has been in there since eight.',
         'One thing, and I am saying this as a friend and not as onboarding. People walk into that room underprepared and they come out agreeing to things.',
@@ -2202,7 +2417,7 @@ async function npcTalk(n){
         'Good luck. That is a real thing I am saying, not a scheduled check-in.'
       ]);
     } else {
-      await say(n.name,[
+      hold(); await say(n.name,[
         'Still going? Build it at your desk, then Priya, Marcus and Kai for the sign-offs. In whatever order they’re free, which is none.',
         'And no, I can’t get you onto Lighthouse. I have asked. On my own behalf, twice.',
         'You’re doing great. That’s not feedback, that’s just something I say.'
@@ -2212,8 +2427,17 @@ async function npcTalk(n){
   }
 
   if(n.id==='priya'){
+    if(sq('own')===1 && !S.asked.priya){
+      S.asked.priya = 1;
+      hold(); await say(n.name,[
+        'checkout-svc? Not us.',
+        'We own the client that calls it. That is not the same thing, although it is the same thing at 3am.',
+        'It sits in the Platform cost centre. Ask Sandeep. He can see the cost centre, and the cost centre is the only thing in this company that has never lied to me.'
+      ]);
+      return done();
+    }
     if(S.approvals.code){
-      await say(n.name,[
+      hold(); await say(n.name,[
         'Your diff is approved. I left one comment. It is a nit. Ignore it. I will not re-litigate the nit.',
         'You keep saying Lighthouse like it’s a building.',
         'Lighthouse is four engineers and a closed test track. The track is immaculate. The demo runs on the track.',
@@ -2222,7 +2446,7 @@ async function npcTalk(n){
       return done();
     }
     if(S.build < 35){
-      await say(n.name,[
+      hold(); await say(n.name,[
         'You want a code review. Of what?',
         'The branch is empty. I opened it. There is a commit called "wip" and it is a whitespace change.',
         'Go and write something. Come back when there is something to read.'
@@ -2232,7 +2456,7 @@ async function npcTalk(n){
     }
     if(F.jordan_done){
       S.approvals.code = 1;
-      await say(n.name,[
+      hold(); await say(n.name,[
         'Jordan moved my item to "Q3 (Tentative)". That is the closest thing to peace this company offers.',
         'I read your diff. It is fine. It is a toggle.',
         'Approved. One comment, it is a nit, I have already said I will not re-litigate the nit.'
@@ -2240,7 +2464,7 @@ async function npcTalk(n){
       toast('CODE REVIEW: approved.');
       return done();
     }
-    await say(n.name,[
+    hold(); await say(n.name,[
       'You want a code review. Sure. I have four hours of meetings today and one of them is recurring and nobody knows who created it.',
       'Here is my problem. Jordan has been asking me for a delivery date on a project I have never been assigned to.',
       'Get Jordan off my calendar and I will read your diff today. Jordan is out on the floor. You will not have to look hard.'
@@ -2251,11 +2475,23 @@ async function npcTalk(n){
   }
 
   if(n.id==='jordan'){
-    if(F.jordan_done){
-      await say(n.name,['I’ve got it in Q3. Tentative. Let’s keep the momentum.','Do you have a number for me yet? Any number. It doesn’t have to be right, it has to be in the sheet.']);
+    if(sq('mon')===1 && !S.flags.justif){
+      S.flags.justif = 1;
+      hold(); await say(n.name,[
+        'A requisition? That is easy. You are writing it as though it is about you.',
+        'Never write what you need. Write what is at risk if you do not get it.',
+        '"Sustained delivery risk to a committed quarterly milestone." Word for word. Put that in the box.',
+        'That sentence has bought me a chair, a monitor arm, and on one occasion a flight.',
+        'It is not a lie, either. Everything is a delivery risk. That is what a quarter is.'
+      ]);
+      toast('Take that wording back to Sandeep.');
       return done();
     }
-    await say(n.name,[
+    if(F.jordan_done){
+      hold(); await say(n.name,['I have it in Q3. Tentative. Let us keep the momentum.','Do you have a number for me yet? Any number. It does not have to be right, it has to be in the sheet.']);
+      return done();
+    }
+    hold(); await say(n.name,[
       'Hey! Quick one. Are you at risk?',
       'I don’t need details. I need a colour. Green, yellow, or red.',
       'I’m going to put yellow. Yellow just means we’re watching it.',
@@ -2265,21 +2501,21 @@ async function npcTalk(n){
       intro:'Jordan has joined the call. Jordan has also invited two people who do not speak.'});
     if(r==='win'){
       F.jordan_done = 1;
-      await say(n.name,[
+      hold(); await say(n.name,[
         'Okay. Okay. I hear you.',
         'I’m moving it to Q3. Tentative. I’m marking it green — green with a note.',
         'And I’ll take the migration off Priya’s calendar. It was never her project. I know. I know.'
       ]);
       toast('Priya’s calendar is clear.');
     } else if(r==='flee'){
-      await say(null,'You walk away. Jordan schedules a follow-up before you reach the corridor.');
+      hold(); await say(null,'You walk away. Jordan schedules a follow-up before you reach the corridor.');
     }
     return done();
   }
 
   if(n.id==='marcus'){
     if(S.approvals.sec){
-      await say(n.name,[
+      hold(); await say(n.name,[
         'Your review stands. We do not talk about the bucket.',
         '...You want to know what was in it.',
         'Six years of Lighthouse telemetry. Every disengagement. Every intervention. Every time a human took the wheel back.',
@@ -2289,7 +2525,7 @@ async function npcTalk(n){
       return done();
     }
     if(S.build < 70){
-      await say(n.name,[
+      hold(); await say(n.name,[
         'Security review. Right. What does it do?',
         'That is not what it does. That is what it will do. I scan behaviour, not intent.',
         'Come back when it does something.'
@@ -2297,7 +2533,7 @@ async function npcTalk(n){
       toast('Build to 70% at your desk first.');
       return done();
     }
-    await say(n.name,[
+    hold(); await say(n.name,[
       'New hire. Fine. Security review is not a conversation, it is a scan. Stand there.',
       'I run your feature against the access log, the log against the last quarter, and the quarter against what people told me the quarter contained.',
       'It is a toggle. This will take forty seconds.',
@@ -2308,7 +2544,7 @@ async function npcTalk(n){
       intro:'Something has been in the logs the entire time. It notices you noticing.'});
     if(r==='win'){
       S.approvals.sec = 1;
-      await say(n.name,[
+      hold(); await say(n.name,[
         'That was not your feature.',
         'That was a storage bucket somebody set to public in 2021 and labelled "temporary".',
         'Your review is approved. Signed, dated, done.',
@@ -2321,7 +2557,7 @@ async function npcTalk(n){
 
   if(n.id==='kai'){
     if(S.approvals.design){
-      await say(n.name,[
+      hold(); await say(n.name,[
         'Approved. Your toggle is on the right, where toggles go, for reasons I could defend for an hour.',
         'I have designed the Lighthouse launch page three times. Three complete design systems.',
         'There has never been a Lighthouse launch.',
@@ -2331,7 +2567,7 @@ async function npcTalk(n){
     }
     if(F.ctf_done){
       S.approvals.design = 1;
-      await say(n.name,[
+      hold(); await say(n.name,[
         'I heard you participated. I’m told your energy was, quote, "present".',
         'That’s all I needed. Design is about people.',
         'Approved. Put the toggle on the right. Toggles go on the right. I can defend that for an hour and I have.'
@@ -2340,7 +2576,7 @@ async function npcTalk(n){
       return done();
     }
     if(S.build < 100){
-      await say(n.name,[
+      hold(); await say(n.name,[
         'Design review. Of a half-built toggle.',
         'Reviewing a thing that does not exist yet is not design, it is astrology.',
         'Finish it. Then I will have opinions, and they will be specific.'
@@ -2348,7 +2584,7 @@ async function npcTalk(n){
       toast('Finish the build first — 100%.');
       return done();
     }
-    await say(n.name,[
+    hold(); await say(n.name,[
       'Design review. Right. Design review is a conversation, not a gate.',
       'It is also a gate.',
       'Here’s my thing: I can’t sign off on someone I haven’t seen collaborate. That’s not policy, that’s just how I work.',
@@ -2360,14 +2596,14 @@ async function npcTalk(n){
 
   if(n.id==='brooke'){
     if(F.ctf_done){
-      await say(n.name,[
+      hold(); await say(n.name,[
         'Great energy today. Truly. We’re doing an escape room in November, and attendance is optional in the same way this was.',
         'Lighthouse has their own offsite. Separate budget line. I don’t plan it and I’m not invited.',
         'Which is fine. It’s fine. I have a lot going on.'
       ]);
       return done();
     }
-    await say(n.name,[
+    hold(); await say(n.name,[
       'CAPTURE THE FLAG! It’s a team-building exercise!',
       'It is not the security kind. Four people have asked. Two of them were disappointed and two of them were relieved.',
       'You’re on Blue. Blue is the colour of trust. Red is the colour of passion. Green had to be renamed for legal reasons.',
@@ -2377,45 +2613,120 @@ async function npcTalk(n){
       intro:'You are handed a foam flag and a lanyard in a colour you did not choose.'});
     if(r==='win'){
       F.ctf_done = 1;
-      await say(n.name,['Amazing. Amazing energy.','Everybody won. Blue won slightly more, but everybody won.','I’ll let Kai know you were here. That’s what you came for, right? ...Right.']);
+      hold(); await say(n.name,['Amazing. Amazing energy.','Everybody won. Blue won slightly more, but everybody won.','I’ll let Kai know you were here. That’s what you came for, right? ...Right.']);
       toast('Kai has been notified.');
     } else if(r==='flee'){
-      await say(n.name,'You slip out. Brooke marks you present anyway. She is not a monster.');
+      hold(); await say(n.name,'You slip out. Brooke marks you present anyway. She is not a monster.');
     }
     return done();
   }
 
   if(n.id==='sandeep'){
+    if(sq('own')===1 && !S.asked.sandeep){
+      S.asked.sandeep = 1;
+      hold(); await say(n.name,[
+        'checkout-svc. Give me a second.',
+        'Cost centre says Platform. On-call rotation says Payments. Repo permissions say a group with one member, and the member is disabled.',
+        'The disabled account was a contractor. The contractor was offboarded by somebody who has since also been offboarded.',
+        'Whoever set it up originally is still here, though. That is usually Mara. It is always Mara.'
+      ]);
+      return done();
+    }
+    if(sq('mon')===1 && S.flags.justif){
+      setSq('mon', 2);
+      S.owned.monitor = 1;
+      hold(); await say(n.name,[
+        '"Sustained delivery risk to a committed quarterly milestone." You got that off Jordan, did you not.',
+        'That will go through. That always goes through. I have furnished half of this floor with that sentence.',
+        'Second monitor. It is in the cage. Do not tell anybody it took one sentence.'
+      ]);
+      await reward({xp:30, cr:20});
+      toast('Second Monitor acquired — equip it in the portal.');
+      return done();
+    }
     if(!F.hoodie){
       F.hoodie = 1; S.owned.hoodie = 1;
-      await say(n.name,[
+      hold(); await say(n.name,[
         'New badge photo. I can tell. Everyone looks like that on day one.',
         'Here — swag hoodie. Size Large. Everyone gets Large. I have raised it.',
         'Vending machine is on the wall behind me, takes perk credits. Equipment requests go through me and are auto-approved for anything in your band.',
         'Everything is in stock. Nothing is approved. Those two facts coexist.'
       ]);
       toast('Received: Swag Hoodie. Equip it in the portal.');
+      await offerMonitor(n);
     } else {
-      await say(n.name,[
-        'Machine’s on the wall. Take what you can afford.',
-        'If the monitor request bounces, resubmit it with a different justification. Any different one.',
-        'Badge question? No. Yours doesn’t open Lighthouse. Mine doesn’t either, and I make the badges.'
+      hold(); await say(n.name,[
+        'Machine is on the wall. Take what you can afford.',
+        'Badge question? No. Yours does not open Lighthouse. Mine does not either, and I make the badges.'
       ]);
+      await offerMonitor(n);
     }
     return done();
   }
 
   if(n.id==='devon'){
-    await say(n.name,[
+    if(sq('own') === 2){
+      hold(); await say(n.name,['It was Mara. Six years, and it was Mara, and nobody told Mara.','I put it in the wiki. Nobody reads the wiki. But it is in the wiki.']);
+      return done();
+    }
+    if(sq('own') === 1){
+      const a = S.asked;
+      if(a.priya && a.sandeep && a.mara){
+        setSq('own', 2);
+        hold(); await say(n.name,[
+          'You actually went and asked. Nobody goes and asks.',
+          'So it is Mara. It has been Mara since 2019, Mara was never told, and Mara is not on the rotation for the thing Mara owns.',
+          'I am going to sit with that for a minute.',
+          'Thank you. Genuinely. You are the first person who treated that like a question instead of a mood.'
+        ]);
+        await reward({cr:90, xp:35, focus:12});
+      } else {
+        const left = [];
+        if(!a.priya) left.push('Priya');
+        if(!a.sandeep) left.push('Sandeep');
+        if(!a.mara) left.push('Mara');
+        hold(); await say(n.name,['Any luck? Still need to ask ' + left.join(' and ') + '.','Everyone says someone else. That is the whole thing. Everyone says someone else.']);
+      }
+      return done();
+    }
+    hold(); await say(n.name,[
       'Third re-org this year. I’ve had four managers. Two of them were the same person, before and after.',
       'I don’t know what my team does now. I know what it did. I ship the old thing. Nobody has stopped me.',
       'You got the letter, huh. The weather one. “Closer to weather.”',
       'We all got that letter. Every single person on this floor got that letter.'
     ]);
+    hold(); await say(n.name,[
+      'Since you are here. Do you know who owns checkout-svc?',
+      'I have asked four people. Every one of them said someone else. Two of them said each other.',
+      'It pages. It has an owner. Somewhere in this building is a person who does not know that they are that owner.',
+      'Ask around for me. Priya, Sandeep, Mara. You will get three different answers and one of them is true.'
+    ]);
+    setSq('own', 1);
+    toast('Side quest: ask Priya, Sandeep and Mara about checkout-svc.');
     return done();
   }
   if(n.id==='mara'){
-    await say(n.name,[
+    if(sq('own')===1 && !S.asked.mara){
+      S.asked.mara = 1;
+      hold(); await say(n.name,[
+        'checkout-svc.',
+        '...',
+        'I wrote checkout-svc. 2019. It was meant to hold for one quarter while we built the real one.',
+        'Nobody has ever told me that I still own it. I am not on the rotation. I do not get the pages.',
+        'Somebody gets those pages. I have often wondered who.'
+      ]);
+      if(!sq('thing')){
+        setSq('thing', 1);
+        hold(); await say(n.name,[
+          'While you are being curious. There is a terminal in the far corner of the pod farm, north-east, at a desk that nobody sits at.',
+          'It is on. It has been on for the entire time I have worked here.',
+          'I have never had a reason to go and look at it. You might.'
+        ]);
+        toast('Side quest: the terminal in the north-east corner.');
+      }
+      return done();
+    }
+    hold(); await say(n.name,[
       'Six years. They call me foundational.',
       'Foundational means the thing I built is load-bearing and I am not on the roadmap.',
       'I wrote the first Lighthouse. 2019. Two of us, one winter.',
@@ -2427,8 +2738,8 @@ async function npcTalk(n){
   }
 
   if(n.id==='brayden'){
-    if(!readyToShip()){ await say(n.name,'Brayden is on a call. He gestures at you in a way that means later.'); return done(); }
-    await say(n.name,[
+    if(!readyToShip()){ hold(); await say(n.name,'Brayden is on a call. He gestures at you in a way that means later.'); return done(); }
+    hold(); await say(n.name,[
       'You made it. Great. Love the hustle on day one, genuinely.',
       'So — I’ve been thinking about your toggle.',
       'What if it isn’t a toggle. What if it’s a surface.',
