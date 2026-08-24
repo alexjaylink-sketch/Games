@@ -1,0 +1,1797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0d1119">
+<title>SHIP IT</title>
+<style>
+:root{
+  --bg:#0d1119;
+  --panel:#161d2a;
+  --panel2:#1e2736;
+  --edge:#2c3849;
+  --edge2:#3a4a60;
+  --ink:#e8eef7;
+  --dim:#8996ab;
+  --brand:#4f8cff;
+  --focus:#3ecf8e;
+  --caf:#d99a3f;
+  --danger:#e5484d;
+  --warn:#f5a524;
+  --ok:#3ecf8e;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sh:0 4px 0 rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%;overflow:hidden}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--sans);
+  overscroll-behavior:none;touch-action:manipulation;
+  user-select:none;-webkit-user-select:none;
+}
+button{font-family:inherit;color:inherit}
+#app{
+  position:fixed;inset:0;display:flex;flex-direction:column;
+  max-width:820px;margin:0 auto;background:var(--bg);
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* ============ HUD ============ */
+#hud{
+  flex:0 0 auto;display:flex;align-items:center;gap:10px;
+  padding:7px 12px;background:var(--panel);border-bottom:1px solid var(--edge);
+  font-size:11px;
+}
+#hud .badge{
+  font-family:var(--mono);font-size:10px;letter-spacing:.5px;color:var(--brand);
+  border:1px solid var(--edge2);border-radius:4px;padding:3px 6px;white-space:nowrap;
+}
+.meter{flex:0 1 96px;min-width:56px}
+.meter .lab{display:flex;justify-content:space-between;font-size:9px;color:var(--dim);letter-spacing:.6px;margin-bottom:2px}
+.meter .trk{height:7px;background:#080b11;border-radius:4px;overflow:hidden;border:1px solid var(--edge)}
+.meter .fil{height:100%;width:100%;border-radius:3px;transition:width .3s ease}
+.meter.f .fil{background:linear-gradient(90deg,#2fae76,var(--focus))}
+.meter.c .fil{background:linear-gradient(90deg,#b47a2c,var(--caf))}
+#hud .loc{flex:1;text-align:right;color:var(--dim);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ============ STAGE ============ */
+#stage{position:relative;flex:1 1 auto;min-height:0;background:#0a0d13;overflow:hidden}
+#view{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+/* ============ DIALOGUE ============ */
+#dlg{
+  position:absolute;left:10px;right:10px;bottom:10px;z-index:20;
+  background:var(--panel);border:1px solid var(--edge2);border-radius:10px;
+  box-shadow:0 10px 30px rgba(0,0,0,.6);padding:11px 13px 15px;display:none;
+}
+#dlg.on{display:block}
+#dlg .who{color:var(--brand);font-size:11px;font-weight:600;letter-spacing:.4px;margin-bottom:3px}
+#dlg .txt{font-size:14px;line-height:1.5}
+#dlg .caret{position:absolute;right:12px;bottom:6px;color:var(--dim);font-size:11px;animation:bl 1.1s steps(2,end) infinite}
+@keyframes bl{50%{opacity:.15}}
+#choices{
+  position:absolute;left:10px;right:10px;bottom:10px;z-index:21;display:none;
+  flex-direction:column;gap:7px;
+}
+#choices.on{display:flex}
+#choices .q{
+  background:var(--panel);border:1px solid var(--edge2);border-radius:10px;
+  padding:10px 13px;font-size:13px;line-height:1.45;
+}
+#choices button{
+  text-align:left;background:var(--panel2);border:1px solid var(--edge2);
+  border-radius:9px;padding:12px 13px;font-size:13px;display:flex;gap:8px;align-items:center;
+}
+#choices button:active{background:var(--brand);border-color:var(--brand)}
+#choices button .c{flex:1}
+#choices button .n{color:var(--dim);font-size:11px;font-family:var(--mono)}
+#choices button[disabled]{opacity:.42}
+
+/* ============ CONTROLS ============ */
+#pad{
+  flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:10px 16px 14px;background:var(--panel);border-top:1px solid var(--edge);
+}
+#dpad{position:relative;width:144px;height:144px;flex:0 0 auto}
+#dpad button{
+  position:absolute;width:48px;height:48px;padding:0;background:var(--panel2);
+  border:1px solid var(--edge2);border-radius:9px;font-size:15px;line-height:1;color:var(--dim);
+}
+#dpad button.hot{background:var(--brand);border-color:var(--brand);color:#fff}
+#dpad .u{left:48px;top:0}
+#dpad .l{left:0;top:48px}
+#dpad .r{left:96px;top:48px}
+#dpad .d{left:48px;top:96px}
+#dpad .hub{position:absolute;left:48px;top:48px;width:48px;height:48px;border:1px solid var(--edge);border-radius:9px;background:#121926}
+#acts{display:flex;flex-direction:column;gap:9px;align-items:flex-end}
+.act{
+  width:78px;height:56px;border-radius:12px;border:1px solid var(--edge2);background:var(--panel2);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;box-shadow:var(--sh);
+  font-size:9px;letter-spacing:.7px;color:var(--dim);
+}
+.act b{font-size:12px;color:var(--ink);letter-spacing:.3px}
+.act:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.4);background:var(--brand);border-color:var(--brand)}
+.act:active b,.act:active{color:#fff}
+
+/* ============ SCREENS ============ */
+.screen{
+  position:absolute;inset:0;z-index:30;background:rgba(10,13,19,.97);
+  display:none;flex-direction:column;
+}
+.screen.on{display:flex}
+.screen header{
+  flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:12px 14px;
+  border-bottom:1px solid var(--edge);background:var(--panel);
+}
+.screen header h2{margin:0;font-size:13px;letter-spacing:.8px;flex:1;text-transform:uppercase;color:var(--ink)}
+.screen header .x{background:var(--panel2);border:1px solid var(--edge2);border-radius:7px;padding:7px 12px;font-size:12px;color:var(--dim)}
+.screen .body{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px;display:flex;flex-direction:column;gap:9px}
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:9px;padding:11px 12px}
+.card h3{margin:0 0 7px;font-size:11px;letter-spacing:.7px;color:var(--dim);text-transform:uppercase;font-weight:600}
+.row{
+  display:flex;align-items:center;gap:9px;width:100%;text-align:left;
+  background:var(--panel2);border:1px solid var(--edge2);border-radius:9px;
+  padding:11px 12px;font-size:13px;
+}
+.row:active{background:var(--brand);border-color:var(--brand)}
+.row[disabled]{opacity:.42}
+.row[disabled]:active{background:var(--panel2);border-color:var(--edge2)}
+.row .g{flex:1;min-width:0}
+.row .g small{display:block;color:var(--dim);font-size:11px;margin-top:2px;line-height:1.35;white-space:normal}
+.row:active .g small{color:rgba(255,255,255,.8)}
+.row .t{flex:0 0 auto;font-size:11px;font-family:var(--mono);color:var(--brand)}
+.row:active .t{color:#fff}
+.kv{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid #202a3a}
+.kv:last-child{border-bottom:0}
+.kv span:last-child{font-family:var(--mono);color:var(--ink)}
+.kv span:first-child{color:var(--dim)}
+.note{color:var(--dim);font-size:11px;line-height:1.55}
+.eq{font-family:var(--mono);font-size:11px;color:var(--brand)}
+
+/* ============ BATTLE ============ */
+#battle{
+  position:absolute;inset:0;z-index:40;display:none;flex-direction:column;
+  background:linear-gradient(180deg,#111823 0%,#0b0f16 100%);
+}
+#battle.on{display:flex}
+#callbar{
+  flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:8px 12px;
+  background:#0a0e15;border-bottom:1px solid var(--edge);font-size:10px;color:var(--dim);
+}
+#callbar .rec{width:7px;height:7px;border-radius:50%;background:var(--danger);animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.25}}
+#callbar .title{flex:1;color:var(--ink);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#callbar .tm{font-family:var(--mono)}
+#grid{
+  flex:1 1 auto;display:flex;align-items:center;justify-content:center;
+  gap:10px;padding:10px;flex-wrap:wrap;min-height:0;
+}
+.tile{
+  position:relative;width:132px;max-width:44%;border-radius:10px;overflow:hidden;
+  background:#182130;border:1px solid var(--edge2);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:12px 8px 22px;transition:transform .13s,opacity .35s,border-color .2s;
+}
+.tile .art{
+  font-size:38px;line-height:1;width:66px;height:66px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 34% 28%,#3a465d,#212a3a);
+  border:1px solid #46536b;box-shadow:0 6px 12px rgba(0,0,0,.5);
+}
+.tile .nm{
+  position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);
+  font-size:10px;padding:3px 6px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.tile .hp{position:absolute;left:6px;right:6px;bottom:20px;height:4px;background:#000;border-radius:3px;overflow:hidden}
+.tile .hp i{display:block;height:100%;background:var(--danger);width:100%;transition:width .3s}
+.tile.sel{border-color:var(--brand);box-shadow:0 0 0 2px rgba(79,140,255,.35)}
+.tile.hit{animation:sh .3s}
+.tile.dead{opacity:0;transform:scale(.82)}
+.tile .st{position:absolute;top:5px;left:5px;font-size:9px;font-family:var(--mono);color:var(--warn);background:rgba(0,0,0,.55);padding:1px 4px;border-radius:3px}
+@keyframes sh{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+#blog{
+  flex:0 0 auto;margin:0 10px 8px;padding:9px 11px;height:70px;overflow:hidden;
+  background:#0a0e15;border:1px solid var(--edge);border-radius:8px;
+  font-size:12px;line-height:1.5;display:flex;flex-direction:column;justify-content:flex-end;
+}
+#blog div{opacity:.45}
+#blog div:last-child{opacity:1}
+#mestrip{
+  flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:8px 12px;
+  background:var(--panel);border-top:1px solid var(--edge);border-bottom:1px solid var(--edge);font-size:10px;
+}
+#bmenu{flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px 14px}
+#bmenu button{
+  padding:13px 10px;font-size:13px;background:var(--panel2);border:1px solid var(--edge2);
+  border-radius:9px;box-shadow:var(--sh);text-align:center;
+}
+#bmenu button small{display:block;color:var(--dim);font-size:10px;margin-top:2px}
+#bmenu button:active{background:var(--brand);border-color:var(--brand);transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.4)}
+#bmenu button:active small{color:rgba(255,255,255,.85)}
+#bmenu button[disabled]{opacity:.38;box-shadow:none}
+#bmenu.one{grid-template-columns:1fr}
+.dmg{
+  position:absolute;font-family:var(--mono);font-size:17px;font-weight:700;
+  pointer-events:none;animation:fly 1s ease-out forwards;text-shadow:0 2px 4px #000;z-index:5;
+}
+@keyframes fly{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-42px)}}
+
+/* ============ TITLE ============ */
+#title{
+  position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:16px;padding:26px;text-align:center;
+  background:linear-gradient(170deg,#121a2a 0%,#0b0e15 70%);
+}
+#title.off{display:none}
+#title .logo{font-size:11px;letter-spacing:5px;color:var(--brand);font-family:var(--mono)}
+#title h1{margin:0;font-size:44px;letter-spacing:2px;font-weight:800;line-height:1}
+#title .tag{color:var(--dim);font-size:12px;line-height:1.65;max-width:32ch}
+#title .tag em{color:var(--ink);font-style:normal}
+#title button{
+  padding:14px 20px;font-size:13px;background:var(--panel2);border:1px solid var(--edge2);
+  border-radius:10px;min-width:230px;box-shadow:var(--sh);letter-spacing:.5px;
+}
+#title button.p{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+#title button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.4)}
+#title .fine{color:#4d5a70;font-size:9px;line-height:1.6;max-width:34ch;font-family:var(--mono)}
+body.titling #hud, body.titling #pad{visibility:hidden}
+#toast{
+  position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:70;
+  background:var(--panel);border:1px solid var(--brand);border-radius:8px;
+  padding:9px 14px;font-size:12px;opacity:0;transition:opacity .25s;pointer-events:none;
+  max-width:90%;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.6);
+}
+#toast.on{opacity:1}
+#flash{position:absolute;inset:0;z-index:50;background:#fff;opacity:0;pointer-events:none;transition:opacity .12s}
+@media (max-height:640px){
+  #dpad{width:120px;height:120px}
+  #dpad button{width:40px;height:40px;font-size:13px}
+  #dpad .u{left:40px}#dpad .l{top:40px}#dpad .r{left:80px;top:40px}
+  #dpad .d{left:40px;top:80px}#dpad .hub{left:40px;top:40px;width:40px;height:40px}
+  .act{width:68px;height:48px}
+  #title h1{font-size:34px}
+  .tile{width:112px;padding:9px 6px 20px}
+  .tile .art{font-size:36px}
+  #blog{height:58px}
+}
+</style>
+</head>
+<body class="titling">
+<div id="app">
+
+  <div id="hud">
+    <span class="badge" id="hLevel">SDE I</span>
+    <div class="meter f"><div class="lab"><span>FOCUS</span><span id="hFocusN">100</span></div><div class="trk"><i class="fil" id="hFocus"></i></div></div>
+    <div class="meter c"><div class="lab"><span>CAFFEINE</span><span id="hCafN">20</span></div><div class="trk"><i class="fil" id="hCaf"></i></div></div>
+    <div class="loc" id="hLoc">VANTA HQ — Floor 3</div>
+  </div>
+
+  <div id="stage">
+    <canvas id="view"></canvas>
+
+    <div id="dlg">
+      <div class="who" id="dlgWho"></div>
+      <div class="txt" id="dlgTxt"></div>
+      <div class="caret">▼</div>
+    </div>
+
+    <div id="choices"><div class="q" id="chQ"></div><div id="chList"></div></div>
+
+    <!-- MENU -->
+    <div class="screen" id="scMenu">
+      <header><h2>Employee Portal</h2><button class="x" data-close="scMenu">Close</button></header>
+      <div class="body" id="menuBody"></div>
+    </div>
+
+    <!-- GENERIC LIST SCREEN (items / equip / shop) -->
+    <div class="screen" id="scList">
+      <header><h2 id="listTitle">List</h2><button class="x" id="listBack">Back</button></header>
+      <div class="body" id="listBody"></div>
+    </div>
+
+    <!-- BATTLE -->
+    <div id="battle">
+      <div id="callbar">
+        <span class="rec"></span>
+        <span class="title" id="callTitle">Sync</span>
+        <span class="tm" id="callTime">00:00</span>
+      </div>
+      <div id="grid"></div>
+      <div id="blog"></div>
+      <div id="mestrip">
+        <span class="badge" id="bLevel">SDE I</span>
+        <div class="meter f" style="flex:1"><div class="lab"><span>FOCUS</span><span id="bFocusN">100</span></div><div class="trk"><i class="fil" id="bFocus"></i></div></div>
+        <div class="meter c" style="flex:1"><div class="lab"><span>CAFFEINE</span><span id="bCafN">20</span></div><div class="trk"><i class="fil" id="bCaf"></i></div></div>
+      </div>
+      <div id="bmenu"></div>
+    </div>
+
+    <div id="flash"></div>
+    <div id="toast"></div>
+
+    <!-- TITLE -->
+    <div id="title">
+      <div class="logo">V A N T A &nbsp;D Y N A M I C S</div>
+      <h1>SHIP IT</h1>
+      <div class="tag">You are a software engineer. It is your first day. You have <em>one feature</em> to ship and <em>everyone in this building</em> has thoughts about it.</div>
+      <button class="p" id="btnNew">Start Onboarding</button>
+      <button id="btnCont">Resume Session</button>
+      <div class="fine">VANTA Dynamics is an equal opportunity employer. Employment is at-will. Focus levels are self-reported. By continuing you consent to being looped in.</div>
+    </div>
+  </div>
+
+  <div id="pad">
+    <div id="dpad">
+      <div class="hub"></div>
+      <button class="u" data-dir="up">▲</button>
+      <button class="l" data-dir="left">◀</button>
+      <button class="r" data-dir="right">▶</button>
+      <button class="d" data-dir="down">▼</button>
+    </div>
+    <div id="acts">
+      <button class="act" id="btnA"><b>A</b><span>TALK / OK</span></button>
+      <button class="act" id="btnB"><b>B</b><span>MENU</span></button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+"use strict";
+/* ==========================================================================
+   SHIP IT — a corporate RPG
+   VANTA Dynamics, Floor 3. One feature. Everyone has thoughts.
+   ========================================================================== */
+
+/* ---------- tiles ---------- */
+const TILE = {
+  '#':{solid:1,kind:'wall'},
+  'g':{solid:1,kind:'glass'},
+  '.':{solid:0,kind:'carpet'},
+  '_':{solid:0,kind:'floor'},
+  '-':{solid:0,kind:'door'},
+  'o':{solid:0,kind:'carpet',enc:1},
+  'D':{solid:1,kind:'desk'},
+  'c':{solid:1,kind:'cube'},
+  'p':{solid:1,kind:'plant'},
+  'k':{solid:1,kind:'counter'},
+  's':{solid:1,kind:'couch'},
+  't':{solid:1,kind:'table'},
+  'w':{solid:1,kind:'board'},
+  'b':{solid:1,kind:'booth'},
+  'T':{solid:1,kind:'tv'},
+  'v':{solid:1,kind:'vend'},
+  'e':{solid:1,kind:'elev'}
+};
+
+const FLOOR3 = `
+##################################
+#kkkkkkkk#....TT......g__________#
+#........#............g____w_____#
+#.tt..tt.#...p....p...g__tttt____#
+#.tt..tt.#............g__tttt____#
+#........#....ee......g__________#
+#p......p#............g__________#
+####-##########--#####g####-######
+#................................#
+#oooooooooooooooooooooooooooooooo#
+#oDDDDDDooDDDDDDooDDDDDDooDDDDDDo#
+#occccccooccccccooccccccoocccccco#
+#oooooooooooooooooooooooooooooooo#
+#oDDDDDDooDDDDDDooDDDDDDooDDDDDDo#
+#occccccooccccccooccccccoocccccco#
+#oooooooooooooooooooooooooooooooo#
+#oDDDDDDooDDDDDDooDDDDDDooDDDDDDo#
+#occccccooccccccooccccccoocccccco#
+#oooooooooooooooooooooooooooooooo#
+#................................#
+##-############--##########-######
+#........#............#..........#
+#.b..b..b#..tttt..tt..#.DDDD..vv.#
+#........#............#..........#
+#..pp..p.#...w....w...#..........#
+#........#............#..DDDD....#
+#........#..ss....ss..#..........#
+#........#............#...pp.....#
+#........#............#..........#
+##################################
+`;
+
+const MAP = {
+  name:'VANTA HQ — Floor 3',
+  raw:FLOOR3,
+  start:{x:15,y:6,dir:'down'}
+};
+
+/* ---------- progression ---------- */
+const TITLES = ['SDE I','SDE II','SDE II (Senior-Track)','Senior Engineer','Senior Engineer II','Staff Engineer'];
+const XPCURVE = [0,35,85,155,255,390];
+
+/* ---------- skills ---------- */
+const SKILLS = {
+  cite:{
+    name:'Cite The Docs', cost:5, lv:2,
+    desc:'Produce the written requirement. Deals damage and lowers their conviction.',
+    hit:(a,e)=>({ dmg: Math.round(a.atk*1.15), debuff:'atk', note:'You read the acceptance criteria aloud.' })
+  },
+  scope:{
+    name:'Scope Cut', cost:11, lv:3,
+    desc:'Remove the part nobody asked for. Damage scales with how big the thing is.',
+    hit:(a,e)=>({ dmg: Math.round(a.atk*0.7 + e.maxHp*0.05), note:'You propose cutting it in half.' })
+  },
+  refactor:{
+    name:'Refactor', cost:6, lv:1,
+    desc:'Restore Focus. Clears Context Switch. Changes no behavior whatsoever.',
+    self:(a)=>({ heal: Math.round(a.maxFocus*0.32), cleanse:1, note:'No functional change. Ready for review.' })
+  },
+  duck:{
+    name:'Rubber Duck', cost:0, lv:1,
+    desc:'Explain the problem out loud to an inanimate object. Recovers Caffeine.',
+    self:(a)=>({ caf:9, note:'Halfway through explaining it, you see the bug.' })
+  },
+  escalate:{
+    name:'Escalate', cost:20, lv:5,
+    desc:'Go above their head. Enormous damage. You can never take this back.',
+    hit:(a,e)=>({ dmg: Math.round(a.atk*2.2), note:'You add their manager to the thread.' })
+  }
+};
+
+/* ---------- items ---------- */
+const ITEMS = {
+  snack:   {name:'Free Snack',        type:'use',  price:15,  focus:32,  desc:'From the wall of snacks. Compensation is total rewards.'},
+  lunch:   {name:'Catered Lunch',     type:'use',  price:48,  focus:85,  desc:'Thursday only. There is a line and it is not moving.'},
+  brew:    {name:'Cold Brew',         type:'use',  price:22,  caf:14,    desc:'On tap. The tap is the third-best perk.'},
+  aspirin: {name:'Aspirin',           type:'use',  price:12,  cure:1,    desc:'Clears Context Switch. Not covered until day 90.'},
+  hoodie:  {name:'Swag Hoodie',       type:'armor',price:0,   def:3,     desc:'Given to you at orientation. Size: Large.'},
+  cans:    {name:'Noise-Cancelling Headphones', type:'armor', price:95, def:6, desc:'The universal signal. Ignored universally.'},
+  block:   {name:'"Focus Time" Block',type:'armor',price:260, def:10,    desc:'A recurring calendar hold. People book over it.'},
+  laptop:  {name:'Company Laptop (2019)', type:'weapon', price:0, atk:0, desc:'Issued. Fans audible. Refresh cycle is under review.'},
+  keeb:    {name:'Mechanical Keyboard',type:'weapon',price:110,atk:6,    desc:'Blues. Your podmates have filed no formal complaint.'},
+  monitor: {name:'Second Monitor',     type:'weapon',price:225,atk:12,   desc:'Approved after four weeks. Productivity, allegedly, doubles.'},
+  lanyard: {name:'Lanyard',            type:'armor', price:0, def:0,     desc:'Badge. Photo taken before you understood the job.'}
+};
+
+/* ---------- enemies ---------- */
+const E = (o)=>o;
+const ENEMIES = {
+  replyall: E({name:'Reply-All Storm', art:'📧', hp:42, atk:9, def:2, sp:12, cr:10,
+    moves:[
+      {t:'atk',p:1.0,txt:'{E} adds four more people to the thread.'},
+      {t:'atk',p:0.9,txt:'Someone replies "+1". Then someone replies "removing myself from this thread." They do not.'},
+      {t:'atk',p:1.1,txt:'{E} forwards it to a distribution list of nine hundred.'}
+    ]}),
+  flaky: E({name:'Flaky Test', art:'🎲', hp:38, atk:10, def:5, sp:12, cr:8,
+    moves:[
+      {t:'atk',p:1.0,txt:'{E} fails. You change nothing. {E} passes.'},
+      {t:'atk',p:1.2,txt:'{E} says it passes locally.'},
+      {t:'skip',p:0,txt:'{E} is green this run. Nobody investigates.'}
+    ]}),
+  merge: E({name:'Merge Conflict', art:'🔀', hp:56, atk:10, def:7, sp:16, cr:14,
+    moves:[
+      {t:'atk',p:1.0,txt:'{E} presents two versions of the truth and refuses to pick.'},
+      {t:'atk',p:1.15,txt:'{E} touches the lockfile. Four thousand lines change.'}
+    ]}),
+  creep: E({name:'Scope Creep', art:'📈', hp:50, atk:10, def:3, sp:17, cr:15,
+    grow:2,
+    moves:[
+      {t:'atk',p:1.0,txt:'{E} says "while we\'re in there."'},
+      {t:'atk',p:1.0,txt:'{E} says it should be trivial since the code is already open.'}
+    ]}),
+  quickq: E({name:'"Quick Question" Guy', art:'🙋', hp:34, atk:12, def:1, sp:13, cr:12,
+    moves:[
+      {t:'atk',p:1.0,txt:'{E} taps you on the shoulder. You lose the thing you were holding in your head.'},
+      {t:'status',p:0.7,st:'switch',txt:'{E} asks if you have two seconds. It is not two seconds.'}
+    ]}),
+  recruiter: E({name:'Recruiter InMail', art:'💼', hp:26, atk:7, def:0, sp:9, cr:26,
+    moves:[
+      {t:'atk',p:1.0,txt:'{E} says your background is truly impressive and gets your name wrong.'},
+      {t:'atk',p:0.8,txt:'{E} describes a rocketship. It is a Series A with eleven months of runway.'}
+    ]}),
+  legacy: E({name:'Legacy Service', art:'🗿', hp:66, atk:10, def:11, sp:24, cr:22,
+    moves:[
+      {t:'atk',p:1.0,txt:'{E} has no owner, no tests, and nine downstream consumers.'},
+      {t:'atk',p:1.1,txt:'The last commit is from someone who left in 2019. It says "temp fix".'},
+      {t:'heal',p:0.12,txt:'{E} has been running untouched for six years. It is not going anywhere.'}
+    ]}),
+  standup: E({name:'Standup That Ran Long', art:'⏱️', hp:46, atk:8, def:5, sp:15, cr:12,
+    moves:[
+      {t:'atk',p:1.0,txt:'{E} enters minute nineteen of a fifteen-minute standup.'},
+      {t:'status',p:0.6,st:'switch',txt:'{E} says "let\'s take this offline," then does not take it offline.'}
+    ]}),
+
+  /* set pieces */
+  jordan: E({name:'Jordan, Project Manager', art:'📊', hp:150, atk:14, def:7, sp:60, cr:70, boss:1,
+    weak:'cite',
+    moves:[
+      {t:'atk',p:1.0,txt:'{E} asks if this is a blocker. It is now.'},
+      {t:'atk',p:1.15,txt:'{E} presents a Gantt chart. The bar for your work is already grey.'},
+      {t:'atk',p:1.0,txt:'{E} asks whether the two-week estimate could be a one-week estimate.'},
+      {t:'atk',p:1.2,txt:'{E} asks if it can be parallelized. There is one of you.'},
+      {t:'status',p:0.5,st:'switch',txt:'{E} moves the deadline up and calls it a stretch goal.'},
+      {t:'heal',p:0.1,txt:'{E} marks the item green in the tracker and is visibly restored.'}
+    ]}),
+  breach: E({name:'The Data Breach', art:'🔓', hp:210, atk:18, def:6, sp:85, cr:95, boss:1,
+    moves:[
+      {t:'atk',p:1.0,txt:'{E} was in the logs the whole time.'},
+      {t:'atk',p:1.25,txt:'A storage bucket was set to public in 2021 "temporarily."'},
+      {t:'atk',p:1.1,txt:'{E} exfiltrates a table nobody remembered writing to.'},
+      {t:'status',p:0.45,st:'switch',txt:'Legal is on the phone. Everything else stops.'}
+    ]}),
+  spirit: E({name:'Mandatory Team Spirit', art:'🚩', hp:88, atk:11, def:9, sp:22, cr:24,
+    moves:[
+      {t:'atk',p:1.0,txt:'{E} says there are no wrong answers, then corrects your answer.'},
+      {t:'atk',p:1.0,txt:'{E} asks everyone to share a fun fact about themselves.'},
+      {t:'status',p:0.35,st:'switch',txt:'{E} splits you into breakout rooms.'}
+    ]}),
+  flag: E({name:'The Flag (Foam)', art:'🏳️', hp:62, atk:6, def:4, sp:16, cr:20,
+    moves:[
+      {t:'atk',p:1.0,txt:'{E} is captured. Points are awarded to a team you were not told you were on.'},
+      {t:'skip',p:0,txt:'{E} sits there. It is a flag.'}
+    ]}),
+  brayden: E({name:'Brayden, Product Manager', art:'🧢', hp:430, atk:22, def:10, sp:220, cr:180, boss:1,
+    weak:'scope',
+    moves:[
+      {t:'atk',p:1.0,txt:'{E} says it should just be a simple toggle.'},
+      {t:'atk',p:1.2,txt:'{E} says the customer wants this. {E} has spoken to one customer.'},
+      {t:'atk',p:1.15,txt:'{E} asks why it cannot use AI. {E} does not specify for what.'},
+      {t:'atk',p:1.1,txt:'{E} says this is what we aligned on. You were not in that meeting.'},
+      {t:'status',p:0.4,st:'switch',txt:'{E} says "actually, let\'s circle back" and schedules a pre-meeting for the meeting.'},
+      {t:'heal',p:0.16,txt:'{E} opens a Google Doc titled "Vision (WIP)" and is restored by it.'}
+    ]})
+};
+
+const ENCOUNTERS = ['replyall','flaky','merge','creep','quickq','recruiter','legacy','standup'];
+
+/* ==========================================================================
+   STATE
+   ========================================================================== */
+const SAVEKEY = 'shipit_vanta_v1';
+const $ = (id)=>document.getElementById(id);
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const ri=(n)=>Math.floor(Math.random()*n);
+const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
+
+let S = null;
+let grid = [], MW = 0, MH = 0;
+let heldDir = null, mode = 'title';
+let dlgResolve = null, chResolve = null;
+let lastT = 0, steps = 0, encCooldown = 6;
+
+function newGame(){
+  return {
+    x:MAP.start.x, y:MAP.start.y, dir:MAP.start.dir,
+    lv:1, xp:0,
+    focus:110, maxFocus:110, caf:24, maxCaf:24,
+    atk:13, def:5, credits:40,
+    weapon:'laptop', armor:'lanyard',
+    bag:{snack:2, brew:1},
+    owned:{laptop:1, lanyard:1},
+    flags:{},
+    approvals:{code:0, sec:0, design:0},
+    minutes:0
+  };
+}
+
+/* ==========================================================================
+   MAP
+   ========================================================================== */
+function buildMap(){
+  const rows = MAP.raw.split('\n').filter(r=>r.length>0);
+  MW = Math.max(...rows.map(r=>r.length));
+  MH = rows.length;
+  grid = rows.map(r => (r + '#'.repeat(MW)).slice(0, MW).split(''));
+}
+const tileAt = (x,y)=> (y<0||y>=MH||x<0||x>=MW) ? '#' : grid[y][x];
+const tinfo  = (x,y)=> TILE[tileAt(x,y)] || TILE['#'];
+
+/* ---------- entities ---------- */
+const PLAYER = {col:'#4f8cff', hair:'#2e2118', skin:'#c68b62', prop:'laptop'};
+const NPCS = [
+  {id:'dee',    x:18,y:4,  col:'#6f7ce0', hair:'#3b2a1c', skin:'#e0ac69', prop:'badge',     name:'Dee, Onboarding Buddy'},
+  {id:'kai',    x:4, y:3,  col:'#c77dff', hair:'#1d1a24', skin:'#8d5524', prop:'mug',       name:'Kai, Design'},
+  {id:'priya',  x:9, y:13, col:'#3ecf8e', hair:'#231a14', skin:'#a9713f', prop:'cans',      name:'Priya, Staff Engineer'},
+  {id:'jordan', x:17,y:15, col:'#f5a524', hair:'#6b4a2a', skin:'#f1c27d', prop:'clipboard', name:'Jordan, Project Manager'},
+  {id:'marcus', x:26,y:26, col:'#2f3a4c', hair:'#15100c', skin:'#5c3a21', prop:'shades',    name:'Marcus, Security'},
+  {id:'sandeep',x:25,y:23, col:'#4f8cff', hair:'#1c1510', skin:'#8d5524', prop:'badge',     name:'Sandeep, IT'},
+  {id:'brooke', x:15,y:23, col:'#e0576b', hair:'#c9a227', skin:'#f1c27d', prop:'flag',      name:'Brooke, Culture & Engagement'},
+  {id:'brayden',x:30,y:3,  col:'#e5484d', hair:'#8a6a3a', skin:'#f1c27d', prop:'cap',       name:'Brayden, Product Manager'},
+  {id:'devon',  x:24,y:9,  col:'#8996ab', hair:'#2a2118', skin:'#c68b62', prop:'laptop',    name:'Devon'},
+  {id:'mara',   x:8, y:18, col:'#7a8ea8', hair:'#4a4a55', skin:'#e0ac69', prop:'mug',       name:'Mara'}
+];
+const npcAt = (x,y)=> NPCS.find(n=>n.x===x&&n.y===y && !(S.flags['gone_'+n.id]));
+
+/* ==========================================================================
+   CANVAS / RENDER
+   ========================================================================== */
+const cv = $('view'), cx = cv.getContext('2d');
+let TS = 40, DPR = 1;
+
+function resize(){
+  DPR = Math.min(window.devicePixelRatio||1, 2);
+  const r = cv.getBoundingClientRect();
+  cv.width  = Math.round(r.width  * DPR);
+  cv.height = Math.round(r.height * DPR);
+  cx.setTransform(DPR,0,0,DPR,0,0);
+  cx.imageSmoothingEnabled = true;
+  TS = Math.round(clamp(Math.min(r.width/11, r.height/8.5), 26, 62));
+}
+window.addEventListener('resize', ()=>{ resize(); });
+
+function hash(x,y){
+  let h = (x*374761393 + y*668265263) ^ 0x5bf03635;
+  h = (h ^ (h>>>13)) * 1274126177;
+  return ((h ^ (h>>>16)) >>> 0) / 4294967295;
+}
+
+function drawTile(k,px,py,x,y){
+  const s = TS, h = hash(x,y);
+  switch(k){
+    case 'wall':
+      cx.fillStyle='#39435a'; cx.fillRect(px,py,s,s);
+      cx.fillStyle='#2b3346'; cx.fillRect(px,py+s*0.72,s,s*0.28);
+      cx.fillStyle='rgba(255,255,255,.05)'; cx.fillRect(px,py,s,2);
+      break;
+    case 'glass':
+      cx.fillStyle='#1d2634'; cx.fillRect(px,py,s,s);
+      cx.fillStyle='rgba(126,196,255,.16)'; cx.fillRect(px,py,s,s);
+      cx.fillStyle='rgba(160,215,255,.4)'; cx.fillRect(px+s*0.44,py,2,s);
+      cx.fillStyle='rgba(255,255,255,.07)'; cx.fillRect(px,py+s*0.1,s,1);
+      break;
+    case 'carpet': {
+      cx.fillStyle = '#28313f'; cx.fillRect(px,py,s,s);
+      cx.fillStyle = h>0.5 ? 'rgba(255,255,255,.022)' : 'rgba(0,0,0,.10)';
+      cx.fillRect(px,py,s,s);
+      cx.fillStyle='rgba(255,255,255,.05)';
+      cx.fillRect(px + h*s*0.7, py + hash(y,x)*s*0.7, 2, 2);
+      break; }
+    case 'floor':
+      cx.fillStyle='#2b3444'; cx.fillRect(px,py,s,s);
+      cx.strokeStyle='rgba(255,255,255,.035)'; cx.lineWidth=1;
+      cx.strokeRect(px+.5,py+.5,s-1,s-1);
+      break;
+    case 'door':
+      cx.fillStyle='#242d3c'; cx.fillRect(px,py,s,s);
+      cx.fillStyle='rgba(79,140,255,.20)'; cx.fillRect(px,py,s,s);
+      break;
+    case 'desk': {
+      cx.fillStyle='#28313f'; cx.fillRect(px,py,s,s);
+      cx.fillStyle='#6f5b43'; cx.fillRect(px,py+s*0.12,s,s*0.76);
+      cx.fillStyle='#7d684d'; cx.fillRect(px,py+s*0.12,s,3);
+      if(h>0.42){ // monitor
+        cx.fillStyle='#11161f'; cx.fillRect(px+s*0.18,py+s*0.2,s*0.64,s*0.4);
+        cx.fillStyle = h>0.8?'#2f6f4f':'#274063'; cx.fillRect(px+s*0.22,py+s*0.24,s*0.56,s*0.32);
+      } else {
+        cx.fillStyle='#2a3242'; cx.fillRect(px+s*0.2,py+s*0.3,s*0.6,s*0.3); // laptop
+      }
+      break; }
+    case 'cube':
+      cx.fillStyle='#28313f'; cx.fillRect(px,py,s,s);
+      cx.fillStyle='#4c586c'; cx.fillRect(px,py,s,s*0.66);
+      cx.fillStyle='#3c465a'; cx.fillRect(px,py+s*0.66,s,s*0.16);
+      cx.fillStyle='rgba(255,255,255,.05)'; cx.fillRect(px,py+3,s,1);
+      if(x%3===0){ cx.fillStyle='#39435a'; cx.fillRect(px,py,3,s*0.82); }
+      break;
+    case 'plant':
+      cx.fillStyle='#28313f'; cx.fillRect(px,py,s,s);
+      cx.fillStyle='#5a4433'; cx.fillRect(px+s*0.3,py+s*0.6,s*0.4,s*0.32);
+      cx.fillStyle='#2f7a4e'; cx.beginPath(); cx.arc(px+s*0.5,py+s*0.44,s*0.28,0,7); cx.fill();
+      cx.fillStyle='#3d9663'; cx.beginPath(); cx.arc(px+s*0.38,py+s*0.34,s*0.16,0,7); cx.fill();
+      break;
+    case 'counter':
+      cx.fillStyle='#28313f'; cx.fillRect(px,py,s,s);
+      cx.fillStyle='#8d8578'; cx.fillRect(px,py+s*0.2,s,s*0.7);
+      cx.fillStyle='#a09889'; cx.fillRect(px,py+s*0.2,s,3);
+      if(h>0.6){ cx.fillStyle='#c9553f'; cx.fillRect(px+s*0.3,py+s*0.3,s*0.18,s*0.26); }
+      else if(h>0.3){ cx.fillStyle='#e0dbd0'; cx.fillRect(px+s*0.26,py+s*0.34,s*0.3,s*0.2); }
+      break;
+    case 'couch':
+      cx.fillStyle='#28313f'; cx.fillRect(px,py,s,s);
+      cx.fillStyle='#404b60'; cx.fillRect(px,py+s*0.22,s,s*0.62);
+      cx.fillStyle='#4d5a72'; cx.fillRect(px+s*0.06,py+s*0.34,s*0.88,s*0.34);
+      break;
+    case 'table':
+      cx.fillStyle='#28313f'; cx.fillRect(px,py,s,s);
+      cx.fillStyle='#6f5b43'; cx.fillRect(px+s*0.04,py+s*0.16,s*0.92,s*0.68);
+      cx.fillStyle='rgba(255,255,255,.06)'; cx.fillRect(px+s*0.04,py+s*0.16,s*0.92,2);
+      break;
+    case 'board':
+      cx.fillStyle='#28313f'; cx.fillRect(px,py,s,s);
+      cx.fillStyle='#e9edf3'; cx.fillRect(px+s*0.05,py+s*0.12,s*0.9,s*0.66);
+      cx.strokeStyle='#7a8496'; cx.lineWidth=1;
+      cx.beginPath();
+      cx.moveTo(px+s*0.16,py+s*0.3); cx.lineTo(px+s*0.7,py+s*0.3);
+      cx.moveTo(px+s*0.16,py+s*0.45); cx.lineTo(px+s*0.58,py+s*0.45);
+      cx.moveTo(px+s*0.16,py+s*0.6); cx.lineTo(px+s*0.76,py+s*0.6);
+      cx.stroke();
+      break;
+    case 'booth':
+      cx.fillStyle='#28313f'; cx.fillRect(px,py,s,s);
+      cx.fillStyle='#2e3849'; cx.fillRect(px+s*0.04,py+s*0.04,s*0.92,s*0.92);
+      cx.fillStyle='rgba(126,196,255,.22)'; cx.fillRect(px+s*0.14,py+s*0.14,s*0.72,s*0.62);
+      cx.strokeStyle='#48566e'; cx.lineWidth=2; cx.strokeRect(px+s*0.04,py+s*0.04,s*0.92,s*0.92);
+      break;
+    case 'tv':
+      cx.fillStyle='#39435a'; cx.fillRect(px,py,s,s);
+      cx.fillStyle='#05070c'; cx.fillRect(px,py+s*0.16,s,s*0.6);
+      cx.fillStyle='rgba(79,140,255,'+(0.24+0.14*Math.sin(Date.now()/600+x))+')';
+      cx.fillRect(px,py+s*0.16,s,s*0.6);
+      break;
+    case 'vend':
+      cx.fillStyle='#28313f'; cx.fillRect(px,py,s,s);
+      cx.fillStyle='#1a2130'; cx.fillRect(px+s*0.06,py,s*0.88,s*0.94);
+      cx.fillStyle='rgba(62,207,142,.22)'; cx.fillRect(px+s*0.14,py+s*0.1,s*0.6,s*0.58);
+      for(let i=0;i<3;i++){ cx.fillStyle='rgba(255,255,255,.16)'; cx.fillRect(px+s*0.16,py+s*(0.16+i*0.16),s*0.56,3); }
+      break;
+    case 'elev':
+      cx.fillStyle='#39435a'; cx.fillRect(px,py,s,s);
+      cx.fillStyle='#5c6880'; cx.fillRect(px,py+s*0.06,s,s*0.88);
+      cx.fillStyle='#2b3346'; cx.fillRect(px+s*0.47,py+s*0.06,2,s*0.88);
+      break;
+    default:
+      cx.fillStyle='#28313f'; cx.fillRect(px,py,s,s);
+  }
+}
+
+function drawPerson(px,py,who,dir){
+  const s = TS, cxx = px + s*0.5;
+  const up = dir==='up', side = dir==='left'||dir==='right';
+  cx.save();
+  cx.globalAlpha=.3; cx.fillStyle='#000';
+  cx.beginPath(); cx.ellipse(cxx, py+s*0.88, s*0.24, s*0.08, 0,0,7); cx.fill();
+  cx.restore();
+
+  // legs
+  cx.fillStyle='#232833';
+  cx.fillRect(cxx-s*0.13, py+s*0.70, s*0.10, s*0.16);
+  cx.fillRect(cxx+s*0.03, py+s*0.70, s*0.10, s*0.16);
+
+  // torso
+  cx.fillStyle = who.col;
+  roundRect(cxx-s*0.19, py+s*0.44, s*0.38, s*0.30, s*0.07); cx.fill();
+  cx.fillStyle='rgba(0,0,0,.16)';
+  cx.fillRect(cxx-s*0.19, py+s*0.66, s*0.38, s*0.08);
+
+  // arms
+  cx.fillStyle = who.col;
+  cx.fillRect(cxx-s*0.25, py+s*0.47, s*0.07, s*0.20);
+  cx.fillRect(cxx+s*0.18, py+s*0.47, s*0.07, s*0.20);
+
+  // head
+  cx.fillStyle = who.skin;
+  cx.beginPath(); cx.arc(cxx, py+s*0.33, s*0.155, 0, 7); cx.fill();
+
+  // hair
+  cx.fillStyle = who.hair;
+  cx.beginPath();
+  if(up) cx.arc(cxx, py+s*0.33, s*0.16, 0, Math.PI*2);
+  else   cx.arc(cxx, py+s*0.31, s*0.16, Math.PI*1.04, Math.PI*2.0);
+  cx.fill();
+
+  // face
+  if(!up){
+    cx.fillStyle='#20242c';
+    const ox = dir==='left' ? -s*0.03 : dir==='right' ? s*0.03 : 0;
+    if(side){ cx.fillRect(cxx+ox-s*0.01, py+s*0.33, s*0.035, s*0.035); }
+    else {
+      cx.fillRect(cxx-s*0.065, py+s*0.33, s*0.035, s*0.035);
+      cx.fillRect(cxx+s*0.03,  py+s*0.33, s*0.035, s*0.035);
+    }
+  }
+
+  // props
+  const p = who.prop;
+  if(p==='cap'){
+    cx.fillStyle='#e5484d';
+    cx.beginPath(); cx.arc(cxx, py+s*0.29, s*0.165, Math.PI, Math.PI*2); cx.fill();
+    if(!up) cx.fillRect(cxx-s*0.17, py+s*0.28, s*0.34, s*0.045);
+  } else if(p==='shades'){
+    cx.fillStyle='#0d1119';
+    if(!up) cx.fillRect(cxx-s*0.13, py+s*0.31, s*0.26, s*0.055);
+  } else if(p==='clipboard'){
+    cx.fillStyle='#e9edf3'; cx.fillRect(cxx+s*0.20, py+s*0.50, s*0.13, s*0.17);
+    cx.fillStyle='#8996ab'; cx.fillRect(cxx+s*0.22, py+s*0.53, s*0.09, s*0.02);
+    cx.fillRect(cxx+s*0.22, py+s*0.57, s*0.09, s*0.02);
+  } else if(p==='laptop'){
+    cx.fillStyle='#39435a'; cx.fillRect(cxx-s*0.16, py+s*0.60, s*0.32, s*0.10);
+    cx.fillStyle='#7ec4ff'; cx.fillRect(cxx-s*0.13, py+s*0.62, s*0.26, s*0.05);
+  } else if(p==='mug'){
+    cx.fillStyle='#e0dbd0'; cx.fillRect(cxx+s*0.20, py+s*0.54, s*0.11, s*0.12);
+  } else if(p==='cans'){
+    cx.fillStyle='#1a2130';
+    cx.fillRect(cxx-s*0.20, py+s*0.28, s*0.05, s*0.11);
+    cx.fillRect(cxx+s*0.15, py+s*0.28, s*0.05, s*0.11);
+    cx.fillRect(cxx-s*0.20, py+s*0.245, s*0.40, s*0.04);
+  } else if(p==='flag'){
+    cx.fillStyle='#8996ab'; cx.fillRect(cxx+s*0.22, py+s*0.30, s*0.025, s*0.38);
+    cx.fillStyle='#e0576b'; cx.fillRect(cxx+s*0.245, py+s*0.30, s*0.16, s*0.11);
+  } else if(p==='badge'){
+    cx.fillStyle='#e9edf3'; cx.fillRect(cxx-s*0.05, py+s*0.55, s*0.10, s*0.08);
+  }
+}
+function roundRect(x,y,w,h,r){
+  cx.beginPath();
+  cx.moveTo(x+r,y); cx.arcTo(x+w,y,x+w,y+h,r); cx.arcTo(x+w,y+h,x,y+h,r);
+  cx.arcTo(x,y+h,x,y,r); cx.arcTo(x,y,x+w,y,r); cx.closePath();
+}
+
+let anim = {on:false, fx:0, fy:0, t:0};
+
+function draw(){
+  const r = cv.getBoundingClientRect(), W = r.width, H = r.height;
+  cx.fillStyle = '#0a0d13'; cx.fillRect(0,0,W,H);
+  if(!S) return;
+
+  const pxw = anim.on ? (S.x*(1-anim.t) + anim.fx*anim.t) : S.x;
+  const pyw = anim.on ? (S.y*(1-anim.t) + anim.fy*anim.t) : S.y;
+
+  let camX = pxw*TS + TS/2 - W/2;
+  let camY = pyw*TS + TS/2 - H/2;
+  if(MW*TS <= W) camX = (MW*TS - W)/2; else camX = clamp(camX, 0, MW*TS - W);
+  if(MH*TS <= H) camY = (MH*TS - H)/2; else camY = clamp(camY, 0, MH*TS - H);
+
+  const x0 = Math.max(0, Math.floor(camX/TS)), x1 = Math.min(MW-1, Math.ceil((camX+W)/TS));
+  const y0 = Math.max(0, Math.floor(camY/TS)), y1 = Math.min(MH-1, Math.ceil((camY+H)/TS));
+
+  for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++){
+    drawTile(tinfo(x,y).kind, Math.round(x*TS-camX), Math.round(y*TS-camY), x, y);
+  }
+
+  for(const n of NPCS){
+    if(S.flags['gone_'+n.id]) continue;
+    if(n.x<x0-1||n.x>x1+1||n.y<y0-1||n.y>y1+1) continue;
+    drawPerson(Math.round(n.x*TS-camX), Math.round(n.y*TS-camY), n, 'down');
+  }
+
+  drawPerson(Math.round(pxw*TS-camX), Math.round(pyw*TS-camY), PLAYER, S.dir);
+
+  // vignette
+  const g = cx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.35, W/2,H/2, Math.max(W,H)*0.75);
+  g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,.45)');
+  cx.fillStyle=g; cx.fillRect(0,0,W,H);
+}
+
+/* ==========================================================================
+   MOVEMENT
+   ========================================================================== */
+const DIRS = {up:[0,-1], down:[0,1], left:[-1,0], right:[1,0]};
+
+function blocked(x,y){
+  if(tinfo(x,y).solid) return true;
+  if(npcAt(x,y)) return true;
+  return false;
+}
+
+function tryMove(dir){
+  if(mode!=='field' || anim.on) return;
+  S.dir = dir;
+  const [dx,dy] = DIRS[dir];
+  const nx = S.x+dx, ny = S.y+dy;
+  if(blocked(nx,ny)) return;
+  if(nx===27 && ny===7 && !allApprovals()){ lockedRoom(); return; }
+  anim = {on:true, fx:nx, fy:ny, t:0};
+}
+
+function arrive(){
+  S.x = anim.fx; S.y = anim.fy; anim.on = false;
+  S.minutes += 1;
+  if(tinfo(S.x,S.y).enc){
+    steps++;
+    if(steps > encCooldown && Math.random() < 0.11){
+      steps = 0; encCooldown = 5 + ri(6);
+      startBattle([ENCOUNTERS[ri(ENCOUNTERS.length)]]);
+    }
+  }
+}
+
+function loop(t){
+  const dt = Math.min(64, t-lastT); lastT = t;
+  if(anim.on){
+    anim.t += dt/135;
+    if(anim.t>=1){ anim.t=1; arrive(); }
+  } else if(mode==='field' && heldDir){
+    tryMove(heldDir);
+  }
+  draw();
+  requestAnimationFrame(loop);
+}
+
+/* ==========================================================================
+   DIALOGUE + CHOICES
+   ========================================================================== */
+function say(who, lines){
+  if(typeof lines === 'string') lines = [lines];
+  return new Promise(res=>{
+    const prev = mode; mode = 'dialogue'; heldDir = null;
+    let i = 0;
+    const show = ()=>{
+      $('dlgWho').textContent = who || '';
+      $('dlgWho').style.display = who ? '' : 'none';
+      $('dlgTxt').textContent = lines[i];
+      $('dlg').classList.add('on');
+    };
+    dlgResolve = ()=>{
+      i++;
+      if(i>=lines.length){
+        $('dlg').classList.remove('on'); dlgResolve = null;
+        mode = prev;
+        res();
+      } else show();
+    };
+    show();
+  });
+}
+
+function choose(q, opts){
+  return new Promise(res=>{
+    const prev = mode; mode = 'choice'; heldDir = null;
+    $('chQ').textContent = q;
+    const list = $('chList'); list.innerHTML = '';
+    opts.forEach((o,idx)=>{
+      const b = document.createElement('button');
+      b.innerHTML = '<span class="c"></span>' + (o.note?'<span class="n"></span>':'');
+      b.querySelector('.c').textContent = o.label;
+      if(o.note) b.querySelector('.n').textContent = o.note;
+      if(o.disabled) b.disabled = true;
+      b.onclick = ()=>{
+        if(o.disabled) return;
+        $('choices').classList.remove('on'); chResolve = null;
+        mode = prev;
+        res(idx);
+      };
+      list.appendChild(b);
+    });
+    $('choices').classList.add('on');
+    chResolve = true;
+  });
+}
+
+let toastT = null;
+function toast(msg){
+  const el = $('toast'); el.textContent = msg; el.classList.add('on');
+  clearTimeout(toastT); toastT = setTimeout(()=>el.classList.remove('on'), 2100);
+}
+async function flash(){
+  const f=$('flash'); f.style.opacity='.85'; await sleep(90); f.style.opacity='0';
+}
+
+/* ==========================================================================
+   DERIVED STATS
+   ========================================================================== */
+const pAtk = ()=> S.atk + (ITEMS[S.weapon].atk||0);
+const pDef = ()=> S.def + (ITEMS[S.armor].def||0);
+const title = ()=> TITLES[Math.min(S.lv-1, TITLES.length-1)];
+const allApprovals = ()=> S.approvals.code && S.approvals.sec && S.approvals.design;
+
+function syncHUD(){
+  if(!S) return;
+  $('hLevel').textContent = title();
+  $('bLevel').textContent = title();
+  const f = Math.max(0,S.focus)/S.maxFocus*100, c = Math.max(0,S.caf)/S.maxCaf*100;
+  $('hFocus').style.width = f+'%'; $('bFocus').style.width = f+'%';
+  $('hCaf').style.width   = c+'%'; $('bCaf').style.width   = c+'%';
+  $('hFocusN').textContent = Math.max(0,S.focus)+'/'+S.maxFocus;
+  $('bFocusN').textContent = Math.max(0,S.focus)+'/'+S.maxFocus;
+  $('hCafN').textContent   = Math.max(0,S.caf)+'/'+S.maxCaf;
+  $('bCafN').textContent   = Math.max(0,S.caf)+'/'+S.maxCaf;
+}
+
+function calcDmg(atk, def, mult){
+  return Math.max(1, Math.round(atk*(1+Math.random()*0.25)*mult - def*0.5));
+}
+
+async function gainXP(sp, cr){
+  S.xp += sp; S.credits += cr;
+  blog('+'+sp+' story points, +'+cr+' credits.');
+  while(XPCURVE[S.lv] !== undefined && S.xp >= XPCURVE[S.lv]){
+    S.lv++;
+    S.maxFocus += 20; S.maxCaf += 5; S.atk += 2; S.def += 2;
+    S.focus = S.maxFocus; S.caf = S.maxCaf;
+    syncHUD();
+    blog('PROMOTED — you are now ' + title() + '.');
+    await sleep(700);
+  }
+}
+
+/* ==========================================================================
+   BATTLE
+   ========================================================================== */
+let B = null;
+
+function blog(t){
+  const el = $('blog');
+  const d = document.createElement('div'); d.textContent = t; el.appendChild(d);
+  while(el.children.length > 4) el.removeChild(el.firstChild);
+}
+
+function renderFoes(){
+  const g = $('grid'); g.innerHTML = '';
+  B.foes.forEach((f,i)=>{
+    const d = document.createElement('div');
+    d.className = 'tile' + (i===B.target?' sel':'');
+    d.innerHTML = '<div class="art"></div><div class="hp"><i></i></div><div class="nm"></div><div class="st"></div>';
+    d.querySelector('.art').textContent = f.art;
+    d.querySelector('.nm').textContent = f.name;
+    d.onclick = ()=>{ if(f.alive){ B.target = i; renderFoes(); } };
+    g.appendChild(d); f.el = d;
+    updateFoe(i);
+  });
+}
+function updateFoe(i){
+  const f = B.foes[i]; if(!f.el) return;
+  f.el.querySelector('.hp i').style.width = Math.max(0, f.hp/f.maxHp*100) + '%';
+  f.el.querySelector('.st').textContent = f.blocked ? 'BLOCKED' : '';
+  f.el.classList.toggle('dead', !f.alive);
+  f.el.classList.toggle('sel', i===B.target && f.alive);
+}
+function popDmg(el, text, color){
+  const d = document.createElement('div');
+  d.className='dmg'; d.textContent=text; d.style.color=color||'#fff';
+  d.style.left='50%'; d.style.top='14px'; d.style.transform='translateX(-50%)';
+  el.appendChild(d); setTimeout(()=>d.remove(), 1000);
+}
+const aliveFoes = ()=> B ? B.foes.filter(f=>f.alive) : [];
+function ensureTarget(){
+  if(!B) return;
+  if(!B.foes[B.target] || !B.foes[B.target].alive){
+    const i = B.foes.findIndex(f=>f.alive);
+    B.target = i<0?0:i;
+  }
+}
+function setMenu(buttons){
+  const m = $('bmenu'); m.innerHTML = '';
+  m.className = buttons.length===1 ? 'one' : '';
+  buttons.forEach(b=>{
+    const el = document.createElement('button');
+    el.innerHTML = '<span></span>' + (b.sub?'<small></small>':'');
+    el.querySelector('span').textContent = b.label;
+    if(b.sub) el.querySelector('small').textContent = b.sub;
+    if(b.disabled) el.disabled = true;
+    el.onclick = ()=>{ if(!b.disabled) b.on(); };
+    m.appendChild(el);
+  });
+}
+function clockStr(){
+  const base = 9*60 + 12 + S.minutes;
+  const h = Math.floor(base/60)%24, m = base%60;
+  return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+}
+
+function startBattle(ids, opts){
+  opts = opts || {};
+  return new Promise(resolve=>{
+    mode = 'battle'; heldDir = null;
+    B = {
+      foes: ids.map(id=>{
+        const t = ENEMIES[id];
+        return Object.assign({}, t, {key:id, hp:t.hp, maxHp:t.hp, alive:true, blocked:0, atkMod:0, el:null});
+      }),
+      target:0, over:false, round:0, boss:!!opts.boss, canFlee:!opts.noFlee, resolve
+    };
+    $('blog').innerHTML = '';
+    $('callTitle').textContent = opts.title || (B.foes.length>1 ? 'Group Sync' : B.foes[0].name);
+    $('callTime').textContent = clockStr();
+    $('battle').classList.add('on');
+    renderFoes(); syncHUD();
+    blog(opts.intro || (B.foes.length>1 ? 'Several people have joined.' : B.foes[0].name + ' has joined the call.'));
+    promptMenu();
+  });
+}
+
+function promptMenu(){
+  ensureTarget();
+  const skills = Object.keys(SKILLS).filter(k=>SKILLS[k].lv <= S.lv);
+  setMenu([
+    {label:'Commit', sub:'Do the work', on:()=>act(doCommit)},
+    {label:'Abilities', sub:skills.length+' available', on:openSkills},
+    {label:'Bag', sub:Object.keys(S.bag).filter(k=>S.bag[k]>0).length+' kinds', on:openBattleBag},
+    {label:'Log Off', sub:B.canFlee?'Attempt to leave':'Not an option', disabled:!B.canFlee, on:()=>act(doFlee)}
+  ]);
+}
+function openSkills(){
+  const list = Object.keys(SKILLS).filter(k=>SKILLS[k].lv <= S.lv).map(k=>{
+    const s = SKILLS[k];
+    return {label:s.name, sub:s.cost?(s.cost+' caffeine'):'free', disabled:S.caf < s.cost, on:()=>act(()=>doSkill(k))};
+  });
+  list.push({label:'← Back', sub:'', on:promptMenu});
+  setMenu(list);
+}
+function openBattleBag(){
+  const keys = Object.keys(S.bag).filter(k=>S.bag[k]>0);
+  const list = keys.map(k=>({label:ITEMS[k].name, sub:'x'+S.bag[k], on:()=>act(()=>doItem(k))}));
+  if(!list.length) list.push({label:'Bag is empty', sub:'', disabled:true, on:()=>{}});
+  list.push({label:'← Back', sub:'', on:promptMenu});
+  setMenu(list);
+}
+
+async function act(fn){
+  setMenu([]);
+  if(S.switched){
+    S.switched = 0;
+    blog('You lost the thread. By the time you find it again, your turn is over.');
+    await sleep(950);
+  } else {
+    await fn();
+  }
+  if(!B || B.over) return;
+  if(!aliveFoes().length){ return endBattle('win'); }
+  await enemyTurn();
+  if(!B || B.over) return;
+  if(S.focus <= 0) return endBattle('lose');
+  B.round++;
+  S.minutes += 2; $('callTime').textContent = clockStr();
+  B.foes.forEach(f=>{ if(f.alive && f.grow){ f.atkMod += f.grow; } });
+  promptMenu();
+}
+
+async function hitFoe(i, dmg, note, color){
+  if(!B) return;
+  const f = B.foes[i];
+  f.hp -= dmg;
+  f.el.classList.add('hit');
+  popDmg(f.el, '-'+dmg, color||'#ffd9d9');
+  if(note) blog(note);
+  await sleep(340);
+  f.el.classList.remove('hit');
+  if(f.hp <= 0){ f.hp = 0; f.alive = false; blog(f.name + ' has left the call.'); }
+  updateFoe(i);
+  await sleep(260);
+}
+
+async function doCommit(){
+  ensureTarget();
+  const f = B.foes[B.target];
+  const dmg = calcDmg(pAtk(), f.def, 1.0);
+  await hitFoe(B.target, dmg, 'You do the actual work.');
+}
+
+async function doSkill(k){
+  const sk = SKILLS[k];
+  S.caf -= sk.cost; syncHUD();
+  if(sk.self){
+    const r = sk.self(S);
+    if(r.heal){ S.focus = Math.min(S.maxFocus, S.focus + r.heal); popDmg($('mestrip'),'+'+r.heal,'#3ecf8e'); }
+    if(r.caf){ S.caf = Math.min(S.maxCaf, S.caf + r.caf); }
+    if(r.cleanse) S.switched = 0;
+    syncHUD(); blog(sk.name + '. ' + r.note);
+    await sleep(700); return;
+  }
+  ensureTarget();
+  const f = B.foes[B.target];
+  const r = sk.hit(Object.assign({}, S, {atk:pAtk()}), f);
+  let mult = 1;
+  if(f.weak === k){ mult = 1.6; }
+  const dmg = calcDmg(r.dmg, f.def, mult);
+  await hitFoe(B.target, dmg, sk.name + '. ' + r.note + (mult>1?' It lands exactly where it hurts.':''),
+               mult>1?'#f5a524':'#ffd9d9');
+  if(r.debuff && f.alive && Math.random()<0.6){
+    f.atkMod -= 3; f.blocked = 1; updateFoe(B.target);
+    blog(f.name + ' has to go check something.');
+    await sleep(450);
+  }
+}
+
+async function doItem(k){
+  const it = ITEMS[k];
+  S.bag[k]--; if(S.bag[k]<=0) delete S.bag[k];
+  if(it.focus){ S.focus = Math.min(S.maxFocus, S.focus + it.focus); popDmg($('mestrip'),'+'+it.focus,'#3ecf8e'); }
+  if(it.caf){ S.caf = Math.min(S.maxCaf, S.caf + it.caf); popDmg($('mestrip'),'+'+it.caf,'#d99a3f'); }
+  if(it.cure) S.switched = 0;
+  syncHUD();
+  blog('You use the ' + it.name + '.');
+  await sleep(700);
+}
+
+async function doFlee(){
+  if(Math.random() < 0.62){
+    blog('You set your status to Away and walk somewhere else.');
+    await sleep(750);
+    return endBattle('flee');
+  }
+  blog('You stand up. They keep talking. You sit back down.');
+  await sleep(800);
+}
+
+async function enemyTurn(){
+  for(let i=0;i<B.foes.length;i++){
+    if(!B || B.over) return;
+    const f = B.foes[i];
+    if(!f.alive) continue;
+    if(f.blocked){ f.blocked = 0; updateFoe(i); blog(f.name + ' is still typing.'); await sleep(600); continue; }
+    const mv = f.moves[ri(f.moves.length)];
+    const txt = mv.txt.replace(/\{E\}/g, f.name);
+    if(mv.t === 'skip'){ blog(txt); await sleep(750); continue; }
+    if(mv.t === 'heal'){
+      const h = Math.round(f.maxHp*0.12);
+      f.hp = Math.min(f.maxHp, f.hp + h); updateFoe(i);
+      popDmg(f.el, '+'+h, '#3ecf8e'); blog(txt); await sleep(800); continue;
+    }
+    if(mv.t === 'status'){
+      blog(txt);
+      if(Math.random() < 0.7){ S.switched = 1; blog('You are context switched.'); }
+      await sleep(850); continue;
+    }
+    const dmg = calcDmg(f.atk + f.atkMod, pDef(), mv.p);
+    S.focus -= dmg; syncHUD();
+    popDmg($('mestrip'), '-'+dmg, '#ff9b9b');
+    blog(txt);
+    await sleep(760);
+    if(S.focus <= 0) return endBattle('lose');
+  }
+}
+
+async function endBattle(outcome){
+  if(!B || B.over) return; B.over = true;
+  const res = B.resolve;
+  if(outcome === 'win'){
+    const sp = B.foes.reduce((a,f)=>a+f.sp,0), cr = B.foes.reduce((a,f)=>a+f.cr,0);
+    blog('The meeting ends.');
+    await sleep(600);
+    await gainXP(sp, cr);
+    await sleep(900);
+  } else if(outcome === 'lose'){
+    blog('You are out of Focus.');
+    await sleep(1100);
+  } else {
+    await sleep(300);
+  }
+  $('battle').classList.remove('on');
+  B = null; mode = 'field'; syncHUD();
+  if(outcome === 'lose') await burnout();
+  res(outcome);
+}
+
+async function burnout(){
+  const lost = Math.min(S.credits, Math.round(S.credits*0.15));
+  S.credits -= lost;
+  S.x = 4; S.y = 2; S.dir = 'up';
+  S.focus = S.maxFocus; S.caf = S.maxCaf; S.switched = 0;
+  syncHUD();
+  await say(null, [
+    'You take a personal day.',
+    'You come back. Nobody mentions it. Your calendar has filled in behind you.',
+    lost ? ('You spent ' + lost + ' credits on something you do not remember buying.') : 'You are, at least, rested.'
+  ]);
+}
+
+/* ==========================================================================
+   SCREENS: portal, bag, equipment, shop
+   ========================================================================== */
+function openList(titleText, rows, onBack){
+  $('listTitle').textContent = titleText;
+  const body = $('listBody'); body.innerHTML = '';
+  rows.forEach(r=>{
+    if(r.card){
+      const c = document.createElement('div'); c.className='card';
+      c.innerHTML = '<h3></h3>' + r.html;
+      c.querySelector('h3').textContent = r.card;
+      body.appendChild(c); return;
+    }
+    if(r.note){
+      const p = document.createElement('div'); p.className='note'; p.textContent = r.note;
+      body.appendChild(p); return;
+    }
+    const b = document.createElement('button');
+    b.className = 'row';
+    b.innerHTML = '<span class="g"></span><span class="t"></span>';
+    const g = b.querySelector('.g'); g.textContent = r.label;
+    if(r.sub){ const sm=document.createElement('small'); sm.textContent=r.sub; g.appendChild(sm); }
+    b.querySelector('.t').textContent = r.tag || '';
+    if(r.disabled) b.disabled = true;
+    b.onclick = ()=>{ if(!r.disabled) r.on(); };
+    body.appendChild(b);
+  });
+  $('listBack').onclick = onBack;
+  $('scList').classList.add('on');
+}
+const closeList = ()=> $('scList').classList.remove('on');
+
+function openMenu(){
+  if(mode!=='field') return;
+  mode = 'menu'; heldDir = null;
+  const body = $('menuBody'); body.innerHTML = '';
+  const need = XPCURVE[S.lv];
+  const card = document.createElement('div'); card.className = 'card';
+  card.innerHTML =
+    '<h3>Performance</h3>' +
+    kv('Level', title()) +
+    kv('Story points', S.xp + (need!==undefined ? ' / ' + need : ' (max band)')) +
+    kv('Focus', S.focus + ' / ' + S.maxFocus) +
+    kv('Caffeine', S.caf + ' / ' + S.maxCaf) +
+    kv('Impact (ATK)', pAtk() + '  (' + S.atk + ' +' + (ITEMS[S.weapon].atk||0) + ')') +
+    kv('Boundaries (DEF)', pDef() + '  (' + S.def + ' +' + (ITEMS[S.armor].def||0) + ')') +
+    kv('Perk credits', S.credits);
+  body.appendChild(card);
+
+  const q = document.createElement('div'); q.className='card';
+  q.innerHTML = '<h3>Ship Checklist</h3>' +
+    kv('Code review', S.approvals.code ? 'APPROVED' : 'pending') +
+    kv('Security review', S.approvals.sec ? 'APPROVED' : 'pending') +
+    kv('Design review', S.approvals.design ? 'APPROVED' : 'pending') +
+    kv('Roadmap review', allApprovals() ? 'VELOCITY is open' : 'locked');
+  body.appendChild(q);
+
+  [
+    {l:'Bag', s:'Consumables you are carrying', f:showBag},
+    {l:'Equipment', s:'Setup and defenses', f:showEquip},
+    {l:'Abilities', s:'What you can do in a meeting', f:showSkills},
+    {l:'Save', s:'Step into a phone booth to save', f:()=>toast('Find a phone booth on the west side of the floor.')},
+    {l:'Quit to title', s:'Your last save is kept', f:quitToTitle}
+  ].forEach(o=>{
+    const b=document.createElement('button'); b.className='row';
+    b.innerHTML='<span class="g"></span>';
+    const g=b.querySelector('.g'); g.textContent=o.l;
+    const sm=document.createElement('small'); sm.textContent=o.s; g.appendChild(sm);
+    b.onclick=o.f; body.appendChild(b);
+  });
+
+  $('scMenu').classList.add('on');
+}
+function kv(a,b){ return '<div class="kv"><span>'+esc(a)+'</span><span>'+esc(b)+'</span></div>'; }
+function esc(t){ return String(t).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function closeMenu(){ $('scMenu').classList.remove('on'); closeList(); if(mode==='menu') mode='field'; }
+
+function showBag(){
+  const keys = Object.keys(S.bag).filter(k=>S.bag[k]>0);
+  const rows = keys.length ? keys.map(k=>({
+    label:ITEMS[k].name, sub:ITEMS[k].desc, tag:'x'+S.bag[k],
+    on:()=>{
+      const it = ITEMS[k];
+      if(it.focus && S.focus>=S.maxFocus && !it.caf) return toast('Your Focus is already full.');
+      S.bag[k]--; if(S.bag[k]<=0) delete S.bag[k];
+      if(it.focus) S.focus = Math.min(S.maxFocus, S.focus+it.focus);
+      if(it.caf)   S.caf   = Math.min(S.maxCaf, S.caf+it.caf);
+      if(it.cure)  S.switched = 0;
+      syncHUD(); toast('Used ' + it.name + '.'); showBag();
+    }
+  })) : [{note:'Nothing in the bag. The vending machine by IT takes perk credits.'}];
+  openList('Bag', rows, ()=>{ closeList(); });
+}
+function showEquip(){
+  const owned = Object.keys(S.owned);
+  const rows = [];
+  rows.push({card:'Equipped', html:kv('Setup', ITEMS[S.weapon].name) + kv('Defenses', ITEMS[S.armor].name)});
+  owned.filter(k=>ITEMS[k].type==='weapon').forEach(k=>rows.push({
+    label:ITEMS[k].name, sub:ITEMS[k].desc, tag:(k===S.weapon?'EQUIPPED':'+'+(ITEMS[k].atk||0)+' ATK'),
+    disabled:k===S.weapon, on:()=>{ S.weapon=k; toast('Setup changed.'); showEquip(); }
+  }));
+  owned.filter(k=>ITEMS[k].type==='armor').forEach(k=>rows.push({
+    label:ITEMS[k].name, sub:ITEMS[k].desc, tag:(k===S.armor?'EQUIPPED':'+'+(ITEMS[k].def||0)+' DEF'),
+    disabled:k===S.armor, on:()=>{ S.armor=k; toast('Defenses changed.'); showEquip(); }
+  }));
+  openList('Equipment', rows, ()=>{ closeList(); });
+}
+function showSkills(){
+  const rows = Object.keys(SKILLS).map(k=>{
+    const s = SKILLS[k], have = S.lv >= s.lv;
+    return {label:s.name, sub: have ? s.desc : 'Unlocks at ' + TITLES[s.lv-1] + '.',
+            tag: have ? (s.cost?s.cost+' caf':'free') : 'LOCKED', disabled:true, on:()=>{}};
+  });
+  openList('Abilities', rows, ()=>{ closeList(); });
+}
+function openShop(){
+  const stock = ['brew','snack','lunch','aspirin','cans','keeb','monitor','block'];
+  const rows = [{note:'Perk credits: ' + S.credits + '. Equipment requests are auto-approved for anything under your band.'}];
+  stock.forEach(k=>{
+    const it = ITEMS[k];
+    const own = it.type!=='use' && S.owned[k];
+    rows.push({
+      label:it.name, sub:it.desc,
+      tag: own ? 'OWNED' : it.price + ' cr',
+      disabled: !!own || S.credits < it.price,
+      on:()=>{
+        S.credits -= it.price;
+        if(it.type==='use'){ S.bag[k] = (S.bag[k]||0)+1; }
+        else { S.owned[k] = 1; }
+        toast('Requisitioned: ' + it.name);
+        closeList(); openShop();
+      }
+    });
+  });
+  openList('Vending & Equipment', rows, ()=>{ closeList(); mode='field'; });
+}
+
+function quitToTitle(){
+  closeMenu();
+  mode = 'title';
+  $('battle').classList.remove('on');
+  $('title').classList.remove('off');
+  document.body.classList.add('titling');
+  $('btnCont').style.display = hasSave() ? '' : 'none';
+}
+
+/* ==========================================================================
+   SAVE
+   ========================================================================== */
+function hasSave(){ try{ return !!localStorage.getItem(SAVEKEY); }catch(e){ return false; } }
+function saveGame(){
+  try{ localStorage.setItem(SAVEKEY, JSON.stringify(S)); return true; }
+  catch(e){ return false; }
+}
+function loadGame(){
+  try{
+    const raw = localStorage.getItem(SAVEKEY); if(!raw) return null;
+    const o = JSON.parse(raw);
+    return Object.assign(newGame(), o);
+  }catch(e){ return null; }
+}
+
+/* ==========================================================================
+   INTERACTION
+   ========================================================================== */
+const FLAVOR = {
+  desk:[ 'Someone else’s desk. Three monitors, one of them vertical. A sticker that says ASK ME ABOUT KUBERNETES.',
+         'An unattended desk with a laptop still unlocked and a Slack draft that begins "honestly".',
+         'A desk with a framed photo, a dead plant, and a keyboard with the letters worn off E, T, and R.',
+         'A standing desk in the down position. It has been in the down position for a year.' ],
+  cube:[ 'A fabric divider, chest height. It was installed to reduce noise and does not.',
+         'Someone has pinned a printout to the divider. It reads MOVE FAST. It is faded.' ],
+  couch:['A couch in a common area. Nobody sits here. It is a photograph of a couch, functionally.'],
+  table:['A table. There are four chairs and six people are scheduled to be here.'],
+  plant:['A plant. It is real, which surprises you. Someone is being paid to keep it alive.'],
+  glass:['Glass. On the other side, a meeting is happening. Everyone is looking at one laptop.'],
+  wall: ['A wall. Behind it, allegedly, Finance.']
+};
+
+async function interact(){
+  if(mode!=='field' || anim.on) return;
+  const [dx,dy] = DIRS[S.dir];
+  const tx = S.x+dx, ty = S.y+dy;
+  const n = npcAt(tx,ty);
+  if(n) return npcTalk(n);
+  const k = tinfo(tx,ty).kind;
+
+  if(k==='counter'){
+    if(S.focus>=S.maxFocus && S.caf>=S.maxCaf)
+      return say(null,'The micro-kitchen. You are as restored as this floor can make you.');
+    S.focus = S.maxFocus; S.caf = S.maxCaf; S.switched = 0; syncHUD();
+    return say(null,[
+      'You take something from the wall of snacks and something cold from the tap.',
+      'Focus and Caffeine restored. This is the third-best perk and everybody says so.'
+    ]);
+  }
+  if(k==='booth'){
+    await say(null,'A phone booth. You close the door. The floor goes quiet and, briefly, nobody can reach you.');
+    const c = await choose('Save your progress?', [{label:'Save', note:'overwrites'},{label:'Just sit here'}]);
+    if(c===0) return say(null, saveGame() ? 'Saved.' : 'This browser will not store the save. Your progress lives only in this tab.');
+    return say(null,'You sit for a minute. It counts as a meeting to no one.');
+  }
+  if(k==='vend'){ mode='shop'; return openShop(); }
+  if(k==='tv'){
+    return say('The Screen',[
+      'The founder is on stage at a conference. The caption reads: BUILDING THE FUTURE, RESPONSIBLY.',
+      'He explains that autonomy is solved. It has been solved for six years. It will be solved next year.',
+      'He explains that this is not about money. Behind him, a slide shows the money.',
+      'The video loops. Nobody on this floor has ever once looked at it.'
+    ]);
+  }
+  if(k==='elev'){
+    return say(null,[
+      'The elevator. Your badge opens Floor 3, the lobby, and a supply closet nobody has been able to explain.',
+      'Floors 4 and above require a different badge. You have not been told what is on them.'
+    ]);
+  }
+  if(k==='board'){
+    if(ty<8) return say('Whiteboard',['Someone has written Q3 PRIORITIES, and beneath it six items.','All six are numbered 1.']);
+    return say('Scoreboard',['CAPTURE THE FLAG. Blue: 3. Red: 3. Green: 3.','Someone has written EVERYONE WINS.','Underneath, in different handwriting: "no".']);
+  }
+  if(k==='door') return say(null,'A doorway. It has a badge reader that has never once been armed.');
+  const f = FLAVOR[k];
+  if(f) return say(null, f[ri(f.length)]);
+  return say(null,'Nothing here but carpet, and the carpet is a decision someone defended.');
+}
+
+/* ==========================================================================
+   NPCS
+   ========================================================================== */
+async function npcTalk(n){
+  mode = 'dialogue';
+  const F = S.flags;
+  const done = ()=>{ mode = 'field'; };
+
+  if(n.id==='dee'){
+    if(!F.briefed){
+      F.briefed = 1;
+      await say(n.name,[
+        'You must be the new engineer. Your laptop is provisioned, your badge opens two of the four doors, and you already have a feature assigned.',
+        'It is a settings toggle. It has been in the backlog for eleven months. It is estimated at two points.',
+        'To ship anything on this floor you need three sign-offs: Code Review, Security Review, and Design Review.',
+        'Priya does code review. Marcus does security. Kai does design. When you have all three, you take it to the Roadmap Review in VELOCITY — the glass room, northeast.',
+        'A word of advice: don’t cross the open floor unless you have to. People see you walking and it reminds them they have questions.'
+      ]);
+      toast('Objective: collect three sign-offs.');
+    } else if(allApprovals()){
+      await say(n.name,['All three? On day one?','VELOCITY is open. Brayden is already in there. He has been in there since eight.','Good luck. That is a real thing I am saying, not a scheduled check-in.']);
+    } else {
+      await say(n.name,['Still need sign-offs? Priya, Marcus, Kai. In whatever order they’re free, which is none.','You’re doing great. That’s not feedback, that’s just something I say.']);
+    }
+    return done();
+  }
+
+  if(n.id==='priya'){
+    if(S.approvals.code){
+      await say(n.name,['Your diff is approved. I left one comment. It is a nit. Ignore it.','I will not re-litigate the nit.']);
+      return done();
+    }
+    if(F.jordan_done){
+      S.approvals.code = 1;
+      await say(n.name,[
+        'Jordan moved my item to "Q3 (Tentative)". That is the closest thing to peace this company offers.',
+        'I read your diff. It is fine. It is a toggle.',
+        'Approved. One comment, it is a nit, I have already said I will not re-litigate the nit.'
+      ]);
+      toast('CODE REVIEW: approved.');
+      return done();
+    }
+    await say(n.name,[
+      'You want a code review. Sure. I have four hours of meetings today and one of them is recurring and nobody knows who created it.',
+      'Here is my problem. Jordan has been asking me for a delivery date on a project I have never been assigned to.',
+      'Get Jordan off my calendar and I will read your diff today. Jordan is out on the floor. You will not have to look hard.'
+    ]);
+    F.priya_task = 1;
+    toast('Find Jordan on the open floor.');
+    return done();
+  }
+
+  if(n.id==='jordan'){
+    if(F.jordan_done){
+      await say(n.name,['I’ve got it in Q3. Tentative. Let’s keep the momentum.','Do you have a number for me yet? Any number. It doesn’t have to be right, it has to be in the sheet.']);
+      return done();
+    }
+    await say(n.name,[
+      'Hey! Quick one. Are you at risk?',
+      'I don’t need details. I need a colour. Green, yellow, or red.',
+      'I’m going to put yellow. Yellow just means we’re watching it.',
+      'Also — while I have you — Priya owes me a date on the migration. Do you know Priya? Could you ask Priya?'
+    ]);
+    const r = await startBattle(['jordan'], {boss:1, title:'Sync: Delivery Risk (recurring)',
+      intro:'Jordan has joined the call. Jordan has also invited two people who do not speak.'});
+    if(r==='win'){
+      F.jordan_done = 1;
+      await say(n.name,[
+        'Okay. Okay. I hear you.',
+        'I’m moving it to Q3. Tentative. I’m marking it green — green with a note.',
+        'And I’ll take the migration off Priya’s calendar. It was never her project. I know. I know.'
+      ]);
+      toast('Priya’s calendar is clear.');
+    } else if(r==='flee'){
+      await say(null,'You walk away. Jordan schedules a follow-up before you reach the corridor.');
+    }
+    return done();
+  }
+
+  if(n.id==='marcus'){
+    if(S.approvals.sec){
+      await say(n.name,['Your review stands. We do not talk about the bucket.']);
+      return done();
+    }
+    await say(n.name,[
+      'New hire. Fine. Security review is not a conversation, it is a scan. Stand there.',
+      'I run your feature against the access log, the log against the last quarter, and the quarter against what people told me the quarter contained.',
+      'It is a toggle. This will take forty seconds.',
+      '...',
+      'Huh.'
+    ]);
+    const r = await startBattle(['breach'], {boss:1, noFlee:1, title:'INCIDENT — SEV1 (auto-created)',
+      intro:'Something has been in the logs the entire time. It notices you noticing.'});
+    if(r==='win'){
+      S.approvals.sec = 1;
+      await say(n.name,[
+        'That was not your feature.',
+        'That was a storage bucket somebody set to public in 2021 and labelled "temporary".',
+        'Your review is approved. Signed, dated, done.',
+        'You will see it in the news in about nine months. It will be described as sophisticated.'
+      ]);
+      toast('SECURITY REVIEW: approved.');
+    }
+    return done();
+  }
+
+  if(n.id==='kai'){
+    if(S.approvals.design){
+      await say(n.name,['Approved. Your toggle is on the right, where toggles go, for reasons I could defend for an hour.']);
+      return done();
+    }
+    if(F.ctf_done){
+      S.approvals.design = 1;
+      await say(n.name,[
+        'I heard you participated. I’m told your energy was, quote, "present".',
+        'That’s all I needed. Design is about people.',
+        'Approved. Put the toggle on the right. Toggles go on the right. I can defend that for an hour and I have.'
+      ]);
+      toast('DESIGN REVIEW: approved.');
+      return done();
+    }
+    await say(n.name,[
+      'Design review. Right. Design review is a conversation, not a gate.',
+      'It is also a gate.',
+      'Here’s my thing: I can’t sign off on someone I haven’t seen collaborate. That’s not policy, that’s just how I work.',
+      'Brooke is running Capture The Flag in the event space downstairs — south side, past the booths. Go and participate. Visibly.'
+    ]);
+    toast('Find Brooke in the event space.');
+    return done();
+  }
+
+  if(n.id==='brooke'){
+    if(F.ctf_done){
+      await say(n.name,['Great energy today. Truly. We’re doing an escape room in November and attendance is optional in the same way this was.']);
+      return done();
+    }
+    await say(n.name,[
+      'CAPTURE THE FLAG! It’s a team-building exercise!',
+      'It is not the security kind. Four people have asked. Two of them were disappointed and two of them were relieved.',
+      'You’re on Blue. Blue is the colour of trust. Red is the colour of passion. Green had to be renamed for legal reasons.',
+      'Ready? There are no wrong answers!'
+    ]);
+    const r = await startBattle(['spirit','flag'], {title:'Q3 Team Building — Capture The Flag (Mandatory/Optional)',
+      intro:'You are handed a foam flag and a lanyard in a colour you did not choose.'});
+    if(r==='win'){
+      F.ctf_done = 1;
+      await say(n.name,['Amazing. Amazing energy.','Everybody won. Blue won slightly more, but everybody won.','I’ll let Kai know you were here. That’s what you came for, right? ...Right.']);
+      toast('Kai has been notified.');
+    } else if(r==='flee'){
+      await say(n.name,'You slip out. Brooke marks you present anyway. She is not a monster.');
+    }
+    return done();
+  }
+
+  if(n.id==='sandeep'){
+    if(!F.hoodie){
+      F.hoodie = 1; S.owned.hoodie = 1;
+      await say(n.name,[
+        'New badge photo. I can tell. Everyone looks like that on day one.',
+        'Here — swag hoodie. Size Large. Everyone gets Large. I have raised it.',
+        'Vending machine is on the wall behind me, takes perk credits. Equipment requests go through me and are auto-approved for anything in your band.',
+        'Everything is in stock. Nothing is approved. Those two facts coexist.'
+      ]);
+      toast('Received: Swag Hoodie. Equip it in the portal.');
+    } else {
+      await say(n.name,['Machine’s on the wall. Take what you can afford.','If the monitor request bounces, resubmit it with a different justification. Any different one.']);
+    }
+    return done();
+  }
+
+  if(n.id==='devon'){
+    await say(n.name,[
+      'Third re-org this year. I’ve had four managers. Two of them were the same person, before and after.',
+      'I don’t know what my team does now. I know what it did. I ship the old thing. Nobody has stopped me.'
+    ]);
+    return done();
+  }
+  if(n.id==='mara'){
+    await say(n.name,[
+      'Six years. They call me foundational.',
+      'Foundational means the thing I built is load-bearing and I am not on the roadmap.',
+      'Good luck with your toggle. I mean that. I built a toggle once. It’s still there.'
+    ]);
+    return done();
+  }
+
+  if(n.id==='brayden'){
+    if(!allApprovals()){ await say(n.name,'Brayden is on a call. He gestures at you in a way that means later.'); return done(); }
+    await say(n.name,[
+      'You made it. Great. Love the hustle on day one, genuinely.',
+      'So — I’ve been thinking about your toggle.',
+      'What if it isn’t a toggle. What if it’s a surface.',
+      'What if it’s AI. I’m not saying what part. I’m saying the word because the word tests well.',
+      'Let’s align.'
+    ]);
+    const r = await startBattle(['brayden'], {boss:1, noFlee:1, title:'Q3 Roadmap Review — VELOCITY',
+      intro:'Brayden shares his screen. It is a document titled "Vision (WIP)". It is eleven pages.'});
+    if(r==='win') return ending();
+    return done();
+  }
+  return done();
+}
+
+async function lockedRoom(){
+  if(mode!=='field') return;
+  mode = 'dialogue';
+  await say(null,['VELOCITY is booked. Through the glass, Brayden is talking to nobody with great conviction.','You are not getting in without all three sign-offs.']);
+  mode = 'field';
+}
+
+/* ==========================================================================
+   ENDING
+   ========================================================================== */
+async function ending(){
+  mode = 'dialogue';
+  await flash();
+  await say('Brayden',[
+    'Okay. Okay! I like it. Ship the toggle.',
+    'We’ll revisit the surface next quarter. Put it in the doc.'
+  ]);
+  await say(null,[
+    'You ship it at 4:47pm on a Friday.',
+    'It works. It does exactly what the ticket said, for the eleven thousand people who will never think about it once.',
+    'Nobody notices.',
+    'On Monday it is announced at the all-hands as an AI-powered personalisation surface. Brayden presents it.',
+    'He does a good job. He is genuinely good at this part.',
+    'Your name is not in the deck.',
+    'Six months later you are promoted, for something else.'
+  ]);
+  await say(null,[
+    'END OF VERTICAL SLICE.',
+    'You finished on day one at ' + clockStr() + ', as ' + title() + ', with ' + S.credits + ' perk credits and one toggle in production.',
+    'Thank you for shipping.'
+  ]);
+  S.flags.finished = 1; saveGame();
+  quitToTitle();
+}
+
+/* ==========================================================================
+   INPUT
+   ========================================================================== */
+function press(dir){ heldDir = dir; if(mode==='field') tryMove(dir); }
+function release(dir){ if(heldDir===dir) heldDir = null; }
+
+document.querySelectorAll('#dpad button').forEach(b=>{
+  const dir = b.dataset.dir;
+  const on = (e)=>{ e.preventDefault(); b.classList.add('hot'); press(dir); };
+  const off= (e)=>{ e.preventDefault(); b.classList.remove('hot'); release(dir); };
+  b.addEventListener('pointerdown', on);
+  b.addEventListener('pointerup', off);
+  b.addEventListener('pointercancel', off);
+  b.addEventListener('pointerleave', off);
+});
+
+function pressA(){
+  if(mode==='dialogue' && dlgResolve) return dlgResolve();
+  if(mode==='field') return interact();
+}
+function pressB(){
+  if(mode==='dialogue' && dlgResolve) return dlgResolve();
+  if(mode==='menu' || mode==='shop'){ closeList(); closeMenu(); mode='field'; return; }
+  if(mode==='field') return openMenu();
+}
+$('btnA').addEventListener('click', pressA);
+$('btnB').addEventListener('click', pressB);
+$('dlg').addEventListener('click', ()=>{ if(dlgResolve) dlgResolve(); });
+
+document.addEventListener('keydown', (e)=>{
+  const k = e.key;
+  const map = {ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right',W:'up',S:'down',A:'left',D:'right'};
+  if(map[k]){ e.preventDefault(); press(map[k]); return; }
+  if(k===' '||k==='Enter'||k==='z'||k==='Z'){ e.preventDefault(); pressA(); return; }
+  if(k==='Escape'||k==='x'||k==='X'){ e.preventDefault(); pressB(); return; }
+});
+document.addEventListener('keyup', (e)=>{
+  const map = {ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right',W:'up',S:'down',A:'left',D:'right'};
+  if(map[e.key]) release(map[e.key]);
+});
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click', ()=>{ closeMenu(); }));
+$('listBack').addEventListener('click', ()=>{});
+
+/* ==========================================================================
+   BOOT
+   ========================================================================== */
+function begin(state){
+  S = state;
+  if(S.switched === undefined) S.switched = 0;
+  $('title').classList.add('off');
+  document.body.classList.remove('titling');
+  $('hLoc').textContent = MAP.name;
+  mode = 'field';
+  syncHUD();
+  resize();
+  if(!S.flags.briefed) setTimeout(()=>{ toast('Talk to Dee — press A when facing her.'); }, 700);
+}
+$('btnNew').addEventListener('click', ()=>{
+  begin(newGame());
+});
+$('btnCont').addEventListener('click', ()=>{
+  const g = loadGame();
+  if(!g) return toast('No saved session found.');
+  begin(g);
+});
+
+buildMap();
+resize();
+$('btnCont').style.display = hasSave() ? '' : 'none';
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
