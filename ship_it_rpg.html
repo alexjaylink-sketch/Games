@@ -233,6 +233,91 @@ button{font-family:inherit;color:inherit}
 }
 @keyframes fly{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-42px)}}
 
+/* ============ THE DESK ============ */
+#desk{
+  position:absolute;inset:0;z-index:42;display:none;flex-direction:column;
+  background:linear-gradient(180deg,#0f141d 0%,#0a0d13 100%);
+}
+#desk.on{display:flex}
+#deskhead{
+  flex:0 0 auto;padding:10px 13px 11px;background:var(--panel);border-bottom:1px solid var(--edge);
+}
+#deskhead .tick{display:flex;align-items:baseline;gap:8px;font-size:12px}
+#deskhead .key{font-family:var(--mono);font-size:10px;color:var(--brand);letter-spacing:.5px}
+#deskhead .sum{flex:1;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#deskhead .pts{font-family:var(--mono);font-size:10px;color:var(--dim)}
+#buildwrap{margin-top:9px}
+#buildwrap .lab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;letter-spacing:1px;color:var(--dim);margin-bottom:4px}
+#buildwrap .lab b{color:var(--ok);font-weight:500}
+#buildtrk{height:10px;background:#05070b;border:1px solid var(--edge);border-radius:5px;overflow:hidden;position:relative}
+#buildfil{height:100%;width:0;background:linear-gradient(90deg,#2f8f63,var(--ok));transition:width .18s linear}
+#buildgoal{position:absolute;top:0;bottom:0;width:2px;background:var(--warn);opacity:.85}
+
+#deskmain{
+  flex:1 1 auto;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;gap:10px;padding:10px;
+}
+#cards{display:flex;flex-direction:column;gap:7px;flex:0 0 auto;min-width:0}
+#focuspane{
+  flex:1 1 auto;min-height:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+}
+#flowbox{text-align:center;transition:transform .2s}
+#flowbox .n{
+  font-family:var(--mono);font-size:48px;font-weight:600;line-height:1;
+  color:var(--ok);text-shadow:0 0 26px rgba(62,207,142,.28);font-variant-numeric:tabular-nums;
+}
+#flowbox .n.cold{color:var(--dim);text-shadow:none}
+#flowbox .n.hot{color:var(--warn);text-shadow:0 0 30px rgba(245,165,36,.35)}
+#flowbox .cap{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--dim);margin-top:8px}
+#deskstate{margin-top:14px;font-size:12.5px;color:var(--dim);text-align:center;max-width:30ch;line-height:1.55;min-height:2.8em}
+#deskstate.blocked{color:var(--warn)}
+
+.card-int{
+  background:var(--panel);border:1px solid var(--edge2);border-left:3px solid var(--brand);
+  border-radius:9px;padding:9px 11px 8px;box-shadow:0 8px 20px rgba(0,0,0,.55);
+  animation:slidein .26s ease-out;position:relative;overflow:hidden;
+}
+.card-int.hi{border-left-color:var(--danger)}
+.card-int.mtg{border-left-color:var(--warn)}
+@keyframes slidein{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
+.card-int .top{display:flex;align-items:center;gap:7px;margin-bottom:4px}
+.card-int .who{flex:1;font-size:11px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-int .thr{font-family:var(--mono);font-size:9px;color:var(--danger);flex:0 0 auto}
+.card-int .msg{font-size:12.5px;line-height:1.45;color:#cfd8e6}
+.card-int .btn{
+  margin-top:8px;width:100%;padding:9px;border-radius:7px;font-size:12px;
+  background:var(--panel2);border:1px solid var(--edge2);color:var(--ink);
+}
+.card-int .btn:active{background:var(--brand);border-color:var(--brand)}
+.card-int .fuse{position:absolute;left:0;bottom:0;height:2px;background:var(--warn);transition:width .12s linear}
+
+#deskacts{flex:0 0 auto;display:grid;grid-template-columns:1.5fr 1fr;gap:8px;padding:10px 12px 14px;background:var(--panel);border-top:1px solid var(--edge)}
+#deskacts button{
+  padding:13px 8px;font-size:12.5px;border-radius:9px;box-shadow:var(--sh);
+  background:var(--panel2);border:1px solid var(--edge2);color:var(--ink);
+}
+#deskacts button small{display:block;font-size:9.5px;color:var(--dim);margin-top:2px;font-family:var(--mono)}
+#deskacts button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.4)}
+#deskacts button[disabled]{opacity:.4;box-shadow:none}
+#deskacts button.armed{background:var(--ok);border-color:var(--ok);color:#06120c}
+#deskacts button.armed small{color:rgba(0,0,0,.6)}
+
+/* the meeting takes the screen, because that is what a meeting does */
+#meeting{
+  position:absolute;inset:0;z-index:6;display:none;flex-direction:column;
+  background:rgba(7,9,14,.975);padding:20px 22px;
+}
+#meeting.on{display:flex}
+#mtgbar{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.5px}
+#mtgbar .rec{width:7px;height:7px;border-radius:50%;background:var(--danger);animation:pulse 1.6s infinite}
+#mtgttl{margin-top:16px;font-size:15px;font-weight:600;color:var(--warn);line-height:1.35;text-wrap:balance}
+#mtgbody{flex:1;display:flex;align-items:center;justify-content:center}
+#mtgline{font-family:var(--serif);font-size:17px;line-height:1.65;color:#e2e9f3;text-align:center;max-width:28ch;transition:opacity .35s}
+#mtgtrk{height:4px;background:#05070b;border:1px solid var(--edge);border-radius:3px;overflow:hidden}
+#mtgfil{height:100%;width:0;background:var(--warn)}
+#mtgfoot{font-family:var(--mono);font-size:9.5px;color:#4d5a70;text-align:center;margin-top:9px;letter-spacing:1px}
+
 /* ============ INTRO: THE OFFER ============ */
 #intro{position:fixed;inset:0;z-index:110;display:flex;flex-direction:column;background:#0a0e15}
 #intro.off{display:none}
@@ -398,6 +483,45 @@ body.fighting #hud, body.fighting #pad{display:none}
       <div id="bmenu"></div>
     </div>
 
+    <!-- THE DESK -->
+    <div id="desk">
+      <div id="deskhead">
+        <div class="tick">
+          <span class="key">VANTA-4417</span>
+          <span class="sum">Add settings toggle</span>
+          <span class="pts">2 pts</span>
+        </div>
+        <div id="buildwrap">
+          <div class="lab"><span>BUILD</span><b id="buildn">0%</b></div>
+          <div id="buildtrk"><div id="buildfil"></div><div id="buildgoal"></div></div>
+        </div>
+      </div>
+
+      <div id="deskmain">
+        <div id="cards"></div>
+        <div id="focuspane">
+          <div id="flowbox">
+            <div class="n" id="flown">&times;1.0</div>
+            <div class="cap">F L O W</div>
+          </div>
+          <div id="deskstate"></div>
+        </div>
+
+        <div id="meeting">
+          <div id="mtgbar"><span class="rec"></span><span id="mtgkind">MEETING IN PROGRESS</span></div>
+          <div id="mtgttl"></div>
+          <div id="mtgbody"><div id="mtgline"></div></div>
+          <div id="mtgtrk"><div id="mtgfil"></div></div>
+          <div id="mtgfoot">YOU CANNOT WORK RIGHT NOW</div>
+        </div>
+      </div>
+
+      <div id="deskacts">
+        <button id="btnHeads">Heads Down<small>10 caffeine &middot; 7s</small></button>
+        <button id="btnLogoff">Log Off<small>keep progress</small></button>
+      </div>
+    </div>
+
     <div id="flash"></div>
     <div id="toast"></div>
 
@@ -513,6 +637,7 @@ const TILE = {
   '-':{solid:0,kind:'door'},
   'o':{solid:0,kind:'carpet',enc:1},
   'D':{solid:1,kind:'desk'},
+  'Y':{solid:1,kind:'mydesk'},
   'c':{solid:1,kind:'cube'},
   'p':{solid:1,kind:'plant'},
   'k':{solid:1,kind:'counter'},
@@ -536,7 +661,7 @@ const FLOOR3 = `
 ####-##########--#####g####-######
 #................................#
 #oooooooooooooooooooooooooooooooo#
-#oDDDDDDooDDDDDDooDDDDDDooDDDDDDo#
+#oDDYDDDooDDDDDDooDDDDDDooDDDDDDo#
 #occccccooccccccooccccccoocccccco#
 #oooooooooooooooooooooooooooooooo#
 #oDDDDDDooDDDDDDooDDDDDDooDDDDDDo#
@@ -702,6 +827,82 @@ const ENEMIES = {
     ]})
 };
 
+/* ---------- interruptions: the actual job ---------- */
+const INTERRUPTS = [
+  {who:'Jordan, Project Manager', art:'📊', act:'Give a status', thr:11, life:9,
+   msg:'Quick one — where are we on this? Not chasing. Just visibility.',
+   esc:'Jordan has booked a 15-minute sync titled "quick sync".'},
+  {who:'Brayden, Product Manager', art:'🧢', act:'React 👍', thr:9, life:10,
+   msg:'had a thought on the toggle. what if it isn\u2019t a toggle. not a blocker, just thinking out loud',
+   esc:'Brayden has added a section to the doc. The doc is now fourteen pages.'},
+  {who:'#social', art:'🎉', act:'Post a lie', thr:6, life:13,
+   msg:'TWO TRUTHS AND A LIE! Everyone please post by 3pm! No wrong answers!',
+   esc:'Brooke has @-mentioned you individually. Twice.'},
+  {who:'PagerDuty', art:'🚨', act:'Acknowledge', thr:15, life:7,
+   msg:'P2 — checkout-svc latency. You are not on call. You are the fallback for someone who left in 2023.',
+   esc:'It escalated to your manager, who escalated it back to you.'},
+  {who:'Priya, Staff Engineer', art:'👩‍💻', act:'Review it', thr:8, life:12,
+   msg:'can you take a look at my PR when you get a sec? it\u2019s small',
+   esc:'The PR is not small. It is 1,400 lines and it touches the lockfile.'},
+  {who:'Calendar', art:'📅', act:'Decline', thr:10, life:8,
+   msg:'"Focus Time" has been double-booked with "Sync re: sync cadence".',
+   esc:'The organiser marked it Required and moved it thirty minutes earlier.'},
+  {who:'Someone at your desk', art:'🙋', act:'Two seconds', thr:12, life:6,
+   msg:'Hey — sorry — do you have two seconds?',
+   esc:'It was not two seconds. It was nine minutes and it was about a spreadsheet.'},
+  {who:'People Operations', art:'⚖️', act:'Start training', thr:9, life:14,
+   msg:'Annual compliance training is overdue. Forty minutes. Eleven questions. One of them is a trick.',
+   esc:'Your laptop access is suspended at 5pm. This process is automated and cannot be appealed.'},
+  {who:'Recruiter', art:'💼', act:'Archive', thr:5, life:11,
+   msg:'Truly impressed by your background, [FIRST_NAME]. Rocketship opportunity. Ground floor.',
+   esc:'They have found your personal email address.'},
+  {who:'Devon', art:'🧑‍💻', act:'Answer him', thr:7, life:10,
+   msg:'do you know who owns checkout-svc now. i\u2019ve asked four people. everyone says someone else',
+   esc:'Devon has created a channel to determine ownership. You have been added as an owner.'},
+  {who:'build-bot', art:'🤖', act:'Investigate', thr:13, life:8,
+   msg:'main is red. Your commit is not in the failing range. You are the most recent committer.',
+   esc:'Four people have now asked, separately, whether main is red.'}
+];
+
+const MEETINGS = [
+  {ttl:'Sprint Refinement (recurring, no agenda)', secs:11, lines:[
+    'Someone is sharing their screen. It is the backlog.',
+    'A ticket is being estimated. It is not your ticket.',
+    'The estimate is being debated by people who will not do the work.',
+    'Minute nineteen of a fifteen-minute meeting.',
+    'Someone says "let\u2019s take this offline." Nobody takes it offline.'
+  ]},
+  {ttl:'ALL-HANDS — "A Word About Velocity"', secs:14, lines:[
+    'Rand Voss joins from a moving vehicle.',
+    '"I want to talk about velocity. Not the metric. The idea."',
+    '"We are not behind. We are early, and early is often mistaken for behind."',
+    '"Someone asked me about the pedestrians. I\u2019d like to address that head on."',
+    'He does not address it head on.',
+    '"You are the last generation that will remember what came before."',
+    'Q&A is forty minutes. The questions were submitted in advance and selected.'
+  ]},
+  {ttl:'Team Building: Two Truths and a Lie', secs:11, lines:[
+    'Brooke: "There are no wrong answers!"',
+    'Someone shares that they once met a minor celebrity.',
+    'Someone shares a truth that is plainly a cry for help.',
+    'Everyone types "haha".',
+    'Nobody guesses the lie. The lie goes unpunished.'
+  ]},
+  {ttl:'Blameless Incident Review', secs:11, lines:[
+    'This is a blameless post-mortem. Nobody is to blame.',
+    'The timeline is reconstructed minute by minute.',
+    'It is very slightly one person\u2019s fault, and everyone knows whose.',
+    'That person says "I should have caught that" and everyone says "no, the system should have."',
+    'Action items are assigned to a team dissolved in the last reorg.'
+  ]},
+  {ttl:'Quarterly Roadmap Pre-Read Walkthrough', secs:10, lines:[
+    'This is the meeting to prepare for the meeting.',
+    'The pre-read was circulated four minutes ago. Nobody has read it.',
+    'It is read aloud, in full, to the people who wrote it.',
+    'A follow-up is scheduled to discuss the pre-read.'
+  ]}
+];
+
 const ENCOUNTERS = ['replyall','flaky','merge','creep','quickq','recruiter','legacy','standup'];
 
 /* ==========================================================================
@@ -729,6 +930,7 @@ function newGame(){
     bag:{snack:2, brew:1},
     owned:{laptop:1, lanyard:1},
     flags:{},
+    build:0,
     approvals:{code:0, sec:0, design:0},
     minutes:0
   };
@@ -825,6 +1027,19 @@ function drawTile(k,px,py,x,y){
       } else {
         cx.fillStyle='#2a3242'; cx.fillRect(px+s*0.2,py+s*0.3,s*0.6,s*0.3); // laptop
       }
+      break; }
+    case 'mydesk': {
+      cx.fillStyle='#28313f'; cx.fillRect(px,py,s,s);
+      cx.fillStyle='#7a6449'; cx.fillRect(px,py+s*0.12,s,s*0.76);
+      cx.fillStyle='#8c7455'; cx.fillRect(px,py+s*0.12,s,3);
+      cx.fillStyle='#0d1119'; cx.fillRect(px+s*0.14,py+s*0.2,s*0.72,s*0.42);
+      cx.fillStyle='#1d3a5c'; cx.fillRect(px+s*0.18,py+s*0.24,s*0.64,s*0.34);
+      cx.fillStyle='rgba(126,196,255,'+(0.5+0.3*Math.sin(Date.now()/520))+')';
+      cx.fillRect(px+s*0.22,py+s*0.28,s*0.3,2);
+      cx.fillRect(px+s*0.22,py+s*0.36,s*0.44,2);
+      cx.fillRect(px+s*0.22,py+s*0.44,s*0.24,2);
+      cx.fillStyle=S.build>=100?'#3ecf8e':'#e9b44c';
+      cx.fillRect(px+s*0.06,py+s*0.66,s*0.2,s*0.09);
       break; }
     case 'cube':
       cx.fillStyle='#28313f'; cx.fillRect(px,py,s,s);
@@ -1029,7 +1244,7 @@ function tryMove(dir){
   const [dx,dy] = DIRS[dir];
   const nx = S.x+dx, ny = S.y+dy;
   if(blocked(nx,ny)) return;
-  if(nx===27 && ny===7 && !allApprovals()){ lockedRoom(); return; }
+  if(nx===27 && ny===7 && !readyToShip()){ lockedRoom(); return; }
   anim = {on:true, fx:nx, fy:ny, t:0};
 }
 
@@ -1047,13 +1262,14 @@ function arrive(){
 
 function loop(t){
   const dt = Math.min(64, t-lastT); lastT = t;
-  if(anim.on){
+  if(mode==='desk'){ deskUpdate(dt); }
+  else if(anim.on){
     anim.t += dt/135;
     if(anim.t>=1){ anim.t=1; arrive(); }
   } else if(mode==='field' && heldDir){
     tryMove(heldDir);
   }
-  draw();
+  if(mode!=='desk' && mode!=='battle') draw();
   requestAnimationFrame(loop);
 }
 
@@ -1122,6 +1338,7 @@ const pAtk = ()=> S.atk + (ITEMS[S.weapon].atk||0);
 const pDef = ()=> S.def + (ITEMS[S.armor].def||0);
 const title = ()=> TITLES[Math.min(S.lv-1, TITLES.length-1)];
 const allApprovals = ()=> S.approvals.code && S.approvals.sec && S.approvals.design;
+const readyToShip  = ()=> allApprovals() && S.build >= 100;
 
 function syncHUD(){
   if(!S) return;
@@ -1140,17 +1357,20 @@ function calcDmg(atk, def, mult){
   return Math.max(1, Math.round(atk*(1+Math.random()*0.25)*mult - def*0.5));
 }
 
-async function gainXP(sp, cr){
-  S.xp += sp; S.credits += cr;
-  blog('+'+sp+' story points, +'+cr+' credits.');
+async function gainLevels(notify){
   while(XPCURVE[S.lv] !== undefined && S.xp >= XPCURVE[S.lv]){
     S.lv++;
     S.maxFocus += 20; S.maxCaf += 5; S.atk += 2; S.def += 2;
     S.focus = S.maxFocus; S.caf = S.maxCaf;
     syncHUD();
-    blog('PROMOTED — you are now ' + title() + '.');
-    await sleep(700);
+    notify('PROMOTED — you are now ' + title() + '.');
+    await sleep(750);
   }
+}
+async function gainXP(sp, cr){
+  S.xp += sp; S.credits += cr;
+  blog('+'+sp+' story points, +'+cr+' credits.');
+  await gainLevels(blog);
 }
 
 /* ==========================================================================
@@ -1419,6 +1639,234 @@ async function burnout(){
 }
 
 /* ==========================================================================
+   THE DESK — deep work, and everything that happens instead
+   ========================================================================== */
+let D = null;
+const FLOW_MAX = 3.0;
+const BUILD_RATE = 0.42;          /* build %/sec at flow x1 */
+const SESSION_CHUNK = 35;         /* what one good sitting is worth */
+
+function startDesk(){
+  return new Promise(res=>{
+    mode = 'desk'; heldDir = null;
+    document.body.classList.add('fighting');
+    D = {
+      progress: S.build, target: Math.min(100, S.build + SESSION_CHUNK),
+      flow: 1, clock: 0, cards: [], meeting: null,
+      heads: 0, cool: 0, over: false, handled: 0, ignored: 0, met: 0, lastMtg: -99,
+      nextSpawn: 3 + Math.random()*1.5, res
+    };
+    $('cards').innerHTML = '';
+    $('toast').classList.remove('on');
+    $('meeting').classList.remove('on');
+    $('desk').classList.add('on');
+    deskState('You sit down. The laptop is already open. Nobody has noticed yet.');
+    renderDeskHud();
+    syncHUD();
+  });
+}
+
+function deskState(t, warn){
+  const el = $('deskstate');
+  el.textContent = t;
+  el.classList.toggle('blocked', !!warn);
+}
+
+function renderDeskHud(){
+  const d = D; if(!d) return;
+  const pct = Math.min(100, d.progress);
+  $('buildfil').style.width = pct + '%';
+  $('buildn').textContent = Math.floor(pct) + '%';
+  $('buildgoal').style.left = d.target + '%';
+  const f = $('flown');
+  f.innerHTML = '&times;' + d.flow.toFixed(1);
+  f.classList.toggle('cold', d.cards.length > 0 && d.heads <= 0);
+  f.classList.toggle('hot', d.flow >= FLOW_MAX - 0.01);
+  const hb = $('btnHeads');
+  hb.disabled = S.caf < 10 || d.cool > 0 || d.heads > 0;
+  hb.classList.toggle('armed', d.heads > 0);
+  hb.querySelector('small').textContent =
+    d.heads > 0 ? Math.ceil(d.heads) + 's left' :
+    d.cool > 0  ? 'ready in ' + Math.ceil(d.cool) + 's' : '10 caffeine · 7s';
+}
+
+function spawnInterrupt(){
+  const d = D;
+  const mtgOk = d.clock > 9 && (d.clock - d.lastMtg) > 22;
+  if(mtgOk && Math.random() < 0.2){
+    d.lastMtg = d.clock;
+    const m = MEETINGS[ri(MEETINGS.length)];
+    d.cards.push({mtg:m, who:'Calendar', art:'📅', act:'Attend', thr:0,
+      msg:'"' + m.ttl + '" is starting now. You are a Required attendee.',
+      life:6, maxLife:6, esc:''});
+  } else {
+    const t = INTERRUPTS[ri(INTERRUPTS.length)];
+    if(d.cards.some(c=>c.who===t.who)) return;
+    d.cards.push(Object.assign({}, t, {maxLife:t.life}));
+  }
+  renderCards();
+}
+
+function renderCards(){
+  const wrap = $('cards');
+  wrap.innerHTML = '';
+  D.cards.forEach(c=>{
+    const el = document.createElement('div');
+    el.className = 'card-int' + (c.mtg ? ' mtg' : c.thr >= 12 ? ' hi' : '');
+    el.innerHTML =
+      '<div class="top"><span class="ar"></span><span class="who"></span><span class="thr"></span></div>' +
+      '<div class="msg"></div><button class="btn"></button><div class="fuse"></div>';
+    el.querySelector('.ar').textContent = c.art;
+    el.querySelector('.who').textContent = c.who;
+    el.querySelector('.thr').textContent = c.mtg ? 'UNAVOIDABLE' : '-' + c.thr + ' focus';
+    el.querySelector('.msg').textContent = c.msg;
+    const b = el.querySelector('.btn');
+    b.textContent = c.act;
+    b.onclick = ()=> handleCard(c);
+    c.el = el;
+    wrap.appendChild(el);
+  });
+}
+
+function handleCard(c){
+  const d = D; if(!d || d.over) return;
+  const i = d.cards.indexOf(c);
+  if(i < 0) return;
+  d.cards.splice(i,1);
+  renderCards();
+  if(c.mtg){ enterMeeting(c.mtg); return; }
+  d.flow = 1;
+  d.handled++;
+  deskState('You deal with it. It takes four minutes and all of your context.');
+  renderDeskHud();
+}
+
+function escalate(c, i){
+  const d = D;
+  d.cards.splice(i,1);
+  renderCards();
+  if(c.mtg){ enterMeeting(c.mtg, true); return; }
+  d.ignored++;
+  S.focus -= c.thr;
+  syncHUD();
+  deskState(c.esc, true);
+  if(S.focus <= 0){ endDesk('burnout'); return; }
+  renderDeskHud();
+}
+
+function enterMeeting(m, late){
+  const d = D;
+  d.meeting = {m, t:0, idx:-1, late:!!late};
+  d.met++;
+  d.flow = 1;
+  $('mtgttl').textContent = m.ttl;
+  $('mtgkind').textContent = late ? 'YOU JOINED LATE' : 'MEETING IN PROGRESS';
+  $('mtgfil').style.width = '0%';
+  $('mtgline').textContent = '';
+  $('meeting').classList.add('on');
+}
+
+function deskUpdate(ms){
+  const d = D;
+  if(!d || d.over) return;
+  const dt = Math.min(0.1, ms/1000);
+  d.clock += dt;
+
+  if(d.meeting){
+    const mt = d.meeting, m = mt.m;
+    mt.t += dt;
+    const per = m.secs / m.lines.length;
+    const idx = Math.min(m.lines.length-1, Math.floor(mt.t/per));
+    if(idx !== mt.idx){
+      mt.idx = idx;
+      const el = $('mtgline');
+      el.style.opacity = 0;
+      setTimeout(()=>{ if(D && D.meeting){ el.textContent = m.lines[idx]; el.style.opacity = 1; } }, 170);
+    }
+    $('mtgfil').style.width = Math.min(100, mt.t/m.secs*100) + '%';
+    if(mt.t >= m.secs){
+      d.meeting = null;
+      $('meeting').classList.remove('on');
+      deskState('The meeting ends. You look at the screen. You have no idea where you were.');
+      d.nextSpawn = d.clock + 4 + Math.random()*3;
+      renderDeskHud();
+    }
+    return;
+  }
+
+  if(d.heads > 0){
+    d.heads -= dt;
+    if(d.heads <= 0){ d.heads = 0; d.cool = 14; deskState('The door opens again.'); }
+  } else if(d.cool > 0){
+    d.cool -= dt; if(d.cool < 0) d.cool = 0;
+  }
+
+  for(let i=d.cards.length-1; i>=0; i--){
+    const c = d.cards[i];
+    c.life -= dt;
+    if(c.el){ const f = c.el.querySelector('.fuse'); if(f) f.style.width = Math.max(0, c.life/c.maxLife*100) + '%'; }
+    if(c.life <= 0){ escalate(c, i); if(!D || D.over) return; }
+  }
+
+  const blocked = d.cards.length > 0 && d.heads <= 0;
+  if(blocked){
+    d.flow = Math.max(1, d.flow - dt*0.75);
+    d.progress += BUILD_RATE * 0.3 * d.flow * dt;
+  } else {
+    const was = d.flow;
+    d.flow = Math.min(FLOW_MAX, d.flow + dt*0.22);
+    d.progress += BUILD_RATE * (d.heads > 0 ? 1.35 : 1) * d.flow * dt;
+    if(was < FLOW_MAX - 0.01 && d.flow >= FLOW_MAX - 0.01)
+      deskState('You are inside the problem. You can see the whole shape of it.');
+  }
+  S.build = Math.min(100, Math.floor(d.progress));
+
+  if(d.progress >= d.target){ endDesk('done'); return; }
+
+  if(d.clock >= d.nextSpawn && d.heads <= 0 && d.cards.length < 3){
+    spawnInterrupt();
+    const pressure = 4.6 - (S.build/100)*2.4;   /* the closer to done, the more people want to talk */
+    d.nextSpawn = d.clock + pressure*(0.7 + Math.random()*0.7);
+  }
+  renderDeskHud();
+}
+
+async function endDesk(reason){
+  const d = D; if(!d || d.over) return;
+  d.over = true;
+  const res = d.res;
+  S.build = Math.min(100, Math.floor(d.progress));
+  $('meeting').classList.remove('on');
+  $('desk').classList.remove('on');
+  document.body.classList.remove('fighting');
+  D = null; mode = 'field'; syncHUD();
+
+  const tally = 'You handled ' + d.handled + ', ignored ' + d.ignored + ', and sat through ' + d.met + '.';
+  if(reason === 'burnout'){
+    await say(null, ['You are out of Focus. You stop pretending.', tally]);
+    await burnout();
+  } else if(reason === 'done'){
+    S.xp += 26 + ri(10);
+    S.caf = Math.max(0, S.caf - 4);
+    await gainLevels(toast);
+    if(S.build >= 100){
+      await say(null, [
+        'The toggle is built. Forty lines. It took a day and a half.',
+        tally,
+        'Now it needs three sign-offs: Priya, Marcus, Kai.'
+      ]);
+      toast('BUILD 100% — go and get your sign-offs.');
+    } else {
+      await say(null, ['You get a real chunk of it done. Build is at ' + S.build + '%.', tally]);
+      toast('Build ' + S.build + '%. Come back to the desk.');
+    }
+  } else {
+    await say(null, ['You close the laptop. Build is at ' + S.build + '%.', tally]);
+  }
+  res(reason);
+}
+
+/* ==========================================================================
    SCREENS: portal, bag, equipment, shop
    ========================================================================== */
 function openList(titleText, rows, onBack){
@@ -1469,10 +1917,11 @@ function openMenu(){
 
   const q = document.createElement('div'); q.className='card';
   q.innerHTML = '<h3>Ship Checklist</h3>' +
+    kv('VANTA-4417 build', S.build + '%') +
     kv('Code review', S.approvals.code ? 'APPROVED' : 'pending') +
     kv('Security review', S.approvals.sec ? 'APPROVED' : 'pending') +
     kv('Design review', S.approvals.design ? 'APPROVED' : 'pending') +
-    kv('Roadmap review', allApprovals() ? 'VELOCITY is open' : 'locked');
+    kv('Roadmap review', readyToShip() ? 'VELOCITY is open' : 'locked');
   body.appendChild(q);
 
   [
@@ -1607,6 +2056,19 @@ async function interact(){
   if(n) return npcTalk(n);
   const k = tinfo(tx,ty).kind;
 
+  if(k==='mydesk'){
+    if(S.build >= 100)
+      return say(null,['Your desk. The toggle is built and merged.','There is nothing left to do here but be seen at it.']);
+    mode = 'dialogue';
+    await say(null,'Your desk. Nameplate, one dead plant, a monitor you requisitioned and did not get.');
+    const c = await choose('Sit down and work on VANTA-4417?', [
+      {label:'Sit down and work', note:'build ' + S.build + '%'},
+      {label:'Not right now'}
+    ]);
+    if(c !== 0){ mode = 'field'; return; }
+    mode = 'field';
+    return startDesk();
+  }
   if(k==='counter'){
     if(S.focus>=S.maxFocus && S.caf>=S.maxCaf)
       return say(null,'The micro-kitchen. You are as restored as this floor can make you.');
@@ -1666,14 +2128,16 @@ async function npcTalk(n){
         'Right. So. Slight thing.',
         'Lighthouse is fully staffed. It has been fully staffed since before your req went out. I don’t know why the req went out.',
         'You’re on Platform. Platform is where we put people while we work out where to put them. It is not a demotion, it is a placement.',
-        'Your first ticket is a settings toggle. It has been in the backlog eleven months and it is estimated at two points.',
+        'Your first ticket is VANTA-4417. A settings toggle. Eleven months in the backlog, estimated at two points.',
         'Ship it and you’re real. Nobody on this floor is real until they have shipped something.',
-        'To ship anything here you need three sign-offs: Code Review, Security Review, Design Review. Priya, Marcus, Kai.',
+        'Two parts to that. You have to actually build it — your desk is in the pod behind me, the one with the nameplate.',
+        'And you need three sign-offs: Code Review, Security Review, Design Review. Priya, Marcus, Kai.',
+        'Fair warning about the desk. Sitting down is the easy bit. Staying down is the job.',
         'When you have all three, you take it to the Roadmap Review in VELOCITY — the glass room, northeast.',
         'And don’t cross the open floor unless you have to. People see you walking and it reminds them they have questions.'
       ]);
-      toast('Objective: ship one toggle. Three sign-offs first.');
-    } else if(allApprovals()){
+      toast('Go to your desk — the pod behind Dee.');
+    } else if(readyToShip()){
       await say(n.name,[
         'All three? On day one?',
         'VELOCITY is open. Brayden is already in there. He has been in there since eight.',
@@ -1683,7 +2147,7 @@ async function npcTalk(n){
       ]);
     } else {
       await say(n.name,[
-        'Still need sign-offs? Priya, Marcus, Kai. In whatever order they’re free, which is none.',
+        'Still going? Build it at your desk, then Priya, Marcus and Kai for the sign-offs. In whatever order they’re free, which is none.',
         'And no, I can’t get you onto Lighthouse. I have asked. On my own behalf, twice.',
         'You’re doing great. That’s not feedback, that’s just something I say.'
       ]);
@@ -1880,7 +2344,7 @@ async function npcTalk(n){
   }
 
   if(n.id==='brayden'){
-    if(!allApprovals()){ await say(n.name,'Brayden is on a call. He gestures at you in a way that means later.'); return done(); }
+    if(!readyToShip()){ await say(n.name,'Brayden is on a call. He gestures at you in a way that means later.'); return done(); }
     await say(n.name,[
       'You made it. Great. Love the hustle on day one, genuinely.',
       'So — I’ve been thinking about your toggle.',
@@ -1901,7 +2365,16 @@ async function npcTalk(n){
 async function lockedRoom(){
   if(mode!=='field') return;
   mode = 'dialogue';
-  await say(null,['VELOCITY is booked. Through the glass, Brayden is talking to nobody with great conviction.','You are not getting in without all three sign-offs. Code, security, design.','Nobody has ever gone in there and won an argument they had not prepared for.']);
+  const missing = [];
+  if(S.build < 100) missing.push('a feature that exists (build is at ' + S.build + '%)');
+  if(!S.approvals.code) missing.push('code review');
+  if(!S.approvals.sec) missing.push('security review');
+  if(!S.approvals.design) missing.push('design review');
+  await say(null,[
+    'VELOCITY is booked. Through the glass, Brayden is talking to nobody with great conviction.',
+    'You are not walking in there without: ' + missing.join(', ') + '.',
+    'Nobody has ever gone into that room and won an argument they had not prepared for.'
+  ]);
   mode = 'field';
 }
 
@@ -1917,6 +2390,7 @@ async function ending(){
   ]);
   await say(null,[
     'You ship it at 4:47pm on a Friday.',
+    'Forty lines. Six days. Nine meetings, of which two had agendas.',
     'It works. It does exactly what the ticket said, for the eleven thousand people who will never think about it once.',
     'Nobody notices.',
     'On Monday it is announced at the all-hands as an AI-powered personalisation surface. Brayden presents it.',
@@ -2036,6 +2510,13 @@ function pressB(){
   if(mode==='menu' || mode==='shop'){ closeList(); closeMenu(); mode='field'; return; }
   if(mode==='field') return openMenu();
 }
+$('btnHeads').addEventListener('click', ()=>{
+  const d = D; if(!d || d.over || d.heads>0 || d.cool>0 || S.caf < 10) return;
+  S.caf -= 10; d.heads = 7; syncHUD();
+  deskState('Headphones on. Status set to Do Not Disturb. Seven minutes of it.');
+  renderDeskHud();
+});
+$('btnLogoff').addEventListener('click', ()=>{ if(D && !D.over) endDesk('quit'); });
 $('btnA').addEventListener('click', pressA);
 $('btnB').addEventListener('click', pressB);
 $('dlg').addEventListener('click', ()=>{ if(dlgResolve) dlgResolve(); });
