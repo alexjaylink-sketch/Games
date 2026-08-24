@@ -252,6 +252,7 @@ button{font-family:inherit;color:inherit}
 #buildtrk{height:10px;background:#05070b;border:1px solid var(--edge);border-radius:5px;overflow:hidden;position:relative}
 #buildfil{height:100%;width:0;background:linear-gradient(90deg,#2f8f63,var(--ok));transition:width .18s linear}
 #buildgoal{position:absolute;top:0;bottom:0;width:2px;background:var(--warn);opacity:.85}
+#buildnote{margin-top:6px;font-family:var(--mono);font-size:9px;letter-spacing:.4px;color:var(--warn);line-height:1.5}
 
 #deskmain{
   flex:1 1 auto;position:relative;overflow:hidden;
@@ -494,6 +495,7 @@ body.fighting #hud, body.fighting #pad{display:none}
         <div id="buildwrap">
           <div class="lab"><span>BUILD</span><b id="buildn">0%</b></div>
           <div id="buildtrk"><div id="buildfil"></div><div id="buildgoal"></div></div>
+          <div id="buildnote"></div>
         </div>
       </div>
 
@@ -1340,10 +1342,35 @@ const title = ()=> TITLES[Math.min(S.lv-1, TITLES.length-1)];
 const allApprovals = ()=> S.approvals.code && S.approvals.sec && S.approvals.design;
 const readyToShip  = ()=> allApprovals() && S.build >= 100;
 
+/* You cannot build past a wall until the office clears it, and the office
+   will not look at work that does not exist yet. That alternation is the game. */
+function buildCap(){
+  if(!S.approvals.code) return 35;
+  if(!S.approvals.sec)  return 70;
+  return 100;
+}
+function capBlocker(){
+  if(!S.approvals.code) return {who:'Priya', what:'code review',
+    line:'You have gone as far as you can without someone reading it. Priya is in the pod farm.'};
+  if(!S.approvals.sec)  return {who:'Marcus', what:'security review',
+    line:'It does something now, which means it cannot go further until Security has looked at it. Marcus is downstairs, south-east.'};
+  return null;
+}
+function nextStep(){
+  if(!S) return '';
+  if(readyToShip())              return 'Next: VELOCITY — Roadmap Review';
+  if(S.build < buildCap())       return 'Next: your desk — build to ' + buildCap() + '%';
+  if(!S.approvals.code)          return 'Next: Priya — code review';
+  if(!S.approvals.sec)           return 'Next: Marcus — security review';
+  if(!S.approvals.design)        return 'Next: Kai — design review';
+  return 'Next: VELOCITY — Roadmap Review';
+}
+
 function syncHUD(){
   if(!S) return;
   $('hLevel').textContent = title();
   $('bLevel').textContent = title();
+  $('hLoc').textContent = nextStep();
   const f = Math.max(0,S.focus)/S.maxFocus*100, c = Math.max(0,S.caf)/S.maxCaf*100;
   $('hFocus').style.width = f+'%'; $('bFocus').style.width = f+'%';
   $('hCaf').style.width   = c+'%'; $('bCaf').style.width   = c+'%';
@@ -1651,7 +1678,7 @@ function startDesk(){
     mode = 'desk'; heldDir = null;
     document.body.classList.add('fighting');
     D = {
-      progress: S.build, target: Math.min(100, S.build + SESSION_CHUNK),
+      progress: S.build, target: Math.min(buildCap(), S.build + SESSION_CHUNK),
       flow: 1, clock: 0, cards: [], meeting: null,
       heads: 0, cool: 0, over: false, handled: 0, ignored: 0, met: 0, lastMtg: -99,
       nextSpawn: 3 + Math.random()*1.5, res
@@ -1678,6 +1705,10 @@ function renderDeskHud(){
   $('buildfil').style.width = pct + '%';
   $('buildn').textContent = Math.floor(pct) + '%';
   $('buildgoal').style.left = d.target + '%';
+  const cap = buildCap();
+  $('buildnote').textContent = cap < 100
+    ? 'CEILING ' + cap + '% — needs ' + capBlocker().what
+    : (S.build >= 100 ? 'COMPLETE' : 'NO CEILING — FINISH IT');
   const f = $('flown');
   f.innerHTML = '&times;' + d.flow.toFixed(1);
   f.classList.toggle('cold', d.cards.length > 0 && d.heads <= 0);
@@ -1821,7 +1852,10 @@ function deskUpdate(ms){
   }
   S.build = Math.min(100, Math.floor(d.progress));
 
-  if(d.progress >= d.target){ endDesk('done'); return; }
+  if(d.progress >= d.target){
+    endDesk(d.target >= buildCap() && buildCap() < 100 ? 'capped' : 'done');
+    return;
+  }
 
   if(d.clock >= d.nextSpawn && d.heads <= 0 && d.cards.length < 3){
     spawnInterrupt();
@@ -1842,7 +1876,17 @@ async function endDesk(reason){
   D = null; mode = 'field'; syncHUD();
 
   const tally = 'You handled ' + d.handled + ', ignored ' + d.ignored + ', and sat through ' + d.met + '.';
-  if(reason === 'burnout'){
+  if(reason === 'capped'){
+    const b = capBlocker();
+    await say(null, [
+      'Build is at ' + S.build + '%. That is as far as this goes today.',
+      b.line,
+      tally
+    ]);
+    S.xp += 22 + ri(8);
+    await gainLevels(toast);
+    toast('BLOCKED — go and find ' + b.who + '.');
+  } else if(reason === 'burnout'){
     await say(null, ['You are out of Focus. You stop pretending.', tally]);
     await burnout();
   } else if(reason === 'done'){
@@ -1916,12 +1960,15 @@ function openMenu(){
   body.appendChild(card);
 
   const q = document.createElement('div'); q.className='card';
-  q.innerHTML = '<h3>Ship Checklist</h3>' +
-    kv('VANTA-4417 build', S.build + '%') +
-    kv('Code review', S.approvals.code ? 'APPROVED' : 'pending') +
-    kv('Security review', S.approvals.sec ? 'APPROVED' : 'pending') +
-    kv('Design review', S.approvals.design ? 'APPROVED' : 'pending') +
-    kv('Roadmap review', readyToShip() ? 'VELOCITY is open' : 'locked');
+  const step = (label, doneYet, detail)=> kv(label, doneYet ? 'DONE' : detail);
+  q.innerHTML = '<h3>VANTA-4417 — Add settings toggle</h3>' +
+    step('1. Build to 35%',      S.build >= 35,  S.build + '% — at your desk') +
+    step('2. Code review',       !!S.approvals.code,  'Priya') +
+    step('3. Build to 70%',      S.build >= 70,  S.build >= 35 && !S.approvals.code ? 'blocked' : S.build + '% — at your desk') +
+    step('4. Security review',   !!S.approvals.sec,   'Marcus') +
+    step('5. Build to 100%',     S.build >= 100, S.build >= 70 && !S.approvals.sec ? 'blocked' : S.build + '% — at your desk') +
+    step('6. Design review',     !!S.approvals.design,'Kai') +
+    step('7. Roadmap review',    false, readyToShip() ? 'VELOCITY is open' : 'locked');
   body.appendChild(q);
 
   [
@@ -2059,6 +2106,13 @@ async function interact(){
   if(k==='mydesk'){
     if(S.build >= 100)
       return say(null,['Your desk. The toggle is built and merged.','There is nothing left to do here but be seen at it.']);
+    if(S.build >= buildCap()){
+      const b = capBlocker();
+      return say(null,[
+        'You sit down and look at it for a while.',
+        'There is nothing here you can move without ' + b.what + '. ' + b.line
+      ]);
+    }
     mode = 'dialogue';
     await say(null,'Your desk. Nameplate, one dead plant, a monitor you requisitioned and did not get.');
     const c = await choose('Sit down and work on VANTA-4417?', [
@@ -2117,7 +2171,7 @@ async function interact(){
 async function npcTalk(n){
   mode = 'dialogue';
   const F = S.flags;
-  const done = ()=>{ mode = 'field'; };
+  const done = ()=>{ mode = 'field'; syncHUD(); };   /* approvals change the next step */
 
   if(n.id==='dee'){
     if(!F.briefed){
@@ -2130,8 +2184,10 @@ async function npcTalk(n){
         'You’re on Platform. Platform is where we put people while we work out where to put them. It is not a demotion, it is a placement.',
         'Your first ticket is VANTA-4417. A settings toggle. Eleven months in the backlog, estimated at two points.',
         'Ship it and you’re real. Nobody on this floor is real until they have shipped something.',
-        'Two parts to that. You have to actually build it — your desk is in the pod behind me, the one with the nameplate.',
-        'And you need three sign-offs: Code Review, Security Review, Design Review. Priya, Marcus, Kai.',
+        'It goes like this, and it always goes like this.',
+        'You build a bit at your desk — the pod behind me, the one with the nameplate. Then you hit something you cannot clear on your own.',
+        'So you get up. You find the person. You wait for the person. You come back and build a bit more.',
+        'Build, then Priya. Build, then Marcus. Build, then Kai. Then the Roadmap Review.',
         'Fair warning about the desk. Sitting down is the easy bit. Staying down is the job.',
         'When you have all three, you take it to the Roadmap Review in VELOCITY — the glass room, northeast.',
         'And don’t cross the open floor unless you have to. People see you walking and it reminds them they have questions.'
@@ -2163,6 +2219,15 @@ async function npcTalk(n){
         'Lighthouse is four engineers and a closed test track. The track is immaculate. The demo runs on the track.',
         'It has never run anywhere that isn’t the track. That is not a secret. It is just not in the letter.'
       ]);
+      return done();
+    }
+    if(S.build < 35){
+      await say(n.name,[
+        'You want a code review. Of what?',
+        'The branch is empty. I opened it. There is a commit called "wip" and it is a whitespace change.',
+        'Go and write something. Come back when there is something to read.'
+      ]);
+      toast('Build to 35% at your desk first.');
       return done();
     }
     if(F.jordan_done){
@@ -2223,6 +2288,15 @@ async function npcTalk(n){
       ]);
       return done();
     }
+    if(S.build < 70){
+      await say(n.name,[
+        'Security review. Right. What does it do?',
+        'That is not what it does. That is what it will do. I scan behaviour, not intent.',
+        'Come back when it does something.'
+      ]);
+      toast('Build to 70% at your desk first.');
+      return done();
+    }
     await say(n.name,[
       'New hire. Fine. Security review is not a conversation, it is a scan. Stand there.',
       'I run your feature against the access log, the log against the last quarter, and the quarter against what people told me the quarter contained.',
@@ -2263,6 +2337,15 @@ async function npcTalk(n){
         'Approved. Put the toggle on the right. Toggles go on the right. I can defend that for an hour and I have.'
       ]);
       toast('DESIGN REVIEW: approved.');
+      return done();
+    }
+    if(S.build < 100){
+      await say(n.name,[
+        'Design review. Of a half-built toggle.',
+        'Reviewing a thing that does not exist yet is not design, it is astrology.',
+        'Finish it. Then I will have opinions, and they will be specific.'
+      ]);
+      toast('Finish the build first — 100%.');
       return done();
     }
     await say(n.name,[
@@ -2542,7 +2625,6 @@ function begin(state){
   if(S.switched === undefined) S.switched = 0;
   $('title').classList.add('off');
   document.body.classList.remove('titling');
-  $('hLoc').textContent = MAP.short;
   mode = 'field';
   syncHUD();
   resize();
