@@ -53,9 +53,23 @@ NODE_PATH=/opt/node22/lib/node_modules node tools/playtest.js --shots /tmp/shots
 | `smoke` | offer letter → cold open → field, movement, collision, a battle, phone-booth save, resume |
 | `chain` | the seven-leg progression: reviewers refuse work that doesn't exist, build ceilings hold, the door opens only when both halves are done |
 | `side`  | all five side quests end to end, the quest log, and save round-tripping |
+| `store` | no network requests, bundled fonts, manifest, versioned saves, save-code round trip, pre-rename save migration, settings |
 | `desk`  | instruments desk mode twice — ignoring every interruption vs handling them — and asserts the difference |
 
 `desk` is slow on purpose (it plays two 40-second sessions in real time).
+
+## `embed-fonts.js` — remove the network dependency
+
+Replaces the Google Fonts `@import` with self-hosted base64 woff2 `@font-face`
+rules, keeping only the `latin` subset. A store build has to render correctly
+offline and must not call a third party at runtime.
+
+```sh
+node tools/embed-fonts.js --dry-run   # report sizes, change nothing
+node tools/embed-fonts.js             # rewrite the game file in place
+```
+
+Only needed again if the set of faces changes.
 
 ## `build-artifact.js` — hosted copy
 

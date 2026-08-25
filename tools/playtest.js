@@ -139,7 +139,7 @@ SUITES.smoke = async browser => {
   const prompted = await d.state(() => document.getElementById('choices').classList.contains('on'));
   ok('phone booth offers a save', prompted);
   if (prompted) { await d.pickChoice(0); await d.advance(); }
-  ok('save written', await d.state(() => !!localStorage.getItem('shipit_vanta_v1')));
+  ok('save written', await d.state(() => !!localStorage.getItem('shipit_lodestar_v2')));
 
   await d.page.reload(); await sleep(1100);
   await d.page.click('#btnCont'); await sleep(700);
@@ -270,6 +270,50 @@ SUITES.desk = async browser => {
   const active = await d.state(() => ({ build: S.build, focus: S.focus }));
   ok('handling everything makes real progress', active.build - from > passive.build, '+' + (active.build - from) + '% vs +' + passive.build + '%');
   ok('  and costs no Focus', active.focus >= 180, active.focus + '/200');
+  return d;
+};
+
+SUITES.store = async browser => {
+  const d = await boot(browser);
+  section('store readiness — self-contained, durable, identifiable');
+
+  const reqs = await d.state(() => performance.getEntriesByType('resource')
+    .map(r => r.name).filter(n => !n.startsWith('file:')));
+  ok('makes no network requests', reqs.length === 0, reqs.join(', '));
+  ok('fonts render from the bundle', await d.state(() => document.fonts.check('600 16px "IBM Plex Sans"')
+    && document.fonts.check('400 16px "IBM Plex Serif"') && document.fonts.check('400 16px "IBM Plex Mono"')));
+  ok('declares an installable manifest', await d.state(() => !!document.querySelector('link[rel="manifest"]')));
+  ok('build number is on the title', await d.state(() => /v\d+\.\d+\.\d+/.test(document.getElementById('titleVer').textContent)));
+
+  // saves: versioned, exportable, restorable
+  await d.set({ build: 62, lv: 3, credits: 404 });
+  await d.page.evaluate(() => saveGame());
+  ok('save carries a version', await d.state(() => JSON.parse(localStorage.getItem('shipit_lodestar_v2')).version) >= 2);
+  const code = await d.state(() => exportSave());
+  ok('exports a save code', typeof code === 'string' && code.length > 40, code.length + ' chars');
+  const restored = await d.state(c => { const g = importSave(c); return g && g.build + '/' + g.credits; }, code);
+  ok('restores from that code', restored === '62/404', String(restored));
+  ok('rejects a bad code', await d.state(() => importSave('not-a-save')) === null);
+
+  // a pre-rename save must still load
+  const migrated = await d.state(() => {
+    localStorage.clear();
+    localStorage.setItem('shipit_vanta_v1', JSON.stringify({ lv: 2, xp: 60, build: 35, maxFocus: 130 }));
+    const g = loadGame();
+    return g && (g.version + '|' + g.build + '|' + (g.opts ? 'opts' : 'no-opts') + '|' + (g.side ? 'side' : 'no-side'));
+  });
+  ok('migrates a pre-rename save', migrated === '2|35|opts|side', String(migrated));
+
+  // settings are reachable and persist
+  await d.page.evaluate(() => { localStorage.clear(); });
+  await d.page.click('#btnB'); await sleep(350);
+  await d.page.click('#menuBody button:has-text("Settings")'); await sleep(350);
+  const labels = await d.state(() => [...document.querySelectorAll('#listBody .g')].map(e => e.firstChild.textContent).join(','));
+  ok('settings expose sound and extra time', /Sound/.test(labels) && /Extra time/.test(labels), labels);
+  const before = await d.state(() => S.opts.extraTime);
+  await d.page.click('#listBody button:has-text("Extra time")'); await sleep(300);
+  ok('extra time toggles', await d.state(() => S.opts.extraTime) !== before);
+  await d.shot('settings');
   return d;
 };
 
