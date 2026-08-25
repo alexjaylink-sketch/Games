@@ -34,12 +34,15 @@ for (const tag of ['<!DOCTYPE', '<html', '</html>', '<head>', '</head>', '<body'
 }
 for (const [needle, what] of [
   ['<title>SHIP IT</title>', 'title tag'],
-  ['@import url(', 'font import'],
   ['</script>', 'game script'],
-  ['const FLOOR3', 'map data']
+  ['const FLOOR3', 'map data'],
+  ['rel="manifest"', 'web app manifest']
 ]) {
   if (!out.includes(needle)) throw new Error('lost the ' + what);
 }
+/* fonts may be embedded (@font-face, the store build) or linked (@import) */
+if (!/@font-face\{font-family:'IBM Plex/.test(out) && !out.includes('@import url('))
+  throw new Error('lost the fonts — neither embedded nor imported');
 
 fs.mkdirSync(path.dirname(OUT), { recursive: true });
 fs.writeFileSync(OUT, out);
