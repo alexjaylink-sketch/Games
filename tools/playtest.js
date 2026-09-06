@@ -322,7 +322,7 @@ SUITES.desk = async browser => {
   await sit();
   let clears = 0, lastBuild = 0;
   for (let t = 0; t < 60 && await d.mode() === 'desk'; t++) {
-    for (const b of await d.page.$$('#cards .btn')) { try { await b.click({ timeout: 300 }); } catch (e) {} }
+    for (const b of await d.page.$$('#cards .deal')) { try { await b.click({ timeout: 300 }); } catch (e) {} }
     if (!await d.state(() => D && D.meeting)) await d.page.evaluate(() => window.__stackStep());
     const bnow = await d.state(() => S.build); if (bnow > lastBuild) clears++; lastBuild = bnow;
     await sleep(350);
@@ -343,6 +343,42 @@ SUITES.desk = async browser => {
   ok('an all-hands leaves two rows you can never clear', rows.locked);
   await d.page.evaluate(() => { endDesk('quit'); }); await d.advance();
 
+  /* ---- dealing with an interruption takes you off the keyboard ---- */
+  await d.set({ build: 0, focus: 200, maxFocus: 200, caf: 40, maxCaf: 40 }); await sit(); await sleep(200);
+  await d.page.evaluate(() => { D.cards.push(Object.assign({}, INTERRUPTS[0], { life: 9, maxLife: 9 })); renderCards(); });
+  ok('a card overlays the board with Deal and Snooze', await d.state(() => document.querySelectorAll('#cards .deal').length === 1 && document.querySelectorAll('#cards .snz').length === 1));
+  await d.page.click('#cards .deal'); await sleep(80);
+  const away = await d.state(() => ({ away: D.away, on: document.getElementById('away').classList.contains('on'), cards: D.cards.length, handled: D.handled }));
+  ok('Deal puts you away from the keyboard', away.away > 1 && away.on && away.cards === 0 && away.handled === 1, JSON.stringify(away));
+  const moved = await d.state(() => { const x0 = D.g.peek().piece.x; press('left'); press('left'); pressA(); return D.g.peek().piece.x !== x0; });
+  ok('  and your inputs are ignored while away', !moved);
+  const y0 = await d.state(() => D.g.peek().piece.y); await sleep(700);
+  ok('  while the queue keeps falling', await d.state(() => D.g.peek().piece.y) > y0 || await d.state(() => D.g.peek().grid.flat().filter(v => v).length) > 0);
+  await d.shot('desk-away');
+  for (let t = 0; t < 40 && await d.state(() => D.away > 0); t++) await sleep(100);
+  ok('  then you come back', await d.state(() => D.away === 0 && !document.getElementById('away').classList.contains('on')));
+
+  /* snooze: costs caffeine, comes back angrier, cannot be snoozed twice */
+  await d.page.evaluate(() => { D.cards.push(Object.assign({}, INTERRUPTS[1], { life: 10, maxLife: 10 })); renderCards(); });
+  await d.page.click('#cards .snz'); await sleep(80);
+  const snz = await d.state(() => ({ caf: S.caf, later: D.later.length, cards: D.cards.length, snoozed: D.snoozed }));
+  ok('Snooze costs 3 caffeine and defers the card', snz.caf === 37 && snz.later === 1 && snz.cards === 0 && snz.snoozed === 1, JSON.stringify(snz));
+  for (let t = 0; t < 110 && await d.state(() => D.later.length > 0 || D.away > 0); t++) await sleep(100);
+  const back = await d.state(() => { const c = D.cards.find(c => c.back); return c ? { thr: c.thr, who: c.el && c.el.querySelector('.who').textContent, snz: !!c.el.querySelector('.snz') } : null; });
+  ok('  the card comes back angrier and cannot be snoozed again', back && back.thr === (await d.state(() => INTERRUPTS[1].thr)) + 4 && /Following up/.test(back.who) && !back.snz, JSON.stringify(back));
+  await d.shot('desk-snooze-back');
+  await d.page.evaluate(() => { D.cards.length = 0; renderCards(); });
+
+  /* meetings do not pause the work */
+  await d.page.evaluate(() => enterMeeting(MEETINGS[0]));
+  const before = await d.state(() => { const p = D.g.peek(); return { y: p.piece.y, filled: p.grid.flat().filter(v => v).length }; });
+  const mMoved = await d.state(() => { const x0 = D.g.peek().piece.x; press('right'); pressB(); return D.g.peek().piece.x !== x0; });
+  await sleep(900);
+  const after = await d.state(() => { const p = D.g.peek(); return { y: p.piece.y, filled: p.grid.flat().filter(v => v).length, mtg: !!D.meeting }; });
+  ok('a meeting keeps the queue falling while you cannot touch it', after.mtg && !mMoved && (after.y > before.y || after.filled > before.filled), JSON.stringify({ before, after }));
+  await d.shot('desk-meeting-running');
+  await d.page.evaluate(() => { endDesk('quit'); }); await d.advance();
+
   /* ---- Bug Bash unlocks with code review; the chooser appears ---- */
   await d.set({ approvals: { code: 1, sec: 0, design: 0 }, build: 35, focus: 200, maxFocus: 200 });
   ok('code review unlocks a second tool', await d.state(() => unlockedTools().join(',')) === 'stack,breaker');
@@ -353,7 +389,7 @@ SUITES.desk = async browser => {
   await d.page.evaluate(() => D.g.input('a'));
   let broke0 = await d.state(() => D.g.peek().left), b0 = await d.state(() => S.build);
   for (let t = 0; t < 90 && await d.mode() === 'desk'; t++) {
-    for (const b of await d.page.$$('#cards .btn')) { try { await b.click({ timeout: 300 }); } catch (e) {} }
+    for (const b of await d.page.$$('#cards .deal')) { try { await b.click({ timeout: 300 }); } catch (e) {} }
     await d.page.evaluate(() => { if (!D || D.meeting) return; const p = D.g.peek(); heldDir = p.ball.x < p.pad.x - 6 ? 'left' : p.ball.x > p.pad.x + 6 ? 'right' : null; D.g.input('a'); });
     if (t === 20) await d.shot('tool-bug-bash');
     await sleep(120);
@@ -371,7 +407,7 @@ SUITES.desk = async browser => {
   ok('Dependency Chain opens', await d.state(() => D && D.tool) === 'snake');
   let ate = 0, len0 = 3;
   for (let t = 0; t < 120 && await d.mode() === 'desk'; t++) {
-    for (const b of await d.page.$$('#cards .btn')) { try { await b.click({ timeout: 300 }); } catch (e) {} }
+    for (const b of await d.page.$$('#cards .deal')) { try { await b.click({ timeout: 300 }); } catch (e) {} }
     const len = await d.page.evaluate(() => {
       if (!D || D.meeting) return 0;
       const p = D.g.peek(); const [hx, hy] = p.body[0]; const [fx, fy] = p.food;

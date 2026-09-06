@@ -276,7 +276,8 @@ button{font-family:inherit;color:inherit}
 #buildnote{margin-top:4px;font-family:var(--mono);font-size:9px;letter-spacing:.4px;color:var(--warn);line-height:1.4}
 
 #deskmain{flex:1 1 auto;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:6px;padding:6px 8px 4px;min-height:0}
-#cards{display:flex;flex-direction:column;gap:5px;flex:0 0 auto;min-width:0}
+#cards{position:absolute;left:8px;right:8px;top:6px;z-index:4;display:flex;flex-direction:column;gap:5px;pointer-events:none}
+#cards .card-int{pointer-events:auto}
 .card-int{
   display:flex;align-items:center;gap:8px;
   background:var(--panel);border:1px solid var(--edge2);border-left:3px solid var(--brand);
@@ -291,11 +292,26 @@ button{font-family:inherit;color:inherit}
 .card-int .who{font-size:10px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card-int .msg{font-size:11px;line-height:1.3;color:#cfd8e6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card-int .thr{font-family:var(--mono);font-size:9px;color:var(--danger);flex:0 0 auto}
+.card-int .btns{display:flex;flex-direction:column;gap:4px;flex:0 0 auto}
 .card-int .btn{
-  flex:0 0 auto;padding:8px 10px;border-radius:7px;font-size:11px;
+  padding:7px 9px;border-radius:7px;font-size:11px;
   background:var(--panel2);border:1px solid var(--edge2);color:var(--ink);white-space:nowrap;
 }
+.card-int .btn.snz{font-size:10px;color:var(--caf);border-color:#4a3a1c;padding:5px 9px}
 .card-int .btn:active{background:var(--brand);border-color:var(--brand)}
+.card-int .btn[disabled]{opacity:.35}
+#work.ping::after{content:'';position:absolute;inset:0;background:rgba(245,165,36,.18);animation:pingfade .35s ease-out forwards;pointer-events:none}
+@keyframes pingfade{to{opacity:0}}
+#away{
+  position:absolute;inset:0;z-index:5;display:none;align-items:center;justify-content:center;
+  background:rgba(7,9,14,.55);pointer-events:none;
+}
+#away.on{display:flex}
+#away .b{
+  background:var(--panel);border:1px solid var(--warn);border-radius:10px;padding:10px 16px;text-align:center;
+  font-family:var(--mono);font-size:11px;letter-spacing:1px;color:var(--warn);
+}
+#away .b small{display:block;font-family:var(--sans);letter-spacing:0;color:var(--dim);font-size:11px;margin-top:4px}
 .card-int .fuse{position:absolute;left:0;bottom:0;height:2px;background:var(--warn);transition:width .12s linear}
 
 #work{flex:1 1 auto;min-height:0;position:relative;display:flex;align-items:center;justify-content:center}
@@ -335,7 +351,7 @@ button{font-family:inherit;color:inherit}
 #deskacts button.armed small{color:rgba(0,0,0,.6)}
 
 /* the meeting takes the screen, because that is what a meeting does */
-#meeting{position:absolute;inset:0;z-index:6;display:none;flex-direction:column;background:rgba(7,9,14,.975);padding:20px 22px}
+#meeting{position:absolute;inset:0;z-index:6;display:none;flex-direction:column;background:rgba(7,9,14,.80);padding:20px 22px;pointer-events:none}
 #meeting.on{display:flex}
 #mtgbar{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.5px}
 #mtgbar .rec{width:7px;height:7px;border-radius:50%;background:var(--danger);animation:pulse 1.6s infinite}
@@ -344,7 +360,7 @@ button{font-family:inherit;color:inherit}
 #mtgline{font-family:var(--serif);font-size:17px;line-height:1.65;color:#e2e9f3;text-align:center;max-width:28ch;transition:opacity .35s}
 #mtgtrk{height:4px;background:#05070b;border:1px solid var(--edge);border-radius:3px;overflow:hidden}
 #mtgfil{height:100%;width:0;background:var(--warn)}
-#mtgfoot{font-family:var(--mono);font-size:9.5px;color:#4d5a70;text-align:center;margin-top:9px;letter-spacing:1px}
+#mtgfoot{font-family:var(--mono);font-size:9.5px;color:var(--warn);text-align:center;margin-top:9px;letter-spacing:1px}
 
 /* at the desk the d-pad drives the build tool; only the walking HUD goes away */
 body.desking #hud{display:none}
@@ -553,6 +569,7 @@ body.fighting #hud, body.fighting #pad{display:none}
         <div id="cards"></div>
         <div id="work">
           <canvas id="workcv"></canvas>
+          <div id="away"><div class="b">DEALING WITH IT <span id="awayT"></span><small>Your work keeps going without you.</small></div></div>
           <div id="autoc">
             <div class="meta"><span id="acStreak">STREAK 0</span><span id="acLeft"></span></div>
             <div class="line" id="acLine"></div>
@@ -567,7 +584,7 @@ body.fighting #hud, body.fighting #pad{display:none}
           <div id="mtgttl"></div>
           <div id="mtgbody"><div id="mtgline"></div></div>
           <div id="mtgtrk"><div id="mtgfil"></div></div>
-          <div id="mtgfoot">YOU CANNOT WORK RIGHT NOW</div>
+          <div id="mtgfoot">YOU CANNOT TOUCH ANYTHING. IT KEEPS RUNNING.</div>
         </div>
       </div>
 
@@ -902,7 +919,7 @@ const INTERRUPTS = [
   {who:'#social', art:'🎉', act:'Post a lie', thr:6, life:13,
    msg:'TWO TRUTHS AND A LIE! Everyone please post by 3pm! No wrong answers!',
    esc:'Brooke has @-mentioned you individually. Twice.'},
-  {who:'PagerDuty', art:'🚨', act:'Acknowledge', thr:15, life:7,
+  {who:'PagerDuty', art:'🚨', act:'Acknowledge', thr:15, life:7, noSnooze:1,
    msg:'P2 — checkout-svc latency. You are not on call. You are the fallback for someone who left in 2023.',
    esc:'It escalated to your manager, who escalated it back to you.'},
   {who:'Priya, Staff Engineer', art:'👩‍💻', act:'Review it', thr:8, life:12,
@@ -923,7 +940,7 @@ const INTERRUPTS = [
   {who:'Devon', art:'🧑‍💻', act:'Answer him', thr:7, life:10,
    msg:'do you know who owns checkout-svc now. i\u2019ve asked four people. everyone says someone else',
    esc:'Devon has created a channel to determine ownership. You have been added as an owner.'},
-  {who:'build-bot', art:'🤖', act:'Investigate', thr:13, life:8,
+  {who:'build-bot', art:'🤖', act:'Investigate', thr:13, life:8, noSnooze:1,
    msg:'main is red. Your commit is not in the failing range. You are the most recent committer.',
    esc:'Four people have now asked, separately, whether main is red.'}
 ];
@@ -1973,12 +1990,14 @@ async function startDesk(){
       tool, g: WORK[tool],
       progress: S.build, target: Math.min(buildCap(), S.build + SESSION_CHUNK),
       flow: 1, clock: 0, cards: [], meeting: null, pressure: 0,
-      heads: 0, cool: 0, over: false, handled: 0, ignored: 0, met: 0, lastMtg: -99,
+      heads: 0, cool: 0, over: false, handled: 0, ignored: 0, met: 0, snoozed: 0, lastMtg: -99,
+      away: 0, awayMax: 0, later: [],
       nextSpawn: 4 + Math.random()*2, res
     };
     $('cards').innerHTML = '';
     $('toast').classList.remove('on');
     $('meeting').classList.remove('on');
+    $('away').classList.remove('on');
     $('toolname').textContent = TOOLS[tool].name.toUpperCase();
     $('desk').classList.add('on');
     $('autoc').classList.remove('on');
@@ -2039,6 +2058,7 @@ function spawnInterrupt(){
     d.cards.push(Object.assign({}, t, {life:t.life*stretch, maxLife:t.life*stretch}));
   }
   Sfx.alert();
+  const w = $('work'); w.classList.remove('ping'); void w.offsetWidth; w.classList.add('ping');
   renderCards();
 }
 function renderCards(){
@@ -2046,23 +2066,40 @@ function renderCards(){
   D.cards.forEach(c=>{
     const el = document.createElement('div');
     el.className = 'card-int' + (c.mtg ? ' mtg' : c.thr >= 12 ? ' hi' : '');
-    el.innerHTML = '<span class="ar"></span><div class="txt"><div class="who"></div><div class="msg"></div></div><span class="thr"></span><button class="btn"></button><div class="fuse"></div>';
+    el.innerHTML = '<span class="ar"></span><div class="txt"><div class="who"></div><div class="msg"></div></div><span class="thr"></span><div class="btns"><button class="btn deal"></button><button class="btn snz"></button></div><div class="fuse"></div>';
     el.querySelector('.ar').textContent = c.art;
-    el.querySelector('.who').textContent = c.who;
+    el.querySelector('.who').textContent = (c.back ? 'Following up — ' : '') + c.who;
     el.querySelector('.msg').textContent = c.msg;
     el.querySelector('.thr').textContent = c.mtg ? 'MTG' : '-' + c.thr;
-    const b = el.querySelector('.btn'); b.textContent = c.act; b.onclick = ()=>handleCard(c);
+    const b = el.querySelector('.deal'); b.textContent = c.act; b.onclick = ()=>handleCard(c);
+    const z = el.querySelector('.snz');
+    if(c.mtg || c.noSnooze || c.back){ z.remove(); }
+    else { z.textContent = 'Snooze −3☕'; z.disabled = S.caf < 3; z.onclick = ()=>snoozeCard(c); }
     c.el = el; wrap.appendChild(el);
   });
   D.pressure = D.cards.length > 0 && D.heads <= 0 ? 1 : 0;
 }
+/* Dealing with it means you are not at the keyboard. The tool keeps running. */
 function handleCard(c){
   const d = D; if(!d || d.over) return;
   const i = d.cards.indexOf(c); if(i < 0) return;
   d.cards.splice(i,1); renderCards();
   if(c.mtg){ enterMeeting(c.mtg); return; }
   d.flow = 1; d.handled++;
-  workState('You deal with it. It takes four minutes and all of your context.');
+  heldDir = null;
+  d.awayMax = d.away = (1.6 + c.thr*0.08) * (S.opts.extraTime ? 0.7 : 1);
+  $('away').classList.add('on');
+  workState('You deal with it. Your hands are off the keyboard and the work does not wait.');
+  renderDeskHud();
+}
+/* Snoozing costs caffeine and the thing comes back angrier. */
+function snoozeCard(c){
+  const d = D; if(!d || d.over || c.mtg || c.noSnooze || c.back || S.caf < 3) return;
+  const i = d.cards.indexOf(c); if(i < 0) return;
+  d.cards.splice(i,1); renderCards();
+  S.caf -= 3; syncHUD(); d.snoozed++; Sfx.blip();
+  d.later.push({at: d.clock + 8, c: Object.assign({}, c, {back:1, thr:c.thr + 4, life:c.maxLife*0.6, maxLife:c.maxLife*0.6, el:null})});
+  workState('"Not now." It will be now in about eight seconds.');
   renderDeskHud();
 }
 function escalate(c, i){
@@ -2102,14 +2139,36 @@ function deskUpdate(ms){
       setTimeout(()=>{ if(D && D.meeting){ el.textContent = m.lines[idx]; el.style.opacity = 1; } }, 170);
     }
     $('mtgfil').style.width = Math.min(100, mt.t/m.secs*100) + '%';
+    /* the meeting is not a pause: the work keeps running and you cannot touch it */
+    d.g.update(dt*0.7, true);
+    if(!D || D.over) return;
+    d.g.render();
     if(mt.t >= m.secs){
       d.meeting = null; $('meeting').classList.remove('on');
       workState('The meeting ends. You look at the screen. You have no idea where you were.');
-      if(d.g.meeting) d.g.meeting(m.secs >= 14);
+      if(m.secs >= 14 && d.g.meeting) d.g.meeting(true);   /* only the all-hands leaves a mark */
       d.nextSpawn = d.clock + 5 + Math.random()*3;
       renderDeskHud();
     }
     return;
+  }
+
+  if(d.away > 0){
+    d.away -= dt;
+    $('awayT').textContent = '· ' + Math.max(0, d.away).toFixed(1) + 's';
+    d.g.update(dt, true);
+    if(!D || D.over) return;
+    d.g.render();
+    if(d.away <= 0){ d.away = 0; $('away').classList.remove('on'); workState('You are back. Where were you.'); }
+    renderDeskHud();
+    return;
+  }
+
+  for(let i=d.later.length-1; i>=0; i--){
+    if(d.clock >= d.later[i].at){
+      if(d.cards.length < 3) d.cards.push(d.later[i].c); else d.later[i].at = d.clock + 2;
+      if(d.cards.length && d.cards[d.cards.length-1] === d.later[i].c){ d.later.splice(i,1); Sfx.alert(); renderCards(); }
+    }
   }
 
   if(d.heads > 0){ d.heads -= dt; if(d.heads <= 0){ d.heads = 0; d.cool = 14; workState('The door opens again.'); renderCards(); } }
@@ -2124,7 +2183,7 @@ function deskUpdate(ms){
   /* flow is earned inside the tool; the shell only lets it bleed */
   d.flow = Math.max(1, d.flow - dt*(d.pressure ? 0.35 : 0.05));
 
-  d.g.update(dt);
+  d.g.update(dt, false);
   if(!D || D.over) return;
   d.g.render();
 
@@ -2146,12 +2205,13 @@ async function endDesk(reason){
   S.build = Math.min(100, Math.floor(d.progress));
   if(d.g.stop) d.g.stop();
   $('meeting').classList.remove('on');
+  $('away').classList.remove('on');
   $('desk').classList.remove('on');
   document.body.classList.remove('desking');
   setPad('TALK / OK', 'MENU');
   D = null; mode = 'field'; syncHUD();
 
-  const tally = 'You handled ' + d.handled + ', ignored ' + d.ignored + ', and sat through ' + d.met + '.';
+  const tally = 'You handled ' + d.handled + ', ignored ' + d.ignored + ', snoozed ' + d.snoozed + ', and sat through ' + d.met + '.';
   if(reason === 'capped'){
     const b = capBlocker();
     await say(null, ['Build is at ' + S.build + '%. That is as far as this goes today.', b.line, tally]);
@@ -2198,7 +2258,7 @@ WORK.stack = (()=>{
     {c:[[0,0]],                   col:'#dbe4f0', tag:'typo'},
     {c:[[0,0],[0,1],[1,1]],       col:'#9fb3d1', tag:'small PR'}
   ];
-  let grid, piece, next, fallT, held, dasT, over;
+  let grid, piece, next, fallT, held, dasT, over, unattended = false;
   const g = {
     intro:'Commits come down the queue. Steer them, drop them, clear a full row to merge it. Yes, it was a hackathon project. The hackathon was to replace the previous one.',
     topped:'The queue has backed up to the top of the screen. Nothing else is getting merged today.',
@@ -2207,14 +2267,16 @@ WORK.stack = (()=>{
       next = mk(); spawn(); fallT = 0; held = null; dasT = 0; over = false;
       setPad('ROTATE', 'DROP');
     },
-    update(dt){
+    update(dt, auto){
       if(over) return;
       const leg = S.build < 35 ? 0 : S.build < 70 ? 1 : 2;
       let iv = [0.85, 0.72, 0.6][leg] - 0.22*((D.progress - (D.target - SESSION_CHUNK))/SESSION_CHUNK);
       if(D.pressure) iv *= 0.75;
-      if(heldDir === 'down') iv = Math.min(iv, 0.06);
+      unattended = !!auto;
+      if(auto) iv = Math.min(iv, 0.3);            /* nobody is steering: it falls and it lands wherever the queue put it */
+      else if(heldDir === 'down') iv = Math.min(iv, 0.06);
       /* held left/right auto-repeats after a short delay */
-      if(heldDir === 'left' || heldDir === 'right'){
+      if(!auto && (heldDir === 'left' || heldDir === 'right')){
         if(held !== heldDir){ held = heldDir; dasT = 0.17; }
         else { dasT -= dt; if(dasT <= 0){ move(heldDir==='left'?-1:1); dasT = 0.08; } }
       } else held = null;
@@ -2280,7 +2342,8 @@ WORK.stack = (()=>{
   function mk(){ const s = SHAPES[ri(SHAPES.length)]; return {c:s.c.map(p=>p.slice()), col:s.col, tag:s.tag}; }
   function spawn(){
     piece = next; next = mk();
-    piece.x = Math.floor((W - (Math.max(...piece.c.map(p=>p[0]))+1))/2); piece.y = 0;
+    const pw = Math.max(...piece.c.map(p=>p[0]))+1;
+    piece.x = unattended ? ri(W - pw + 1) : Math.floor((W - pw)/2); piece.y = 0;
     if(collides(piece.c, piece.x, piece.y)){ over = true; Sfx.hurt(); endDesk('topped'); }
   }
   function collides(c, x, y){
@@ -2324,15 +2387,15 @@ WORK.breaker = (()=>{
     intro:'The codebase is full of bugs. You have one fix. Serve it with A and keep it in play.',
     topped:'The backlog has reached your desk. There is no room left to swing.',
     start(){ ({w,h} = workSize()); wave = 0; shrink = 0; streak = 0; bricks = []; newWave(); resetBall(); setPad('SERVE','SERVE'); },
-    update(dt){
+    update(dt, auto){
       ({w,h} = workSize());
       const pw = w * Math.max(0.12, (D.heads > 0 ? 0.30 : 0.22) - shrink);
       pad.w = pw;
       const sp = w * 1.1 * dt;
-      if(heldDir==='left') pad.x -= sp; else if(heldDir==='right') pad.x += sp;
+      if(!auto){ if(heldDir==='left') pad.x -= sp; else if(heldDir==='right') pad.x += sp; }   /* away: the paddle stays where you left it */
       pad.x = Math.max(pw/2, Math.min(w - pw/2, pad.x));
       pad.y = h - 18;
-      if(stuck){ ball.x = pad.x; ball.y = pad.y - ball.r - 1; stuck -= dt; if(stuck <= -2.5) serve(); return; }
+      if(stuck){ ball.x = pad.x; ball.y = pad.y - ball.r - 1; stuck -= dt; if(stuck <= -2.5 || auto) serve(); return; }
       const speed = w * (0.55 + 0.06*wave) * (D.pressure ? 1.18 : 1);
       const vx = ball.dx*speed*dt, vy = ball.dy*speed*dt;
       ball.x += vx; ball.y += vy;
@@ -2413,7 +2476,7 @@ WORK.snake = (()=>{
   const g = {
     intro:'Each service depends on the last. Keep growing. This was one service once; you split it up to make it simpler, and now it is this.',
     start(){ walls = new Set(); reset(); setPad('—','—'); },
-    update(dt){
+    update(dt, auto){
       const iv = (0.22 - Math.min(0.08, len*0.004)) * (D.pressure ? 0.8 : 1);
       t += dt; if(t < iv) return; t = 0;
       dir = nextDir;
@@ -3450,7 +3513,7 @@ function openLetter(){
 function press(dir){
   heldDir = dir;
   if(mode==='field') tryMove(dir);
-  else if(mode==='desk' && D && D.g && !D.meeting) D.g.input(dir);
+  else if(mode==='desk' && D && D.g && !D.meeting && !(D.away > 0)) D.g.input(dir);
 }
 function release(dir){ if(heldDir===dir) heldDir = null; }
 
@@ -3468,13 +3531,13 @@ document.querySelectorAll('#dpad button').forEach(b=>{
 });
 
 function pressA(){
-  if(mode==='desk'){ if(D && D.g && !D.meeting) D.g.input('a'); return; }
+  if(mode==='desk'){ if(D && D.g && !D.meeting && !(D.away > 0)) D.g.input('a'); return; }
   Sfx.blip();
   if(mode==='dialogue' && dlgResolve) return dlgResolve();
   if(mode==='field') return interact();
 }
 function pressB(){
-  if(mode==='desk'){ if(D && D.g && !D.meeting) D.g.input('b'); return; }
+  if(mode==='desk'){ if(D && D.g && !D.meeting && !(D.away > 0)) D.g.input('b'); return; }
   Sfx.blip();
   if(mode==='dialogue' && dlgResolve) return dlgResolve();
   if(mode==='menu' || mode==='shop'){ closeList(); closeMenu(); mode='field'; return; }
