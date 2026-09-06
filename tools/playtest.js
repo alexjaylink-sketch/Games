@@ -42,8 +42,10 @@ function findChrome() {
   return undefined;
 }
 
-let passed = 0, failed = 0;
+let passed = 0, failed = 0, lastLabel = '(start)', lastMark = '(none)', lastBeat = 0;
+const DEBUG = !!process.env.PT_DEBUG;   /* PT_DEBUG=1: heartbeat + markers + watchdog, to locate a hang */
 const ok  = (label, cond, detail) => {
+  lastLabel = label;
   if (cond) { passed++; console.log('    ok   ' + label + (detail ? '  — ' + detail : '')); }
   else { failed++; console.log('    FAIL ' + label + (detail ? '  — ' + detail : '')); }
 };
@@ -52,13 +54,25 @@ const section = t => console.log('\n  ' + t);
 /* ---------- a tiny driver over the game's own globals ---------- */
 async function boot(browser, { stage = 'field' } = {}) {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+  page.setDefaultTimeout(20000);
   const errors = [];
   page.on('pageerror', e => errors.push('pageerror: ' + e.message));
   page.on('console', m => {
-    if (m.type() === 'error' && !/ERR_CONNECTION|Failed to load resource/.test(m.text())) errors.push(m.text());
+    const t = m.text();
+    if (t === 'HB') { lastBeat = Date.now(); return; }
+    if (t.startsWith('@')) { lastMark = t; if (DEBUG) console.log('      ' + t); return; }
+    if (m.type() === 'error' && !/ERR_CONNECTION|Failed to load resource/.test(t)) errors.push(t);
   });
   await page.goto(GAME);
   await sleep(1200);
+  if (DEBUG) await page.evaluate(() => {
+    setInterval(() => console.log('HB'), 500);
+    if (typeof WORK === 'undefined') return;
+    const wrap = (o, k, label) => { const f = o[k]; let n = 0; o[k] = function (...a) { if (n++ < 1) console.log('@' + label); return f.apply(this, a); }; };
+    for (const t of Object.keys(WORK)) for (const fn of Object.keys(WORK[t])) if (typeof WORK[t][fn] === 'function') wrap(WORK[t], fn, t + '.' + fn);
+    for (const fn of ['startDesk', 'endDesk', 'spawnInterrupt', 'escalate', 'enterMeeting', 'handleCard'])
+      if (typeof window[fn] === 'function') { /* top-level function declarations are not window props; skip */ }
+  });
 
   const d = {
     page, errors,
@@ -162,7 +176,8 @@ SUITES.chain = async browser => {
   await d.page.evaluate(() => { startDesk(); }); await sleep(400);
   ok('build ceiling is 35%', await d.state(() => D.target) === 35);
   ok('ceiling is shown on the bar', (await d.state(() => document.getElementById('buildnote').textContent)).includes('35%'));
-  await d.page.evaluate(() => { D.progress = 34.7; }); await sleep(1100); await d.advance();
+  /* progress only comes from the tool now, so cross the ceiling the way a line clear would */
+  await d.page.evaluate(() => { D.progress = 34.7; workProgress(0.4); }); await sleep(1100); await d.advance();
   ok('session stops at the ceiling', await d.state(() => S.build) === 35);
   ok('hud now points at Priya', (await d.hud()).includes('Priya'), await d.hud());
 
@@ -246,30 +261,141 @@ SUITES.side = async browser => {
 
 SUITES.desk = async browser => {
   const d = await boot(browser);
-  section('desk — interruptions must actually cost you');
+  section('desk — three build tools, and interruptions that cost you');
 
-  await d.page.evaluate(() => { startDesk(); }); await sleep(500);
-  ok('desk mode opens', await d.mode() === 'desk');
-  ok('  and hides the walking controls', await d.state(() => getComputedStyle(document.getElementById('pad')).display) === 'none');
+  /* in-page bots: a greedy stacker, a paddle that tracks the ball, a snake that walks to food */
+  await d.page.evaluate(() => {
+    window.__stackStep = () => {
+      const p = D.g.peek(); if (!p.piece) return;
+      const { W, H, grid, piece } = p;
+      const fits = (c, x, y) => c.length > 0 && c.every(([cx, cy]) => { const gx = x + cx, gy = y + cy; return gx >= 0 && gx < W && gy < H && (gy < 0 || !grid[gy][gx]); });
+      const rot = c => { const my = Math.max(...c.map(q => q[1])); const r = c.map(([x, y]) => [my - y, x]);
+        const mx = Math.min(...r.map(q => q[0])), mn = Math.min(...r.map(q => q[1])); return r.map(([x, y]) => [x - mx, y - mn]); };
+      let best = null, shape = piece.c;
+      for (let r = 0; r < 4; r++) {
+        for (let x = -2; x < W; x++) {
+          if (!fits(shape, x, 0)) continue;
+          let y = 0; while (fits(shape, x, y + 1)) y++;
+          const g2 = grid.map(row => row.slice());
+          shape.forEach(([cx, cy]) => { if (y + cy >= 0) g2[y + cy][x + cx] = 1; });
+          let lines = 0, holes = 0, height = 0;
+          for (let yy = 0; yy < H; yy++) if (g2[yy].every(v => v) && !g2[yy].includes('L')) lines++;
+          for (let xx = 0; xx < W; xx++) { let seen = false; for (let yy = 0; yy < H; yy++) { if (g2[yy][xx]) { if (!seen) height += H - yy; seen = true; } else if (seen) holes++; } }
+          const score = lines * 12 - holes * 5 - height * 0.6;
+          if (!best || score > best.score) best = { score, r, x };
+        }
+        shape = rot(shape);
+      }
+      if (!best) return;
+      for (let i = 0; i < best.r; i++) D.g.input('a');
+      const now = D.g.peek().piece; if (!now) return;
+      const dx = best.x - now.x;
+      for (let i = 0; i < Math.abs(dx); i++) D.g.input(dx < 0 ? 'left' : 'right');
+      D.g.input('b');
+    };
+  });
 
-  const WINDOW = 24;   // seconds per observation; long enough to separate the two playstyles
+  const sit = async () => { await d.page.evaluate(() => { startDesk(); }); await sleep(500);
+    if (await d.state(() => document.getElementById('choices').classList.contains('on'))) return true; return false; };
+
+  /* ---- Merge Queue: available from day one, no chooser ---- */
+  ok('day one offers exactly one tool', await d.state(() => unlockedTools().join(',')) === 'stack');
+  const prompted1 = await sit();
+  ok('no chooser with one tool', !prompted1);
+  ok('desk opens in Merge Queue', await d.mode() === 'desk' && await d.state(() => D.tool) === 'stack');
+  ok('d-pad stays on screen for the tool', await d.state(() => getComputedStyle(document.getElementById('pad')).display) !== 'none');
+  ok('A/B relabelled', await d.state(() => document.querySelector('#btnA span').textContent) === 'ROTATE');
+  await d.shot('tool-merge-queue');
+
+  /* passive: touch nothing for 20s */
+  const WINDOW = 20;
   for (let t = 0; t < WINDOW && await d.mode() === 'desk'; t++) await sleep(1000);
-  const passive = await d.state(() => ({ build: S.build, focus: S.focus, max: S.maxFocus }));
-  ok('ignoring everything barely builds', passive.build < 20, passive.build + '%');
-  ok('ignoring everything drains Focus', passive.focus < passive.max * 0.85, passive.focus + '/' + passive.max);
-  await d.shot('desk-swamped');
+  const passive = await d.state(() => ({ build: S.build, focus: S.focus, max: S.maxFocus, mode }));
+  ok('ignoring everything barely builds', passive.build < 8, passive.build + '%');
+  ok('ignoring everything drains Focus', passive.focus < passive.max, passive.focus + '/' + passive.max);
+  /* always start the active phase on a fresh well, not the junk the passive phase left behind */
+  if (await d.mode() === 'desk') await d.page.evaluate(() => { endDesk('quit'); });
+  await d.advance();
 
-  if (await d.mode() !== 'desk') await d.advance();
-  await d.set({ focus: 200, maxFocus: 200, caf: 40, maxCaf: 40 });
-  if (await d.mode() !== 'desk') { await d.page.evaluate(() => { startDesk(); }); await sleep(500); }
-  const from = await d.state(() => S.build);
-  for (let t = 0; t < WINDOW && await d.mode() === 'desk'; t++) {
-    for (const b of await d.page.$$('#cards .btn')) { try { await b.click({ timeout: 500 }); } catch (e) {} }
-    await sleep(1000);
+  /* active: the greedy bot plays, the cards get handled */
+  await d.set({ focus: 200, maxFocus: 200, caf: 40, maxCaf: 40, build: 0 });
+  await sit();
+  let clears = 0, lastBuild = 0;
+  for (let t = 0; t < 60 && await d.mode() === 'desk'; t++) {
+    for (const b of await d.page.$$('#cards .btn')) { try { await b.click({ timeout: 300 }); } catch (e) {} }
+    if (!await d.state(() => D && D.meeting)) await d.page.evaluate(() => window.__stackStep());
+    const bnow = await d.state(() => S.build); if (bnow > lastBuild) clears++; lastBuild = bnow;
+    await sleep(350);
   }
-  const active = await d.state(() => ({ build: S.build, focus: S.focus }));
-  ok('handling everything makes real progress', active.build - from > passive.build, '+' + (active.build - from) + '% vs +' + passive.build + '%');
-  ok('  and costs no Focus', active.focus >= 180, active.focus + '/200');
+  const active = await d.state(() => ({ build: S.build, focus: S.focus, mode }));
+  ok('playing the queue clears rows and builds', active.build >= 12, active.build + '% after ' + clears + ' scoring drops');
+  ok('  without losing Focus', active.focus >= 190, active.focus + '/200');
+  await d.shot('tool-merge-queue-late');
+  if (await d.mode() === 'desk') await d.page.evaluate(() => { endDesk('quit'); });
+  await d.advance();
+  ok('A/B restored on leaving', await d.state(() => document.querySelector('#btnA span').textContent) === 'TALK / OK');
+
+  /* garbage and locked rows */
+  await d.set({ build: 0 }); await sit(); await sleep(200);
+  await d.page.evaluate(() => { D.g.punish(); D.g.meeting(true); });
+  const rows = await d.state(() => { const p = D.g.peek(); return { debt: p.grid[p.H - 3].filter(v => v && v !== 'L').length, locked: p.grid[p.H - 1].every(v => v === 'L') && p.grid[p.H - 2].every(v => v === 'L') }; });
+  ok('an ignored interruption leaves a row of debt with one hole', rows.debt === 9, JSON.stringify(rows));
+  ok('an all-hands leaves two rows you can never clear', rows.locked);
+  await d.page.evaluate(() => { endDesk('quit'); }); await d.advance();
+
+  /* ---- Bug Bash unlocks with code review; the chooser appears ---- */
+  await d.set({ approvals: { code: 1, sec: 0, design: 0 }, build: 35, focus: 200, maxFocus: 200 });
+  ok('code review unlocks a second tool', await d.state(() => unlockedTools().join(',')) === 'stack,breaker');
+  const prompted2 = await sit();
+  ok('chooser appears with two tools', prompted2 && await d.state(() => document.querySelectorAll('#chList button').length) === 2);
+  await d.pickChoice(1); await sleep(400);
+  ok('Bug Bash opens', await d.state(() => D && D.tool) === 'breaker');
+  await d.page.evaluate(() => D.g.input('a'));
+  let broke0 = await d.state(() => D.g.peek().left), b0 = await d.state(() => S.build);
+  for (let t = 0; t < 90 && await d.mode() === 'desk'; t++) {
+    for (const b of await d.page.$$('#cards .btn')) { try { await b.click({ timeout: 300 }); } catch (e) {} }
+    await d.page.evaluate(() => { if (!D || D.meeting) return; const p = D.g.peek(); heldDir = p.ball.x < p.pad.x - 6 ? 'left' : p.ball.x > p.pad.x + 6 ? 'right' : null; D.g.input('a'); });
+    if (t === 20) await d.shot('tool-bug-bash');
+    await sleep(120);
+  }
+  await d.page.evaluate(() => { heldDir = null; });
+  const bb = await d.state(() => ({ left: D ? D.g.peek().left : -1, build: S.build, wave: D ? D.g.peek().wave : -1, mode }));
+  ok('the paddle breaks bricks and builds', bb.build > b0, 'build ' + b0 + '% → ' + bb.build + '%, ' + (broke0 - bb.left) + ' bricks, wave ' + (bb.wave + 1));
+  if (await d.mode() === 'desk') await d.page.evaluate(() => { endDesk('quit'); });
+  await d.advance();
+
+  /* ---- Dependency Chain unlocks with security review ---- */
+  await d.set({ approvals: { code: 1, sec: 1, design: 0 }, build: 70, focus: 200, maxFocus: 200 });
+  ok('security review unlocks a third tool', await d.state(() => unlockedTools().length) === 3);
+  await sit(); await d.pickChoice(2); await sleep(400);
+  ok('Dependency Chain opens', await d.state(() => D && D.tool) === 'snake');
+  let ate = 0, len0 = 3;
+  for (let t = 0; t < 120 && await d.mode() === 'desk'; t++) {
+    for (const b of await d.page.$$('#cards .btn')) { try { await b.click({ timeout: 300 }); } catch (e) {} }
+    const len = await d.page.evaluate(() => {
+      if (!D || D.meeting) return 0;
+      const p = D.g.peek(); const [hx, hy] = p.body[0]; const [fx, fy] = p.food;
+      const blocked = (x, y) => x < 0 || x >= p.W || y < 0 || y >= p.H || p.walls.includes(x + ',' + y) || p.body.some(([bx, by]) => bx === x && by === y);
+      const opts = [['left', -1, 0], ['right', 1, 0], ['up', 0, -1], ['down', 0, 1]].filter(([, dx, dy]) => !blocked(hx + dx, hy + dy));
+      opts.sort((a, b) => (Math.abs(hx + a[1] - fx) + Math.abs(hy + a[2] - fy)) - (Math.abs(hx + b[1] - fx) + Math.abs(hy + b[2] - fy)));
+      if (opts[0]) D.g.input(opts[0][0]);
+      return p.body.length;
+    });
+    if (len > len0) { ate++; len0 = len; }
+    if (t === 40) await d.shot('tool-dependency-chain');
+    await sleep(110);
+  }
+  const sn = await d.state(() => ({ build: S.build, mode }));
+  ok('the chain eats and builds', sn.build > 70 && ate > 0, 'ate ' + ate + ', build ' + sn.build + '%');
+  if (await d.mode() === 'desk') await d.page.evaluate(() => { endDesk('quit'); });
+  await d.advance();
+
+  /* ---- the portal shows the progression ---- */
+  await d.page.click('#btnB'); await sleep(350);
+  const tools = await d.state(() => [...document.querySelectorAll('#menuBody .card')].find(c => /Build Tools/.test(c.textContent)).textContent.replace(/\s+/g, ' '));
+  ok('portal lists tools with locked ones for Floor 6', /Merge Queue.?READY/.test(tools) && /Pipeline.?locked/.test(tools), tools.slice(0, 110));
+  await d.shot('portal-tools');
+  await d.page.click('#scMenu .x'); await sleep(200);
   return d;
 };
 
@@ -324,7 +450,14 @@ SUITES.store = async browser => {
   const wanted = named.length ? named : Object.keys(SUITES);
   const allErrors = [];
 
-  console.log('playtest — ' + wanted.join(', '));
+  console.log('playtest — ' + wanted.join(', ') + (DEBUG ? '  [debug]' : ''));
+  if (DEBUG) setTimeout(async () => {
+    console.log('\nWATCHDOG: no verdict after 240s.\n  last checkpoint: ' + lastLabel + '\n  last page marker: ' + lastMark +
+      '\n  page heartbeat: ' + (lastBeat ? ((Date.now() - lastBeat) / 1000).toFixed(1) + 's ago' : 'never') +
+      (lastBeat && Date.now() - lastBeat > 3000 ? '  ← main thread is spinning' : '  ← page is alive; Node side is stuck'));
+    try { await browser.close(); } catch (e) {}
+    process.exit(3);
+  }, 240000).unref();
   for (const name of wanted) {
     if (!SUITES[name]) { console.log('\n  unknown suite: ' + name); failed++; continue; }
     let d;

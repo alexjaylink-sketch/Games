@@ -257,76 +257,85 @@ button{font-family:inherit;color:inherit}
   background:linear-gradient(180deg,#0f141d 0%,#0a0d13 100%);
 }
 #desk.on{display:flex}
-#deskhead{
-  flex:0 0 auto;padding:10px 13px 11px;background:var(--panel);border-bottom:1px solid var(--edge);
-}
-#deskhead .tick{display:flex;align-items:baseline;gap:8px;font-size:12px}
+#deskhead{flex:0 0 auto;padding:8px 12px 9px;background:var(--panel);border-bottom:1px solid var(--edge)}
+#deskhead .tick{display:flex;align-items:center;gap:8px;font-size:12px}
 #deskhead .key{font-family:var(--mono);font-size:10px;color:var(--brand);letter-spacing:.5px}
 #deskhead .sum{flex:1;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#deskhead .pts{font-family:var(--mono);font-size:10px;color:var(--dim)}
-#buildwrap{margin-top:9px}
-#buildwrap .lab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;letter-spacing:1px;color:var(--dim);margin-bottom:4px}
+#flowpill{
+  font-family:var(--mono);font-size:11px;font-weight:600;font-variant-numeric:tabular-nums;
+  padding:2px 8px;border-radius:10px;border:1px solid var(--edge2);color:var(--dim);background:#0b0f16;
+}
+#flowpill.warm{color:var(--ok);border-color:#2f6f52}
+#flowpill.hot{color:var(--warn);border-color:#6b4a14;box-shadow:0 0 10px rgba(245,165,36,.25)}
+#buildwrap{margin-top:7px}
+#buildwrap .lab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;letter-spacing:1px;color:var(--dim);margin-bottom:3px}
 #buildwrap .lab b{color:var(--ok);font-weight:500}
-#buildtrk{height:10px;background:#05070b;border:1px solid var(--edge);border-radius:5px;overflow:hidden;position:relative}
+#buildtrk{height:9px;background:#05070b;border:1px solid var(--edge);border-radius:5px;overflow:hidden;position:relative}
 #buildfil{height:100%;width:0;background:linear-gradient(90deg,#2f8f63,var(--ok));transition:width .18s linear}
 #buildgoal{position:absolute;top:0;bottom:0;width:2px;background:var(--warn);opacity:.85}
-#buildnote{margin-top:6px;font-family:var(--mono);font-size:9px;letter-spacing:.4px;color:var(--warn);line-height:1.5}
+#buildnote{margin-top:4px;font-family:var(--mono);font-size:9px;letter-spacing:.4px;color:var(--warn);line-height:1.4}
 
-#deskmain{
-  flex:1 1 auto;position:relative;overflow:hidden;
-  display:flex;flex-direction:column;gap:10px;padding:10px;
-}
-#cards{display:flex;flex-direction:column;gap:7px;flex:0 0 auto;min-width:0}
-#focuspane{
-  flex:1 1 auto;min-height:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-}
-#flowbox{text-align:center;transition:transform .2s}
-#flowbox .n{
-  font-family:var(--mono);font-size:48px;font-weight:600;line-height:1;
-  color:var(--ok);text-shadow:0 0 26px rgba(62,207,142,.28);font-variant-numeric:tabular-nums;
-}
-#flowbox .n.cold{color:var(--dim);text-shadow:none}
-#flowbox .n.hot{color:var(--warn);text-shadow:0 0 30px rgba(245,165,36,.35)}
-#flowbox .cap{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--dim);margin-top:8px}
-#deskstate{margin-top:14px;font-size:12.5px;color:var(--dim);text-align:center;max-width:30ch;line-height:1.55;min-height:2.8em}
-#deskstate.blocked{color:var(--warn)}
-
+#deskmain{flex:1 1 auto;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:6px;padding:6px 8px 4px;min-height:0}
+#cards{display:flex;flex-direction:column;gap:5px;flex:0 0 auto;min-width:0}
 .card-int{
+  display:flex;align-items:center;gap:8px;
   background:var(--panel);border:1px solid var(--edge2);border-left:3px solid var(--brand);
-  border-radius:9px;padding:9px 11px 8px;box-shadow:0 8px 20px rgba(0,0,0,.55);
-  animation:slidein .26s ease-out;position:relative;overflow:hidden;
+  border-radius:8px;padding:6px 8px 7px;box-shadow:0 6px 16px rgba(0,0,0,.5);
+  animation:slidein .22s ease-out;position:relative;overflow:hidden;
 }
 .card-int.hi{border-left-color:var(--danger)}
 .card-int.mtg{border-left-color:var(--warn)}
-@keyframes slidein{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
-.card-int .top{display:flex;align-items:center;gap:7px;margin-bottom:4px}
-.card-int .who{flex:1;font-size:11px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@keyframes slidein{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+.card-int .ar{font-size:16px;flex:0 0 auto}
+.card-int .txt{flex:1;min-width:0}
+.card-int .who{font-size:10px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-int .msg{font-size:11px;line-height:1.3;color:#cfd8e6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card-int .thr{font-family:var(--mono);font-size:9px;color:var(--danger);flex:0 0 auto}
-.card-int .msg{font-size:12.5px;line-height:1.45;color:#cfd8e6}
 .card-int .btn{
-  margin-top:8px;width:100%;padding:9px;border-radius:7px;font-size:12px;
-  background:var(--panel2);border:1px solid var(--edge2);color:var(--ink);
+  flex:0 0 auto;padding:8px 10px;border-radius:7px;font-size:11px;
+  background:var(--panel2);border:1px solid var(--edge2);color:var(--ink);white-space:nowrap;
 }
 .card-int .btn:active{background:var(--brand);border-color:var(--brand)}
 .card-int .fuse{position:absolute;left:0;bottom:0;height:2px;background:var(--warn);transition:width .12s linear}
 
-#deskacts{flex:0 0 auto;display:grid;grid-template-columns:1.5fr 1fr;gap:8px;padding:10px 12px 14px;background:var(--panel);border-top:1px solid var(--edge)}
-#deskacts button{
-  padding:13px 8px;font-size:12.5px;border-radius:9px;box-shadow:var(--sh);
-  background:var(--panel2);border:1px solid var(--edge2);color:var(--ink);
+#work{flex:1 1 auto;min-height:0;position:relative;display:flex;align-items:center;justify-content:center}
+#workcv{display:block;max-width:100%;max-height:100%}
+#autoc{display:none;flex-direction:column;gap:10px;width:100%;max-width:420px;padding:4px}
+#autoc.on{display:flex}
+#autoc .line{
+  font-family:var(--mono);font-size:13px;line-height:1.6;color:#dbe4f0;
+  background:#080b11;border:1px solid var(--edge2);border-radius:8px;padding:12px 12px;
+  white-space:pre-wrap;word-break:break-word;min-height:4.4em;
 }
-#deskacts button small{display:block;font-size:9.5px;color:var(--dim);margin-top:2px;font-family:var(--mono)}
+#autoc .line .hole{
+  display:inline-block;min-width:3.2em;border-bottom:2px solid var(--brand);color:var(--brand);
+  text-align:center;animation:bl 1.1s steps(2,end) infinite;
+}
+#autoc .opts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+#autoc .opts button{
+  padding:12px 6px;font-family:var(--mono);font-size:12px;border-radius:8px;
+  background:var(--panel2);border:1px solid var(--edge2);color:var(--ink);box-shadow:var(--sh);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#autoc .opts button:active{background:var(--brand);border-color:var(--brand)}
+#autoc .opts button.good{background:#1f5a3f;border-color:var(--ok)}
+#autoc .opts button.bad{background:#5a1f24;border-color:var(--danger)}
+#autoc .meta{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;letter-spacing:1px;color:var(--dim)}
+#autoc .tmr{height:4px;background:#05070b;border:1px solid var(--edge);border-radius:3px;overflow:hidden}
+#autoc .tmr i{display:block;height:100%;width:100%;background:var(--brand);transition:width .1s linear}
+#workstate{flex:0 0 auto;font-size:11px;color:var(--dim);text-align:center;min-height:1.4em;line-height:1.4;padding:0 6px}
+#workstate.blocked{color:var(--warn)}
+
+#deskacts{flex:0 0 auto;display:grid;grid-template-columns:1.4fr 1fr;gap:8px;padding:8px 12px 10px;background:var(--panel);border-top:1px solid var(--edge)}
+#deskacts button{padding:10px 8px;font-size:12px;border-radius:9px;box-shadow:var(--sh);background:var(--panel2);border:1px solid var(--edge2);color:var(--ink)}
+#deskacts button small{display:block;font-size:9px;color:var(--dim);margin-top:1px;font-family:var(--mono)}
 #deskacts button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.4)}
 #deskacts button[disabled]{opacity:.4;box-shadow:none}
 #deskacts button.armed{background:var(--ok);border-color:var(--ok);color:#06120c}
 #deskacts button.armed small{color:rgba(0,0,0,.6)}
 
 /* the meeting takes the screen, because that is what a meeting does */
-#meeting{
-  position:absolute;inset:0;z-index:6;display:none;flex-direction:column;
-  background:rgba(7,9,14,.975);padding:20px 22px;
-}
+#meeting{position:absolute;inset:0;z-index:6;display:none;flex-direction:column;background:rgba(7,9,14,.975);padding:20px 22px}
 #meeting.on{display:flex}
 #mtgbar{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.5px}
 #mtgbar .rec{width:7px;height:7px;border-radius:50%;background:var(--danger);animation:pulse 1.6s infinite}
@@ -336,6 +345,10 @@ button{font-family:inherit;color:inherit}
 #mtgtrk{height:4px;background:#05070b;border:1px solid var(--edge);border-radius:3px;overflow:hidden}
 #mtgfil{height:100%;width:0;background:var(--warn)}
 #mtgfoot{font-family:var(--mono);font-size:9.5px;color:#4d5a70;text-align:center;margin-top:9px;letter-spacing:1px}
+
+/* at the desk the d-pad drives the build tool; only the walking HUD goes away */
+body.desking #hud{display:none}
+body.desking #btnA b,body.desking #btnB b{color:var(--ok)}
 
 /* ============ INTRO: THE OFFER ============ */
 #intro{position:fixed;inset:0;z-index:110;display:flex;flex-direction:column;background:#0a0e15}
@@ -527,10 +540,10 @@ body.fighting #hud, body.fighting #pad{display:none}
         <div class="tick">
           <span class="key">LDS-4417</span>
           <span class="sum">Add settings toggle</span>
-          <span class="pts">2 pts</span>
+          <span id="flowpill">&times;1.0</span>
         </div>
         <div id="buildwrap">
-          <div class="lab"><span>BUILD</span><b id="buildn">0%</b></div>
+          <div class="lab"><span id="toolname">BUILD</span><b id="buildn">0%</b></div>
           <div id="buildtrk"><div id="buildfil"></div><div id="buildgoal"></div></div>
           <div id="buildnote"></div>
         </div>
@@ -538,13 +551,16 @@ body.fighting #hud, body.fighting #pad{display:none}
 
       <div id="deskmain">
         <div id="cards"></div>
-        <div id="focuspane">
-          <div id="flowbox">
-            <div class="n" id="flown">&times;1.0</div>
-            <div class="cap">F L O W</div>
+        <div id="work">
+          <canvas id="workcv"></canvas>
+          <div id="autoc">
+            <div class="meta"><span id="acStreak">STREAK 0</span><span id="acLeft"></span></div>
+            <div class="line" id="acLine"></div>
+            <div class="tmr"><i id="acTmr"></i></div>
+            <div class="opts" id="acOpts"></div>
           </div>
-          <div id="deskstate"></div>
         </div>
+        <div id="workstate"></div>
 
         <div id="meeting">
           <div id="mtgbar"><span class="rec"></span><span id="mtgkind">MEETING IN PROGRESS</span></div>
@@ -1900,38 +1916,83 @@ async function burnout(){
 }
 
 /* ==========================================================================
-   THE DESK — deep work, and everything that happens instead
+   THE DESK — a shell for build tools, and everything that happens instead
    ========================================================================== */
 let D = null;
 const FLOW_MAX = 3.0;
-const BUILD_RATE = 0.42;          /* build %/sec at flow x1 */
 const SESSION_CHUNK = 35;         /* what one good sitting is worth */
 
-function startDesk(){
+/* Build tools are retro arcade mechanics with original names and skins.
+   Mechanics are not copyrightable; names and specific looks are, so these
+   share neither with the games they nod to. */
+const TOOLS = {
+  stack:   {name:'Merge Queue',      sub:'Stack the commits. Clear a full row to merge it.',      hint:'day one',                 unlock:()=>true},
+  breaker: {name:'Bug Bash',         sub:'Knock every bug out of the codebase. Do not drop the fix.', hint:'after code review',   unlock:()=>!!S.approvals.code},
+  snake:   {name:'Dependency Chain', sub:'Grow the service graph. Do not depend on yourself.',     hint:'after security review', unlock:()=>!!S.approvals.sec},
+  cross:   {name:'Open Floor',       sub:'Cross the floor to the kitchen without being talked to.', hint:'Floor 6',              unlock:()=>false},
+  pipes:   {name:'Pipeline',         sub:'Plumb it before the data arrives.',                      hint:'Floor 6',              unlock:()=>false}
+};
+const unlockedTools = ()=> Object.keys(TOOLS).filter(k=>TOOLS[k].unlock() && WORK[k]);
+
+const wcv = $('workcv'), wx = wcv.getContext('2d');
+function workSize(){
+  const r = $('work').getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio||1, 2);
+  const w = Math.max(120, Math.floor(r.width)), h = Math.max(120, Math.floor(r.height));
+  if(wcv.width !== Math.round(w*dpr) || wcv.height !== Math.round(h*dpr)){
+    wcv.width = Math.round(w*dpr); wcv.height = Math.round(h*dpr);
+    wcv.style.width = w+'px'; wcv.style.height = h+'px';
+  }
+  wx.setTransform(dpr,0,0,dpr,0,0);
+  return {w,h};
+}
+function setPad(a,b){ $('btnA').querySelector('span').textContent = a; $('btnB').querySelector('span').textContent = b; }
+
+async function startDesk(){
+  const tools = unlockedTools();
+  let tool = tools[0];
+  if(tools.length > 1){
+    mode = 'dialogue';
+    const i = await choose('Which build tool?', tools.map(k=>({label:TOOLS[k].name, note:TOOLS[k].sub})));
+    tool = tools[i];
+  }
   return new Promise(res=>{
     mode = 'desk'; heldDir = null;
     S.flags.satDown = 1;
-    document.body.classList.add('fighting');
+    document.body.classList.add('desking');
     D = {
+      tool, g: WORK[tool],
       progress: S.build, target: Math.min(buildCap(), S.build + SESSION_CHUNK),
-      flow: 1, clock: 0, cards: [], meeting: null,
+      flow: 1, clock: 0, cards: [], meeting: null, pressure: 0,
       heads: 0, cool: 0, over: false, handled: 0, ignored: 0, met: 0, lastMtg: -99,
-      nextSpawn: 3 + Math.random()*1.5, res
+      nextSpawn: 4 + Math.random()*2, res
     };
     $('cards').innerHTML = '';
     $('toast').classList.remove('on');
     $('meeting').classList.remove('on');
+    $('toolname').textContent = TOOLS[tool].name.toUpperCase();
     $('desk').classList.add('on');
-    deskState('You sit down. The laptop is already open. Nobody has noticed yet.');
+    $('autoc').classList.remove('on');
+    D.g.start();
+    workState(D.g.intro);
     renderDeskHud();
     syncHUD();
   });
 }
 
-function deskState(t, warn){
-  const el = $('deskstate');
-  el.textContent = t;
-  el.classList.toggle('blocked', !!warn);
+function workState(t, warn){ const el=$('workstate'); el.textContent=t; el.classList.toggle('blocked',!!warn); }
+
+/* the games report through these two */
+function workProgress(pct){
+  const d = D; if(!d || d.over) return;
+  d.progress += pct * d.flow * (d.heads > 0 ? 1.35 : 1);
+  S.build = Math.min(100, Math.floor(d.progress));
+}
+function workFlow(delta){
+  const d = D; if(!d) return;
+  const was = d.flow;
+  d.flow = Math.max(1, Math.min(FLOW_MAX, d.flow + delta));
+  if(was < FLOW_MAX-0.01 && d.flow >= FLOW_MAX-0.01){ Sfx.flow(); workState('You are inside the problem. You can see the whole shape of it.'); }
 }
 
 function renderDeskHud(){
@@ -1941,165 +2002,129 @@ function renderDeskHud(){
   $('buildn').textContent = Math.floor(pct) + '%';
   $('buildgoal').style.left = d.target + '%';
   const cap = buildCap();
-  $('buildnote').textContent = cap < 100
-    ? 'CEILING ' + cap + '% — needs ' + capBlocker().what
-    : (S.build >= 100 ? 'COMPLETE' : 'NO CEILING — FINISH IT');
-  const f = $('flown');
+  $('buildnote').textContent = cap < 100 ? 'CEILING ' + cap + '% — needs ' + capBlocker().what
+                             : (S.build >= 100 ? 'COMPLETE' : 'NO CEILING — FINISH IT');
+  const f = $('flowpill');
   f.innerHTML = '&times;' + d.flow.toFixed(1);
-  f.classList.toggle('cold', d.cards.length > 0 && d.heads <= 0);
-  f.classList.toggle('hot', d.flow >= FLOW_MAX - 0.01);
+  f.className = d.flow >= FLOW_MAX-0.01 ? 'hot' : d.flow >= 1.8 ? 'warm' : '';
   const hb = $('btnHeads');
   hb.disabled = S.caf < 10 || d.cool > 0 || d.heads > 0;
   hb.classList.toggle('armed', d.heads > 0);
   hb.querySelector('small').textContent =
-    d.heads > 0 ? Math.ceil(d.heads) + 's left' :
-    d.cool > 0  ? 'ready in ' + Math.ceil(d.cool) + 's' : '10 caffeine · 7s';
+    d.heads > 0 ? Math.ceil(d.heads) + 's left' : d.cool > 0 ? 'ready in ' + Math.ceil(d.cool) + 's' : '10 caffeine · 7s';
 }
 
+/* ---------- interruptions ---------- */
 function spawnInterrupt(){
   const d = D;
-  const mtgOk = d.clock > 9 && (d.clock - d.lastMtg) > 22;
+  const mtgOk = d.clock > 12 && (d.clock - d.lastMtg) > 26;
+  const stretch = S.opts.extraTime ? 1.8 : 1;
   if(mtgOk && Math.random() < 0.2){
     d.lastMtg = d.clock;
     const m = MEETINGS[ri(MEETINGS.length)];
     d.cards.push({mtg:m, who:'Calendar', art:'📅', act:'Attend', thr:0,
-      msg:'"' + m.ttl + '" is starting now. You are a Required attendee.',
-      life:6*(S.opts.extraTime?1.8:1), maxLife:6*(S.opts.extraTime?1.8:1), esc:''});
+      msg:'"' + m.ttl + '" is starting now.', life:6*stretch, maxLife:6*stretch, esc:''});
   } else {
     const t = INTERRUPTS[ri(INTERRUPTS.length)];
     if(d.cards.some(c=>c.who===t.who)) return;
-    const life = t.life * (S.opts.extraTime ? 1.8 : 1);
-    d.cards.push(Object.assign({}, t, {life, maxLife:life}));
+    d.cards.push(Object.assign({}, t, {life:t.life*stretch, maxLife:t.life*stretch}));
   }
   Sfx.alert();
   renderCards();
 }
-
 function renderCards(){
-  const wrap = $('cards');
-  wrap.innerHTML = '';
+  const wrap = $('cards'); wrap.innerHTML = '';
   D.cards.forEach(c=>{
     const el = document.createElement('div');
     el.className = 'card-int' + (c.mtg ? ' mtg' : c.thr >= 12 ? ' hi' : '');
-    el.innerHTML =
-      '<div class="top"><span class="ar"></span><span class="who"></span><span class="thr"></span></div>' +
-      '<div class="msg"></div><button class="btn"></button><div class="fuse"></div>';
+    el.innerHTML = '<span class="ar"></span><div class="txt"><div class="who"></div><div class="msg"></div></div><span class="thr"></span><button class="btn"></button><div class="fuse"></div>';
     el.querySelector('.ar').textContent = c.art;
     el.querySelector('.who').textContent = c.who;
-    el.querySelector('.thr').textContent = c.mtg ? 'UNAVOIDABLE' : '-' + c.thr + ' focus';
     el.querySelector('.msg').textContent = c.msg;
-    const b = el.querySelector('.btn');
-    b.textContent = c.act;
-    b.onclick = ()=> handleCard(c);
-    c.el = el;
-    wrap.appendChild(el);
+    el.querySelector('.thr').textContent = c.mtg ? 'MTG' : '-' + c.thr;
+    const b = el.querySelector('.btn'); b.textContent = c.act; b.onclick = ()=>handleCard(c);
+    c.el = el; wrap.appendChild(el);
   });
+  D.pressure = D.cards.length > 0 && D.heads <= 0 ? 1 : 0;
 }
-
 function handleCard(c){
   const d = D; if(!d || d.over) return;
-  const i = d.cards.indexOf(c);
-  if(i < 0) return;
-  d.cards.splice(i,1);
-  renderCards();
+  const i = d.cards.indexOf(c); if(i < 0) return;
+  d.cards.splice(i,1); renderCards();
   if(c.mtg){ enterMeeting(c.mtg); return; }
-  d.flow = 1;
-  d.handled++;
-  deskState('You deal with it. It takes four minutes and all of your context.');
+  d.flow = 1; d.handled++;
+  workState('You deal with it. It takes four minutes and all of your context.');
   renderDeskHud();
 }
-
 function escalate(c, i){
   const d = D;
-  d.cards.splice(i,1);
-  renderCards();
+  d.cards.splice(i,1); renderCards();
   if(c.mtg){ enterMeeting(c.mtg, true); return; }
   d.ignored++;
-  S.focus -= c.thr;
-  syncHUD();
-  deskState(c.esc, true);
+  S.focus -= c.thr; syncHUD(); Sfx.hurt();
+  workState(c.esc, true);
+  if(d.g.punish) d.g.punish();
   if(S.focus <= 0){ endDesk('burnout'); return; }
   renderDeskHud();
 }
-
 function enterMeeting(m, late){
   const d = D;
   d.meeting = {m, t:0, idx:-1, late:!!late};
-  d.met++;
-  d.flow = 1;
+  d.met++; d.flow = 1;
   $('mtgttl').textContent = m.ttl;
   $('mtgkind').textContent = late ? 'YOU JOINED LATE' : 'MEETING IN PROGRESS';
-  $('mtgfil').style.width = '0%';
-  $('mtgline').textContent = '';
+  $('mtgfil').style.width = '0%'; $('mtgline').textContent = '';
   Sfx.meeting();
   $('meeting').classList.add('on');
 }
 
+/* ---------- the frame ---------- */
 function deskUpdate(ms){
-  const d = D;
-  if(!d || d.over) return;
+  const d = D; if(!d || d.over) return;
   const dt = Math.min(0.1, ms/1000);
   d.clock += dt;
 
   if(d.meeting){
     const mt = d.meeting, m = mt.m;
     mt.t += dt;
-    const per = m.secs / m.lines.length;
-    const idx = Math.min(m.lines.length-1, Math.floor(mt.t/per));
+    const idx = Math.min(m.lines.length-1, Math.floor(mt.t/(m.secs/m.lines.length)));
     if(idx !== mt.idx){
-      mt.idx = idx;
-      const el = $('mtgline');
-      el.style.opacity = 0;
+      mt.idx = idx; const el = $('mtgline'); el.style.opacity = 0;
       setTimeout(()=>{ if(D && D.meeting){ el.textContent = m.lines[idx]; el.style.opacity = 1; } }, 170);
     }
     $('mtgfil').style.width = Math.min(100, mt.t/m.secs*100) + '%';
     if(mt.t >= m.secs){
-      d.meeting = null;
-      $('meeting').classList.remove('on');
-      deskState('The meeting ends. You look at the screen. You have no idea where you were.');
-      d.nextSpawn = d.clock + 4 + Math.random()*3;
+      d.meeting = null; $('meeting').classList.remove('on');
+      workState('The meeting ends. You look at the screen. You have no idea where you were.');
+      if(d.g.meeting) d.g.meeting(m.secs >= 14);
+      d.nextSpawn = d.clock + 5 + Math.random()*3;
       renderDeskHud();
     }
     return;
   }
 
-  if(d.heads > 0){
-    d.heads -= dt;
-    if(d.heads <= 0){ d.heads = 0; d.cool = 14; deskState('The door opens again.'); }
-  } else if(d.cool > 0){
-    d.cool -= dt; if(d.cool < 0) d.cool = 0;
-  }
+  if(d.heads > 0){ d.heads -= dt; if(d.heads <= 0){ d.heads = 0; d.cool = 14; workState('The door opens again.'); renderCards(); } }
+  else if(d.cool > 0){ d.cool -= dt; if(d.cool < 0) d.cool = 0; }
 
   for(let i=d.cards.length-1; i>=0; i--){
-    const c = d.cards[i];
-    c.life -= dt;
+    const c = d.cards[i]; c.life -= dt;
     if(c.el){ const f = c.el.querySelector('.fuse'); if(f) f.style.width = Math.max(0, c.life/c.maxLife*100) + '%'; }
     if(c.life <= 0){ escalate(c, i); if(!D || D.over) return; }
   }
 
-  const blocked = d.cards.length > 0 && d.heads <= 0;
-  if(blocked){
-    d.flow = Math.max(1, d.flow - dt*0.75);
-    d.progress += BUILD_RATE * 0.3 * d.flow * dt;
-  } else {
-    const was = d.flow;
-    d.flow = Math.min(FLOW_MAX, d.flow + dt*0.22);
-    d.progress += BUILD_RATE * (d.heads > 0 ? 1.35 : 1) * d.flow * dt;
-    if(was < FLOW_MAX - 0.01 && d.flow >= FLOW_MAX - 0.01){
-      Sfx.flow();
-      deskState('You are inside the problem. You can see the whole shape of it.');
-    }
-  }
-  S.build = Math.min(100, Math.floor(d.progress));
+  /* flow is earned inside the tool; the shell only lets it bleed */
+  d.flow = Math.max(1, d.flow - dt*(d.pressure ? 0.35 : 0.05));
+
+  d.g.update(dt);
+  if(!D || D.over) return;
+  d.g.render();
 
   if(d.progress >= d.target){
-    endDesk(d.target >= buildCap() && buildCap() < 100 ? 'capped' : 'done');
-    return;
+    endDesk(d.target >= buildCap() && buildCap() < 100 ? 'capped' : 'done'); return;
   }
-
   if(d.clock >= d.nextSpawn && d.heads <= 0 && d.cards.length < 3){
     spawnInterrupt();
-    const pressure = 4.6 - (S.build/100)*2.4;   /* the closer to done, the more people want to talk */
+    const pressure = 5.2 - (S.build/100)*2.4;   /* the closer to done, the more people want to talk */
     d.nextSpawn = d.clock + pressure*(0.7 + Math.random()*0.7);
   }
   renderDeskHud();
@@ -2110,45 +2135,326 @@ async function endDesk(reason){
   d.over = true;
   const res = d.res;
   S.build = Math.min(100, Math.floor(d.progress));
+  if(d.g.stop) d.g.stop();
   $('meeting').classList.remove('on');
   $('desk').classList.remove('on');
-  document.body.classList.remove('fighting');
+  document.body.classList.remove('desking');
+  setPad('TALK / OK', 'MENU');
   D = null; mode = 'field'; syncHUD();
 
   const tally = 'You handled ' + d.handled + ', ignored ' + d.ignored + ', and sat through ' + d.met + '.';
   if(reason === 'capped'){
     const b = capBlocker();
-    await say(null, [
-      'Build is at ' + S.build + '%. That is as far as this goes today.',
-      b.line,
-      tally
-    ]);
-    S.xp += 22 + ri(8);
-    await gainLevels(toast);
+    await say(null, ['Build is at ' + S.build + '%. That is as far as this goes today.', b.line, tally]);
+    S.xp += 22 + ri(8); await gainLevels(toast);
     toast('BLOCKED — go and find ' + b.who + '.');
   } else if(reason === 'burnout'){
     await say(null, ['You are out of Focus. You stop pretending.', tally]);
     await burnout();
+  } else if(reason === 'topped'){
+    await say(null, [d.g.topped || 'You have run out of screen.', 'Build is at ' + S.build + '%.', tally]);
   } else if(reason === 'done'){
-    S.xp += 26 + ri(10);
-    S.caf = Math.max(0, S.caf - 4);
+    S.xp += 26 + ri(10); S.caf = Math.max(0, S.caf - 4);
     await gainLevels(toast);
     if(S.build >= 100){
-      await say(null, [
-        'The toggle is built. Forty lines. It took a day and a half.',
-        tally,
-        'Now it needs three sign-offs: Priya, Marcus, Kai.'
-      ]);
+      await say(null, ['The toggle is built. Forty lines. It took a day and a half.', tally, 'Now it needs three sign-offs: Priya, Marcus, Kai.']);
       toast('BUILD 100% — go and get your sign-offs.');
     } else {
       await say(null, ['You get a real chunk of it done. Build is at ' + S.build + '%.', tally]);
-      toast('Build ' + S.build + '%. Come back to the desk.');
     }
   } else {
     await say(null, ['You close the laptop. Build is at ' + S.build + '%.', tally]);
   }
   res(reason);
 }
+
+/* ==========================================================================
+   BUILD TOOLS
+   ========================================================================== */
+const WORK = {};
+
+/* ---------- MERGE QUEUE — commits fall; a full row merges ---------- */
+WORK.stack = (()=>{
+  const W = 10, H = 14;
+  /* an original piece set: the classic four-cell shapes plus a one-cell typo
+     fix and a three-cell small PR, each tagged like a commit */
+  const SHAPES = [
+    {c:[[0,0],[1,0],[2,0],[3,0]], col:'#4f8cff', tag:'feat'},
+    {c:[[0,0],[1,0],[0,1],[1,1]], col:'#e9b44c', tag:'chore'},
+    {c:[[1,0],[0,1],[1,1],[2,1]], col:'#c77dff', tag:'refactor'},
+    {c:[[0,0],[0,1],[1,1],[2,1]], col:'#3ecf8e', tag:'fix'},
+    {c:[[2,0],[0,1],[1,1],[2,1]], col:'#e0576b', tag:'hotfix'},
+    {c:[[1,0],[2,0],[0,1],[1,1]], col:'#7ec4ff', tag:'test'},
+    {c:[[0,0],[1,0],[1,1],[2,1]], col:'#f5a524', tag:'docs'},
+    {c:[[0,0]],                   col:'#dbe4f0', tag:'typo'},
+    {c:[[0,0],[0,1],[1,1]],       col:'#9fb3d1', tag:'small PR'}
+  ];
+  let grid, piece, next, fallT, held, dasT, over;
+  const g = {
+    intro:'Commits come down the queue. Steer them, drop them, clear a full row to merge it.',
+    topped:'The queue has backed up to the top of the screen. Nothing else is getting merged today.',
+    start(){
+      grid = Array.from({length:H}, ()=>Array(W).fill(0));
+      next = mk(); spawn(); fallT = 0; held = null; dasT = 0; over = false;
+      setPad('ROTATE', 'DROP');
+    },
+    update(dt){
+      if(over) return;
+      const leg = S.build < 35 ? 0 : S.build < 70 ? 1 : 2;
+      let iv = [0.85, 0.72, 0.6][leg] - 0.22*((D.progress - (D.target - SESSION_CHUNK))/SESSION_CHUNK);
+      if(D.pressure) iv *= 0.75;
+      if(heldDir === 'down') iv = Math.min(iv, 0.06);
+      /* held left/right auto-repeats after a short delay */
+      if(heldDir === 'left' || heldDir === 'right'){
+        if(held !== heldDir){ held = heldDir; dasT = 0.17; }
+        else { dasT -= dt; if(dasT <= 0){ move(heldDir==='left'?-1:1); dasT = 0.08; } }
+      } else held = null;
+      fallT += dt;
+      if(fallT >= iv){ fallT = 0; if(!step()) lock(); }
+    },
+    input(k){
+      if(over) return;
+      if(k==='left')  move(-1);
+      else if(k==='right') move(1);
+      else if(k==='up' || k==='a') rotate();
+      else if(k==='b'){ while(step()){} lock(); Sfx.blip(); }
+    },
+    peek(){ return {W, H, grid: grid.map(r=>r.slice()), piece: piece ? {c:piece.c.map(p=>p.slice()), x:piece.x, y:piece.y} : null}; },
+    punish(){ /* an ignored interruption is a row of technical debt with one hole */
+      grid.shift(); const row = Array(W).fill('#3a4658'); row[ri(W)] = 0; grid.push(row);
+      if(piece && collides(piece.c, piece.x, piece.y)) piece.y--;
+    },
+    meeting(big){ /* rows you can never clear */
+      for(let n = big ? 2 : 1; n > 0; n--){ grid.shift(); grid.push(Array(W).fill('L')); }
+      if(piece && collides(piece.c, piece.x, piece.y)) piece.y = Math.max(0, piece.y-2);
+    },
+    render(){
+      const {w,h} = workSize();
+      const cell = Math.floor(Math.min((w-8)/W, (h-8)/H));
+      const ox = Math.floor((w - cell*W)/2), oy = Math.floor((h - cell*H)/2);
+      wx.fillStyle = '#0a0d13'; wx.fillRect(0,0,w,h);
+      wx.fillStyle = '#080b11'; wx.fillRect(ox,oy,cell*W,cell*H);
+      wx.strokeStyle = 'rgba(255,255,255,.035)'; wx.lineWidth = 1;
+      for(let x=1;x<W;x++){ wx.beginPath(); wx.moveTo(ox+x*cell+.5,oy); wx.lineTo(ox+x*cell+.5,oy+H*cell); wx.stroke(); }
+      for(let y=1;y<H;y++){ wx.beginPath(); wx.moveTo(ox,oy+y*cell+.5); wx.lineTo(ox+W*cell,oy+y*cell+.5); wx.stroke(); }
+      for(let y=0;y<H;y++) for(let x=0;x<W;x++){
+        const v = grid[y][x]; if(!v) continue;
+        if(v==='L'){
+          wx.fillStyle = '#2a1114'; wx.fillRect(ox+x*cell, oy+y*cell, cell, cell);
+          wx.fillStyle = 'rgba(229,72,77,.35)';
+          for(let s=-cell; s<cell; s+=6){ wx.fillRect(ox+x*cell+s+cell/2, oy+y*cell, 2, cell); }
+        } else block(ox+x*cell, oy+y*cell, cell, v);
+      }
+      for(let y=0;y<H;y++) if(grid[y][0]==='L'){
+        wx.fillStyle='rgba(255,255,255,.55)'; wx.font='600 '+Math.max(8,cell*0.5)+'px "IBM Plex Mono",monospace';
+        wx.textAlign='center'; wx.textBaseline='middle';
+        wx.fillText('MEETING', ox+W*cell/2, oy+y*cell+cell/2);
+      }
+      if(piece){
+        let gy = piece.y; while(!collides(piece.c, piece.x, gy+1)) gy++;
+        wx.strokeStyle = 'rgba(255,255,255,.18)'; wx.lineWidth = 1;
+        piece.c.forEach(([cx0,cy0])=> wx.strokeRect(ox+(piece.x+cx0)*cell+1.5, oy+(gy+cy0)*cell+1.5, cell-3, cell-3));
+        piece.c.forEach(([cx0,cy0])=>{ if(piece.y+cy0>=0) block(ox+(piece.x+cx0)*cell, oy+(piece.y+cy0)*cell, cell, piece.col); });
+      }
+      /* next commit */
+      wx.fillStyle='rgba(219,228,240,.7)'; wx.font='600 9px "IBM Plex Mono",monospace'; wx.textAlign='left'; wx.textBaseline='top';
+      wx.fillText('NEXT · ' + next.tag, ox+2, Math.max(2, oy-12));
+      wx.strokeStyle='#2c3849'; wx.strokeRect(ox+.5, oy+.5, cell*W-1, cell*H-1);
+    },
+    stop(){}
+  };
+  function block(x,y,c,col){
+    wx.fillStyle = col; wx.fillRect(x+1,y+1,c-2,c-2);
+    wx.fillStyle = 'rgba(255,255,255,.18)'; wx.fillRect(x+1,y+1,c-2,2);
+    wx.fillStyle = 'rgba(0,0,0,.22)'; wx.fillRect(x+1,y+c-3,c-2,2);
+  }
+  function mk(){ const s = SHAPES[ri(SHAPES.length)]; return {c:s.c.map(p=>p.slice()), col:s.col, tag:s.tag}; }
+  function spawn(){
+    piece = next; next = mk();
+    piece.x = Math.floor((W - (Math.max(...piece.c.map(p=>p[0]))+1))/2); piece.y = 0;
+    if(collides(piece.c, piece.x, piece.y)){ over = true; Sfx.hurt(); endDesk('topped'); }
+  }
+  function collides(c, x, y){
+    return c.some(([cx0,cy0])=>{ const gx=x+cx0, gy=y+cy0; return gx<0||gx>=W||gy>=H||(gy>=0&&grid[gy][gx]); });
+  }
+  function move(dx){ if(!collides(piece.c, piece.x+dx, piece.y)) piece.x += dx; }
+  function step(){ if(collides(piece.c, piece.x, piece.y+1)) return false; piece.y++; return true; }
+  function rotate(){
+    const maxY = Math.max(...piece.c.map(p=>p[1]));
+    const r = piece.c.map(([x,y])=>[maxY-y, x]);
+    const minX = Math.min(...r.map(p=>p[0])), minY = Math.min(...r.map(p=>p[1]));
+    const n = r.map(([x,y])=>[x-minX, y-minY]);
+    for(const k of [0,-1,1,-2,2]) if(!collides(n, piece.x+k, piece.y)){ piece.c = n; piece.x += k; Sfx.blip(); return; }
+  }
+  function lock(){
+    piece.c.forEach(([cx0,cy0])=>{ if(piece.y+cy0>=0) grid[piece.y+cy0][piece.x+cx0] = piece.col; });
+    let cleared = 0;
+    for(let y=H-1; y>=0; y--){
+      if(grid[y].every(v=>v) && !grid[y].includes('L')){ grid.splice(y,1); grid.unshift(Array(W).fill(0)); cleared++; y++; }
+    }
+    if(cleared){
+      const pct = [0, 1.6, 4.0, 6.6, 9.6][Math.min(4,cleared)];
+      workProgress(pct); workFlow(0.35*cleared);
+      Sfx.confirm();
+      workState(cleared >= 3 ? 'Merged. Three at once. Someone will ask how.' : cleared === 2 ? 'Two merged. Clean.' : 'Merged.');
+    } else workFlow(-0.02);
+    spawn();
+  }
+  return g;
+})();
+
+/* ---------- BUG BASH — a paddle, a fix, and a wall of bugs ---------- */
+WORK.breaker = (()=>{
+  const COLS = 8;
+  const KINDS = [
+    {col:'#e0576b', n:'null'}, {col:'#f5a524', n:'off-by-one'}, {col:'#c77dff', n:'race'},
+    {col:'#4f8cff', n:'typo'},  {col:'#3ecf8e', n:'undefined'}
+  ];
+  let w, h, pad, ball, bricks, wave, stuck, streak, shrink;
+  const g = {
+    intro:'The codebase is full of bugs. You have one fix. Serve it with A and keep it in play.',
+    topped:'The backlog has reached your desk. There is no room left to swing.',
+    start(){ ({w,h} = workSize()); wave = 0; shrink = 0; streak = 0; bricks = []; newWave(); resetBall(); setPad('SERVE','SERVE'); },
+    update(dt){
+      ({w,h} = workSize());
+      const pw = w * Math.max(0.12, (D.heads > 0 ? 0.30 : 0.22) - shrink);
+      pad.w = pw;
+      const sp = w * 1.1 * dt;
+      if(heldDir==='left') pad.x -= sp; else if(heldDir==='right') pad.x += sp;
+      pad.x = Math.max(pw/2, Math.min(w - pw/2, pad.x));
+      pad.y = h - 18;
+      if(stuck){ ball.x = pad.x; ball.y = pad.y - ball.r - 1; stuck -= dt; if(stuck <= -2.5) serve(); return; }
+      const speed = w * (0.55 + 0.06*wave) * (D.pressure ? 1.18 : 1);
+      const vx = ball.dx*speed*dt, vy = ball.dy*speed*dt;
+      ball.x += vx; ball.y += vy;
+      if(ball.x < ball.r){ ball.x = ball.r; ball.dx = Math.abs(ball.dx); }
+      if(ball.x > w-ball.r){ ball.x = w-ball.r; ball.dx = -Math.abs(ball.dx); }
+      if(ball.y < ball.r){ ball.y = ball.r; ball.dy = Math.abs(ball.dy); }
+      /* paddle */
+      if(ball.dy > 0 && ball.y + ball.r >= pad.y - 4 && ball.y - ball.r <= pad.y + 4 && Math.abs(ball.x - pad.x) <= pad.w/2 + ball.r){
+        const t = (ball.x - pad.x) / (pad.w/2);
+        const ang = -Math.PI/2 + t * (Math.PI/3);
+        ball.dx = Math.cos(ang); ball.dy = Math.sin(ang);
+        ball.y = pad.y - 4 - ball.r;
+        Sfx.blip();
+      }
+      /* bricks */
+      const bw = w/COLS, bh = Math.max(14, h*0.045);
+      for(const b of bricks){
+        if(b.hp<=0) continue;
+        const bx = b.c*bw, by = 10 + b.r*bh;
+        if(ball.x+ball.r > bx && ball.x-ball.r < bx+bw && ball.y+ball.r > by && ball.y-ball.r < by+bh){
+          const fromSide = Math.min(ball.x-bx, bx+bw-ball.x) < Math.min(ball.y-by, by+bh-ball.y);
+          if(fromSide) ball.dx = -ball.dx; else ball.dy = -ball.dy;
+          b.hp--;
+          if(b.hp<=0){ streak++; workProgress(b.legacy ? 0.9 : 0.5); workFlow(0.12); (streak%4===0?Sfx.confirm():Sfx.hit()); }
+          else Sfx.hit();
+          break;
+        }
+      }
+      if(bricks.every(b=>b.hp<=0)){ wave++; workProgress(3); workFlow(0.6); Sfx.confirm(); workState('Clean. Wave ' + (wave+1) + '. The bugs come back, because they always come back.'); newWave(); resetBall(); }
+      /* dropped */
+      if(ball.y > h + ball.r){ streak = 0; D.flow = 1; workState('You dropped the fix. It is fine. It is not fine.'); resetBall(); }
+      /* buried */
+      const lowest = Math.max(...bricks.filter(b=>b.hp>0).map(b=>b.r), -1);
+      if(10 + (lowest+1)*bh > pad.y - 30) endDesk('topped');
+    },
+    input(k){ if(k==='a' || k==='b'){ if(stuck) serve(); } },
+    peek(){ return {w, h, ball: {x:ball.x, y:ball.y}, pad: {x:pad.x, w:pad.w}, left: bricks.filter(b=>b.hp>0).length, wave}; },
+    punish(){ for(const b of bricks) b.r++; for(let c=0;c<COLS;c++) bricks.push({c, r:0, hp:1, k:ri(KINDS.length)}); },
+    meeting(big){ shrink = Math.min(0.1, shrink + (big ? 0.06 : 0.03)); for(let n=big?2:1;n>0;n--) g.punish(); },
+    render(){
+      ({w,h} = workSize());
+      wx.fillStyle = '#0a0d13'; wx.fillRect(0,0,w,h);
+      const bw = w/COLS, bh = Math.max(14, h*0.045);
+      for(const b of bricks){
+        if(b.hp<=0) continue;
+        const x = b.c*bw, y = 10 + b.r*bh;
+        wx.fillStyle = b.legacy ? (b.hp>1 ? '#3a4658' : '#556377') : KINDS[b.k].col;
+        wx.fillRect(x+1.5, y+1.5, bw-3, bh-3);
+        wx.fillStyle = 'rgba(255,255,255,.16)'; wx.fillRect(x+1.5, y+1.5, bw-3, 2);
+      }
+      wx.fillStyle = D.heads > 0 ? '#3ecf8e' : '#dbe4f0';
+      roundRectW(pad.x - pad.w/2, pad.y - 4, pad.w, 8, 4); wx.fill();
+      wx.fillStyle = '#7ec4ff'; wx.beginPath(); wx.arc(ball.x, ball.y, ball.r, 0, 7); wx.fill();
+      wx.fillStyle='rgba(219,228,240,.6)'; wx.font='600 9px "IBM Plex Mono",monospace'; wx.textAlign='right'; wx.textBaseline='top';
+      wx.fillText('WAVE ' + (wave+1) + ' · STREAK ' + streak, w-4, 0);
+      if(stuck){ wx.textAlign='center'; wx.fillStyle='rgba(126,196,255,.8)'; wx.fillText('A TO SERVE', w/2, h/2); }
+    },
+    stop(){}
+  };
+  function roundRectW(x,y,w0,h0,r){ wx.beginPath(); wx.moveTo(x+r,y); wx.arcTo(x+w0,y,x+w0,y+h0,r); wx.arcTo(x+w0,y+h0,x,y+h0,r); wx.arcTo(x,y+h0,x,y,r); wx.arcTo(x,y,x+w0,y,r); wx.closePath(); }
+  function newWave(){
+    bricks = [];
+    const rows = Math.min(7, 4 + wave);
+    for(let r=0;r<rows;r++) for(let c=0;c<COLS;c++){
+      const legacy = Math.random() < 0.1 + 0.03*wave;
+      bricks.push({c, r, hp: legacy ? 2 : 1, legacy, k: ri(KINDS.length)});
+    }
+  }
+  function resetBall(){ ({w,h} = workSize()); pad = pad || {x:w/2, w:w*0.22, y:h-18}; ball = {x:pad.x, y:pad.y-8, r:Math.max(4, w*0.014), dx:0, dy:0}; stuck = 0.001; }
+  function serve(){ const a = -Math.PI/2 + (Math.random()*0.8-0.4); ball.dx = Math.cos(a); ball.dy = Math.sin(a); stuck = 0; }
+  return g;
+})();
+
+/* ---------- DEPENDENCY CHAIN — grow the graph; never depend on yourself ---------- */
+WORK.snake = (()=>{
+  const W = 14, H = 18;
+  let body, dir, nextDir, food, walls, t, len;
+  const g = {
+    intro:'Each service you add depends on the last. Keep growing. A circular dependency resets the graph.',
+    start(){ walls = new Set(); reset(); setPad('—','—'); },
+    update(dt){
+      const iv = (0.22 - Math.min(0.08, len*0.004)) * (D.pressure ? 0.8 : 1);
+      t += dt; if(t < iv) return; t = 0;
+      dir = nextDir;
+      const hd = body[0], nx = hd[0]+dir[0], ny = hd[1]+dir[1];
+      const key = nx+','+ny;
+      if(nx<0||nx>=W||ny<0||ny>=H||walls.has(key)||body.some(([x,y])=>x===nx&&y===ny)){
+        Sfx.hurt(); D.flow = 1; workState('Circular dependency. The graph resets. Nobody is surprised.'); reset(); return;
+      }
+      body.unshift([nx,ny]);
+      if(nx===food[0] && ny===food[1]){ len++; workProgress(1.1); workFlow(0.15); Sfx.hit(); placeFood(); }
+      else body.pop();
+    },
+    input(k){
+      const m = {left:[-1,0], right:[1,0], up:[0,-1], down:[0,1]}[k];
+      if(!m) return;
+      if(m[0] === -dir[0] && m[1] === -dir[1] && body.length > 1) return;
+      nextDir = m;
+    },
+    peek(){ return {W, H, body: body.map(p=>p.slice()), food: food.slice(), walls: [...walls]}; },
+    punish(){ addWall(1); },
+    meeting(big){ addWall(big ? 3 : 2); },
+    render(){
+      const {w,h} = workSize();
+      const cell = Math.floor(Math.min((w-8)/W, (h-8)/H));
+      const ox = Math.floor((w-cell*W)/2), oy = Math.floor((h-cell*H)/2);
+      wx.fillStyle = '#0a0d13'; wx.fillRect(0,0,w,h);
+      wx.fillStyle = '#080b11'; wx.fillRect(ox,oy,cell*W,cell*H);
+      wx.strokeStyle='#2c3849'; wx.strokeRect(ox+.5,oy+.5,cell*W-1,cell*H-1);
+      for(const k of walls){ const [x,y] = k.split(',').map(Number); wx.fillStyle='#3a4658'; wx.fillRect(ox+x*cell+1, oy+y*cell+1, cell-2, cell-2); }
+      body.forEach(([x,y],i)=>{ wx.fillStyle = i===0 ? '#7ec4ff' : '#3ecf8e'; wx.fillRect(ox+x*cell+1, oy+y*cell+1, cell-2, cell-2); });
+      wx.fillStyle='#f5a524'; wx.beginPath(); wx.arc(ox+food[0]*cell+cell/2, oy+food[1]*cell+cell/2, cell*0.32, 0, 7); wx.fill();
+      wx.fillStyle='rgba(219,228,240,.6)'; wx.font='600 9px "IBM Plex Mono",monospace'; wx.textAlign='left'; wx.textBaseline='top';
+      wx.fillText('SERVICES ' + body.length, ox+2, Math.max(2, oy-12));
+    },
+    stop(){}
+  };
+  function reset(){ body = [[Math.floor(W/2),Math.floor(H/2)],[Math.floor(W/2)-1,Math.floor(H/2)],[Math.floor(W/2)-2,Math.floor(H/2)]]; dir = nextDir = [1,0]; t = 0; len = 3; placeFood(); }
+  function placeFood(){ for(let i=0;i<200;i++){ const x=ri(W), y=ri(H); if(!walls.has(x+','+y) && !body.some(([bx,by])=>bx===x&&by===y)){ food=[x,y]; return; } } food=[0,0]; }
+  function addWall(n){ for(;n>0;n--) for(let i=0;i<50;i++){ const x=ri(W), y=ri(H); const k=x+','+y; if(!walls.has(k) && !body.some(([bx,by])=>Math.abs(bx-x)+Math.abs(by-y)<3) && !(food[0]===x&&food[1]===y)){ walls.add(k); break; } } }
+  return g;
+})();
+
+/* ---------- desk buttons ---------- */
+$('btnHeads').addEventListener('click', ()=>{
+  const d = D; if(!d || d.over || d.heads>0 || d.cool>0 || S.caf < 10) return;
+  S.caf -= 10; d.heads = 7; syncHUD();
+  workState('Headphones on. Status set to Do Not Disturb. Seven minutes of it.');
+  renderCards(); renderDeskHud();
+});
+$('btnLogoff').addEventListener('click', ()=>{ if(D && !D.over) endDesk('quit'); });
 
 /* ==========================================================================
    SCREENS: portal, bag, equipment, shop
@@ -2210,6 +2516,11 @@ function openMenu(){
     step('6. Design review',     !!S.approvals.design,'Kai') +
     step('7. Roadmap review',    false, readyToShip() ? 'VELOCITY is open' : 'locked');
   body.appendChild(q);
+
+  const tc = document.createElement('div'); tc.className='card';
+  tc.innerHTML = '<h3>Build Tools</h3>' + Object.keys(TOOLS).map(k=>
+    kv(TOOLS[k].name, TOOLS[k].unlock() ? 'READY' : 'locked — ' + TOOLS[k].hint)).join('');
+  body.appendChild(tc);
 
   const open = SIDEQUESTS.filter(q=>sq(q.k) > 0);
   if(open.length){
@@ -2637,6 +2948,7 @@ async function npcTalk(n){
         'You build a bit at your desk — the pod behind me, the one with the nameplate. Then you hit something you cannot clear on your own.',
         'So you get up. You find the person. You wait for the person. You come back and build a bit more.',
         'Build, then Priya. Build, then Marcus. Build, then Kai. Then the Roadmap Review.',
+        'The build tool on your desk is a queue. Commits come down it, you stack them, a full row merges. Do not ask why. It was a hackathon.',
         'Fair warning about the desk. Sitting down is the easy bit. Staying down is the job.',
         'When you have all three, you take it to the Roadmap Review in VELOCITY — the glass room, northeast.',
         'And don’t cross the open floor unless you have to. People see you walking and it reminds them they have questions.'
@@ -2693,9 +3005,10 @@ async function npcTalk(n){
       hold(); await say(n.name,[
         'Jordan moved my item to "Q3 (Tentative)". That is the closest thing to peace this company offers.',
         'I read your diff. It is fine. It is a toggle.',
-        'Approved. One comment, it is a nit, I have already said I will not re-litigate the nit.'
+        'Approved. One comment, it is a nit, I have already said I will not re-litigate the nit.',
+        'Oh — and I gave you access to the bug tracker. It is a paddle and a ball. Do not ask who built it. It was me, in 2021, during a reorg.'
       ]);
-      toast('CODE REVIEW: approved.');
+      toast('CODE REVIEW approved · new build tool: Bug Bash');
       return done();
     }
     hold(); await say(n.name,[
@@ -2782,9 +3095,10 @@ async function npcTalk(n){
         'That was not your feature.',
         'That was a storage bucket somebody set to public in 2021 and labelled "temporary".',
         'Your review is approved. Signed, dated, done.',
-        'You will see it in the news in about nine months. It will be described as sophisticated.'
+        'You will see it in the news in about nine months. It will be described as sophisticated.',
+        'I have also unlocked the dependency mapper on your desk. It is a snake. Everything here is a snake if you look at it long enough.'
       ]);
-      toast('SECURITY REVIEW: approved.');
+      toast('SECURITY REVIEW approved · new build tool: Dependency Chain');
     }
     return done();
   }
@@ -3117,7 +3431,11 @@ function openLetter(){
 /* ==========================================================================
    INPUT
    ========================================================================== */
-function press(dir){ heldDir = dir; if(mode==='field') tryMove(dir); }
+function press(dir){
+  heldDir = dir;
+  if(mode==='field') tryMove(dir);
+  else if(mode==='desk' && D && D.g && !D.meeting) D.g.input(dir);
+}
 function release(dir){ if(heldDir===dir) heldDir = null; }
 
 ['pointerdown','keydown'].forEach(ev=>
@@ -3134,11 +3452,13 @@ document.querySelectorAll('#dpad button').forEach(b=>{
 });
 
 function pressA(){
+  if(mode==='desk'){ if(D && D.g && !D.meeting) D.g.input('a'); return; }
   Sfx.blip();
   if(mode==='dialogue' && dlgResolve) return dlgResolve();
   if(mode==='field') return interact();
 }
 function pressB(){
+  if(mode==='desk'){ if(D && D.g && !D.meeting) D.g.input('b'); return; }
   Sfx.blip();
   if(mode==='dialogue' && dlgResolve) return dlgResolve();
   if(mode==='menu' || mode==='shop'){ closeList(); closeMenu(); mode='field'; return; }
@@ -3160,13 +3480,6 @@ $('saveLoad').addEventListener('click', ()=>{
   $('scSave').classList.remove('on'); closeMenu();
   toast('Restored — ' + title() + ', build ' + S.build + '%.');
 });
-$('btnHeads').addEventListener('click', ()=>{
-  const d = D; if(!d || d.over || d.heads>0 || d.cool>0 || S.caf < 10) return;
-  S.caf -= 10; d.heads = 7; syncHUD();
-  deskState('Headphones on. Status set to Do Not Disturb. Seven minutes of it.');
-  renderDeskHud();
-});
-$('btnLogoff').addEventListener('click', ()=>{ if(D && !D.over) endDesk('quit'); });
 $('btnA').addEventListener('click', pressA);
 $('btnB').addEventListener('click', pressB);
 $('dlg').addEventListener('click', ()=>{ if(dlgResolve) dlgResolve(); });
