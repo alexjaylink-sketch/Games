@@ -1484,7 +1484,7 @@ function tryMove(dir){
 function arrive(){
   S.x = anim.fx; S.y = anim.fy; anim.on = false;
   S.minutes += 1;
-  if(tinfo(S.x,S.y).enc){
+  if(tinfo(S.x,S.y).enc && S.flags.satDown){   /* the floor leaves you alone until you have sat down once */
     steps++;
     if(steps > encCooldown && Math.random() < 0.11){
       steps = 0; encCooldown = 5 + ri(6);
@@ -1910,6 +1910,7 @@ const SESSION_CHUNK = 35;         /* what one good sitting is worth */
 function startDesk(){
   return new Promise(res=>{
     mode = 'desk'; heldDir = null;
+    S.flags.satDown = 1;
     document.body.classList.add('fighting');
     D = {
       progress: S.build, target: Math.min(buildCap(), S.build + SESSION_CHUNK),
@@ -2364,6 +2365,7 @@ function migrate(o){
     if(o.build === undefined) o.build = 0;
   }
   o.opts = Object.assign({sound:1, extraTime:0}, o.opts || {});
+  if(o.build > 0 && o.flags && !o.flags.satDown) o.flags.satDown = 1;
   o.version = SAVE_VERSION;
   return o;
 }
