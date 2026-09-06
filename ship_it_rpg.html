@@ -782,13 +782,13 @@ const SKILLS = {
 const ITEMS = {
   snack:   {name:'Free Snack',        type:'use',  price:15,  focus:32,  desc:'From the wall of snacks. Compensation is total rewards.'},
   lunch:   {name:'Catered Lunch',     type:'use',  price:48,  focus:85,  desc:'Thursday only. There is a line and it is not moving.'},
-  brew:    {name:'Cold Brew',         type:'use',  price:22,  caf:14,    desc:'On tap. The tap is the third-best perk.'},
+  brew:    {name:'Cold Brew',         type:'use',  price:22,  caf:14,    desc:'On tap. Cold. Free. Three of the words that got you to sign.'},
   aspirin: {name:'Aspirin',           type:'use',  price:12,  cure:1,    desc:'Clears Context Switch. Not covered until day 90.'},
   hoodie:  {name:'Swag Hoodie',       type:'armor',price:0,   def:3,     desc:'Given to you at orientation. Size: Large.'},
   cans:    {name:'Noise-Cancelling Headphones', type:'armor', price:95, def:6, desc:'The universal signal. Ignored universally.'},
   block:   {name:'"Focus Time" Block',type:'armor',price:260, def:10,    desc:'A recurring calendar hold. People book over it.'},
   laptop:  {name:'Company Laptop (2019)', type:'weapon', price:0, atk:0, desc:'Issued. Fans audible. Refresh cycle is under review.'},
-  keeb:    {name:'Mechanical Keyboard',type:'weapon',price:110,atk:6,    desc:'Blues. Your podmates have filed no formal complaint.'},
+  keeb:    {name:'Mechanical Keyboard',type:'weapon',price:110,atk:6,    desc:'Blues. Four percent faster, forty percent louder. Your podmates have filed no formal complaint.'},
   monitor: {name:'Second Monitor',     type:'weapon',price:225,atk:12,   desc:'Approved after four weeks. Productivity, allegedly, doubles.'},
   runbook: {name:'The Runbook',        type:'armor',price:0,   def:9,     desc:'Forty pages, handwritten, found taped under a desk. Everything anyone knew.'},
   lanyard: {name:'Lanyard',            type:'armor', price:0, def:0,     desc:'Badge. Photo taken before you understood the job.'}
@@ -807,7 +807,7 @@ const ENEMIES = {
     moves:[
       {t:'atk',p:1.0,txt:'{E} fails. You change nothing. {E} passes.'},
       {t:'atk',p:1.2,txt:'{E} says it passes locally.'},
-      {t:'skip',p:0,txt:'{E} is green this run. Nobody investigates.'}
+      {t:'skip',p:0,txt:'{E} passes this run. Nobody asks why. Asking is how it becomes yours.'}
     ]}),
   merge: E({name:'Merge Conflict', art:'🔀', hp:56, atk:10, def:7, sp:16, cr:14,
     moves:[
@@ -833,7 +833,7 @@ const ENEMIES = {
   legacy: E({name:'Legacy Service', art:'🗿', hp:66, atk:10, def:11, sp:24, cr:22,
     moves:[
       {t:'atk',p:1.0,txt:'{E} has no owner, no tests, and nine downstream consumers.'},
-      {t:'atk',p:1.1,txt:'The last commit is from someone who left in 2019. It says "temp fix".'},
+      {t:'atk',p:1.1,txt:'The last commit is from someone who left in 2019. It says "temp fix". You check the blame further back. It gets worse.'},
       {t:'heal',p:0.12,txt:'{E} has been running untouched for six years. It is not going anywhere.'}
     ]}),
   standup: E({name:'Standup That Ran Long', art:'⏱️', hp:46, atk:8, def:5, sp:15, cr:12,
@@ -933,6 +933,7 @@ const MEETINGS = [
     'Someone is sharing their screen. It is the backlog.',
     'A ticket is being estimated. It is not your ticket.',
     'The estimate is being debated by people who will not do the work.',
+    'You say "three points." You have no idea. Neither has anyone, ever. Three is the number that ends the conversation.',
     'Minute nineteen of a fifteen-minute meeting.',
     'Someone says "let\u2019s take this offline." Nobody takes it offline.'
   ]},
@@ -962,7 +963,7 @@ const MEETINGS = [
   ]},
   {ttl:'Quarterly Roadmap Pre-Read Walkthrough', secs:10, lines:[
     'This is the meeting to prepare for the meeting.',
-    'The pre-read was circulated four minutes ago. Nobody has read it.',
+    'The pre-read went out four minutes ago, which is why it is unread.',
     'It is read aloud, in full, to the people who wrote it.',
     'A follow-up is scheduled to discuss the pre-read.'
   ]}
@@ -1802,7 +1803,15 @@ async function doCommit(){
   ensureTarget();
   const f = B.foes[B.target];
   const dmg = calcDmg(pAtk(), f.def, 1.0);
-  await hitFoe(B.target, dmg, 'You do the actual work.');
+  const COMMITS = [
+    'You write the code. Forty lines. You will later describe this as "non-trivial".',
+    'You fix it properly. Then you fix it the fast way, because the proper way needs a design doc.',
+    'You add a TODO. The TODO has a date. The date is today. It will always be today.',
+    'It works on your machine, so you ship your machine.',
+    'You rename three variables and call it a refactor.',
+    'You push. CI is green. You do not know why, and you know better than to ask.'
+  ];
+  await hitFoe(B.target, dmg, COMMITS[ri(COMMITS.length)]);
 }
 
 async function doSkill(k){
@@ -1910,7 +1919,7 @@ async function burnout(){
   syncHUD();
   await say(null, [
     'You take a personal day.',
-    'You come back. Nobody mentions it. Your calendar has filled in behind you.',
+    'You come back. It goes unmentioned. Your calendar has filled in behind you.',
     lost ? ('You spent ' + lost + ' credits on something you do not remember buying.') : 'You are, at least, rested.'
   ]);
 }
@@ -2191,7 +2200,7 @@ WORK.stack = (()=>{
   ];
   let grid, piece, next, fallT, held, dasT, over;
   const g = {
-    intro:'Commits come down the queue. Steer them, drop them, clear a full row to merge it.',
+    intro:'Commits come down the queue. Steer them, drop them, clear a full row to merge it. Yes, it was a hackathon project. The hackathon was to replace the previous one.',
     topped:'The queue has backed up to the top of the screen. Nothing else is getting merged today.',
     start(){
       grid = Array.from({length:H}, ()=>Array(W).fill(0));
@@ -2354,7 +2363,7 @@ WORK.breaker = (()=>{
       }
       if(bricks.every(b=>b.hp<=0)){ wave++; workProgress(3); workFlow(0.6); Sfx.confirm(); workState('Clean. Wave ' + (wave+1) + '. The bugs come back, because they always come back.'); newWave(); resetBall(); }
       /* dropped */
-      if(ball.y > h + ball.r){ streak = 0; D.flow = 1; workState('You dropped the fix. It is fine. It is not fine.'); resetBall(); }
+      if(ball.y > h + ball.r){ streak = 0; D.flow = 1; workState('You dropped the fix. In standup you will call this "iterating".'); resetBall(); }
       /* buried */
       const lowest = Math.max(...bricks.filter(b=>b.hp>0).map(b=>b.r), -1);
       if(10 + (lowest+1)*bh > pad.y - 30) endDesk('topped');
@@ -2402,7 +2411,7 @@ WORK.snake = (()=>{
   const W = 14, H = 18;
   let body, dir, nextDir, food, walls, t, len;
   const g = {
-    intro:'Each service you add depends on the last. Keep growing. A circular dependency resets the graph.',
+    intro:'Each service depends on the last. Keep growing. This was one service once; you split it up to make it simpler, and now it is this.',
     start(){ walls = new Set(); reset(); setPad('—','—'); },
     update(dt){
       const iv = (0.22 - Math.min(0.08, len*0.004)) * (D.pressure ? 0.8 : 1);
@@ -2731,12 +2740,15 @@ async function reward(r){
    ========================================================================== */
 const FLAVOR = {
   desk:[ 'Someone else’s desk. Three monitors, one of them vertical. A sticker that says ASK ME ABOUT KUBERNETES.',
+         'A whiteboard sketch of the architecture. Forty boxes, sixty arrows. The product has one feature.',
+         'Eleven browser tabs on one screen, all the same Stack Overflow question, asked in 2013, answered by the person who asked it.',
+         'A sticker on a laptop lid: I WOULD RATHER BE REWRITING THIS IN RUST. The laptop is running the thing it would rather be rewriting.',
          'An unattended desk with a laptop still unlocked and a Slack draft that begins "honestly".',
          'A desk with a framed photo, a dead plant, and a keyboard with the letters worn off E, T, and R.',
          'A standing desk in the down position. It has been in the down position for a year.' ],
   cube:[ 'A fabric divider, chest height. It was installed to reduce noise and does not.',
          'Someone has pinned a printout to the divider. It reads MOVE FAST. It is faded.' ],
-  couch:['A couch in a common area. Nobody sits here. It is a photograph of a couch, functionally.'],
+  couch:['A couch in a common area. It has never been sat on. It is a photograph of a couch, functionally.'],
   table:['A table. There are four chairs and six people are scheduled to be here.'],
   plant:['A plant. It is real, which surprises you. Someone is being paid to keep it alive.'],
   glass:['Glass. On the other side, a meeting is happening. Everyone is looking at one laptop.'],
@@ -2792,8 +2804,8 @@ async function interact(){
       setSq('mani', 2);
       await say(null, [
         'That is all of it. Eleven sections, four of which somebody thought were worth printing.',
-        'You have now read the entire LODESTAR Doctrine, including the margins, which are the better half.',
-        'Nothing anyone says in this building can surprise you again.'
+        'The margins run longer than the text.',
+        'You are now, technically, the most doctrinally informed person on Floor 3. This will never once come up.'
       ]);
       await reward({caf:8, cr:70, xp:30});
     } else {
@@ -2942,6 +2954,7 @@ async function npcTalk(n){
         'Right. So. Slight thing.',
         'Lighthouse is fully staffed. It has been fully staffed since before your req went out. I don’t know why the req went out.',
         'You’re on Platform. Platform is where we put people while we work out where to put them. It is not a demotion, it is a placement.',
+        'And you’re already redesigning the onboarding in your head. I can see it. Don’t. Someone did that. It’s in Kubernetes now.',
         'Your first ticket is LDS-4417. A settings toggle. Eleven months in the backlog, estimated at two points.',
         'Ship it and you’re real. Nobody on this floor is real until they have shipped something.',
         'It goes like this, and it always goes like this.',
@@ -2985,6 +2998,7 @@ async function npcTalk(n){
     if(S.approvals.code){
       hold(); await say(n.name,[
         'Your diff is approved. I left one comment. It is a nit. Ignore it. I will not re-litigate the nit.',
+        'I would have written it differently. I would write everything differently. That is not a review comment, it is a personality.',
         'You keep saying Lighthouse like it’s a building.',
         'Lighthouse is four engineers and a closed test track. The track is immaculate. The demo runs on the track.',
         'It has never run anywhere that isn’t the track. That is not a secret. It is just not in the letter.'
@@ -3067,7 +3081,7 @@ async function npcTalk(n){
         '...You want to know what was in it.',
         'Six years of Lighthouse telemetry. Every disengagement. Every intervention. Every time a human took the wheel back.',
         'It is the most complete dataset I have ever seen.',
-        'Nobody has ever asked me for it. Not once. Think about that on your way out.'
+        'Nobody has ever asked me for it. Not once.'
       ]);
       return done();
     }
@@ -3240,7 +3254,8 @@ async function npcTalk(n){
     }
     hold(); await say(n.name,[
       'Third re-org this year. I’ve had four managers. Two of them were the same person, before and after.',
-      'I don’t know what my team does now. I know what it did. I ship the old thing. Nobody has stopped me.',
+      'I don’t know what my team does now. I know what it did. I ship the old thing.',
+      'I have rewritten it twice, in my head. In my head it is beautiful and has no users.',
       'You got the letter, huh. The weather one. “Closer to weather.”',
       'We all got that letter. Every single person on this floor got that letter.'
     ]);
@@ -3295,7 +3310,7 @@ async function npcTalk(n){
       'What if it’s AI. I’m not saying what part. I’m saying the word because the word tests well.',
       'And listen — the Lighthouse thing. I hear you have been asking.',
       'Lighthouse isn’t a program. Lighthouse is a narrative. Programs get canceled. Narratives get renewed.',
-      'That’s not cynical, that’s just the actual job. Now. Let’s align.'
+      'That’s not cynical. Now. Let’s align.'
     ]);
     const r = await startBattle(['brayden'], {boss:1, noFlee:1, title:'Q3 Roadmap Review — VELOCITY',
       intro:'Brayden shares his screen. It is a document titled "Vision (WIP)". It is eleven pages.'});
@@ -3346,7 +3361,8 @@ async function ending(){
     'You never work on it. In three years at LODESTAR you will not meet one person who does.',
     'Mara is laid off in a reorganisation described internally as a sharpening of focus. The bottom of Lighthouse is still hers. Nobody renames that part, because nobody knows it is there.',
     'Rand Voss says the word autonomy on a stage in Lisbon. Solved, he says. Six years.',
-    'You are promoted, eventually, for something else.'
+    'You are promoted, eventually, for something else.',
+    'In your next interview you will describe the toggle as "a cross-functional platform initiative", and you will be hired.'
   ]);
   await say(null,[
     'The letter is still in your inbox.',
@@ -3409,7 +3425,7 @@ async function runIntro(){
   await coldBeat('The lobby of LODESTAR Dynamics is four stories of glass and one receptionist who does not look up.');
   await coldBeat('They photograph you before you have decided what your face is doing. It will be on your badge for as long as you work here.');
   await coldBeat('On the far wall a screen loops the founder, explaining that autonomy is solved.');
-  await coldBeat('Nobody in the lobby is watching it.');
+  await coldBeat('The lobby is not watching.');
   await coldBeat('The elevator opens on Floor 3.');
   $('skipIntro').classList.add('off');
   $('cold').classList.add('off');
