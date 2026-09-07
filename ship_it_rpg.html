@@ -378,7 +378,7 @@ button{font-family:inherit;color:inherit}
 #away .b small{display:block;font-family:var(--sans);letter-spacing:0;color:var(--dim);font-size:11px;margin-top:4px}
 #tut{position:absolute;inset:0;z-index:7;display:none;align-items:center;justify-content:center;background:rgba(7,9,14,.78);padding:16px}
 #tut.on{display:flex}
-#tut .b{background:var(--panel);border:1px solid var(--brand);border-radius:12px;padding:14px 16px;max-width:340px;width:100%;text-align:left}
+#tut .b{background:var(--panel);border:1px solid var(--brand);border-radius:12px;padding:14px 16px;max-width:340px;width:100%;text-align:left;max-height:100%;overflow-y:auto}
 #tut .k{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--brand)}
 #tut .t{font-weight:700;font-size:17px;margin:4px 0 8px}
 #tut .how{font-size:13px;line-height:1.45;color:var(--ink)}
@@ -580,6 +580,19 @@ body.fighting #hud, body.fighting #pad{display:none}
 }
 #toast.on{opacity:1}
 #flash{position:absolute;inset:0;z-index:50;background:#fff;opacity:0;pointer-events:none;transition:opacity .12s}
+#rotate{
+  position:fixed;inset:0;z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;padding:24px;text-align:center;background:#0a0d13;
+}
+body.sideways #rotate{display:flex}
+#rotate b{font-size:16px;color:var(--ink)}
+#rotate small{font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.6;max-width:34ch}
+#rotate .ph{
+  width:54px;height:88px;border-radius:9px;border:2px solid var(--brand);position:relative;
+  animation:turnph 2.6s ease-in-out infinite;
+}
+#rotate .ph .scr{position:absolute;inset:6px 4px;border-radius:3px;background:rgba(79,140,255,.22)}
+@keyframes turnph{0%,18%{transform:rotate(-90deg)}46%,100%{transform:rotate(0deg)}}
 @media (max-height:640px){
   #dpad{width:120px;height:120px}
   #dpad button{width:40px;height:40px;font-size:13px}
@@ -708,6 +721,13 @@ body.fighting #hud, body.fighting #pad{display:none}
 
     <div id="flash"></div>
     <div id="toast"></div>
+
+    <!-- phones in landscape: the desk board has no room, so ask for portrait -->
+    <div id="rotate">
+      <div class="ph"><span class="scr"></span></div>
+      <b>Turn your phone upright</b>
+      <small>SHIP IT is played in portrait. Your session is paused.</small>
+    </div>
 
     <!-- INTRO: THE OFFER -->
     <div id="intro" class="off">
@@ -1241,7 +1261,7 @@ const Sfx = {
 /* ==========================================================================
    STATE
    ========================================================================== */
-const BUILD = '1.2.1';                       /* shown in the UI so bug reports name a build */
+const BUILD = '1.3.0';                       /* shown in the UI so bug reports name a build */
 const SAVE_VERSION = 2;
 const SAVEKEY = 'shipit_lodestar_v2';
 const LEGACY_KEYS = ['shipit_vanta_v1'];     /* saves written before the rename */
@@ -2262,6 +2282,7 @@ async function endBattle(outcome){
   document.body.classList.remove('fighting');
   B = null; mode = 'field'; syncHUD();
   if(outcome === 'lose') await burnout();
+  autosave(true);
   res(outcome);
 }
 
@@ -2487,7 +2508,7 @@ function enterMeeting(m, late){
 
 /* ---------- the frame ---------- */
 function deskUpdate(ms){
-  const d = D; if(!d || d.over || d.tut) return;
+  const d = D; if(!d || d.over || d.tut || sideways) return;
   const dt = Math.min(0.1, ms/1000);
   d.clock += dt;
 
@@ -2562,6 +2583,7 @@ function deskUpdate(ms){
 async function endDesk(reason){
   const d = D; if(!d || d.over) return;
   d.over = true;
+  autosave(true);
   const res = d.res;
   S.build = Math.min(100, Math.floor(d.progress));
   if(d.g.stop) d.g.stop();
@@ -3371,7 +3393,8 @@ function quitToTitle(){
    mobile webview can be evicted by the OS, which is why Save Code exists. */
 const Store = {
   get(k){ try{ return (window.__store ? window.__store.get(k) : localStorage.getItem(k)); }catch(e){ return null; } },
-  set(k,v){ try{ (window.__store ? window.__store.set(k,v) : localStorage.setItem(k,v)); return true; }catch(e){ return false; } }
+  set(k,v){ try{ (window.__store ? window.__store.set(k,v) : localStorage.setItem(k,v)); return true; }catch(e){ return false; } },
+  del(k){ try{ (window.__store && window.__store.del ? window.__store.del(k) : localStorage.removeItem(k)); }catch(e){} }
 };
 
 function readAnySave(){
@@ -3381,7 +3404,17 @@ function readAnySave(){
   }
   return null;
 }
-function hasSave(){ return !!readAnySave(); }
+/* Only offer Resume for a save that can actually be loaded. A truncated write
+   used to leave a button that failed forever with no way to clear it. */
+function hasSave(){
+  const raw = readAnySave();
+  if(!raw) return false;
+  try{ const o = JSON.parse(raw); return !!o && typeof o === 'object' && o.maxFocus !== undefined; }
+  catch(e){ dropBadSave(); return false; }
+}
+function dropBadSave(){
+  for(const key of [SAVEKEY, ...LEGACY_KEYS]) Store.del(key);
+}
 
 /* Bring any older save shape up to the current one. Add a case per bump. */
 function migrate(o){
@@ -3736,7 +3769,7 @@ async function npcTalk(n){
         'Approved. One comment, it is a nit, I have already said I will not re-litigate the nit.',
         'Oh — and I gave you access to the bug tracker. It is a paddle and a ball. Do not ask who built it. It was me, in 2021, during a reorg.'
       ]);
-      toast('CODE REVIEW approved · new build tool: Bug Bash');
+      toast('CODE REVIEW approved · new build tool: Bug Bash'); autosave(true);
       return done();
     }
     hold(); await say(n.name,[
@@ -3826,7 +3859,7 @@ async function npcTalk(n){
         'You will see it in the news in about nine months. It will be described as sophisticated.',
         'I have also unlocked the dependency mapper on your desk. It is a snake. Everything here is a snake if you look at it long enough.'
       ]);
-      toast('SECURITY REVIEW approved · new build tool: Dependency Chain');
+      toast('SECURITY REVIEW approved · new build tool: Dependency Chain'); autosave(true);
     }
     return done();
   }
@@ -3848,7 +3881,7 @@ async function npcTalk(n){
         'That’s all I needed. Design is about people.',
         'Approved. Put the toggle on the right. Toggles go on the right. I can defend that for an hour and I have.'
       ]);
-      toast('DESIGN REVIEW approved · new build tool: Open Floor');
+      toast('DESIGN REVIEW approved · new build tool: Open Floor'); autosave(true);
       return done();
     }
     if(S.build < 100){
@@ -4278,6 +4311,64 @@ document.addEventListener('keyup', (e)=>{
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click', ()=>{ closeMenu(); }));
 
 /* ==========================================================================
+   LIFECYCLE — the phone is not a browser tab that stays open
+   ========================================================================== */
+let sideways = false;
+
+/* A phone held sideways has no room for the desk board, so the game asks for
+   portrait and stops the clock while it waits. */
+function watchOrientation(){
+  const mq = window.matchMedia('(orientation: landscape) and (max-height: 560px)');
+  const apply = ()=>{
+    sideways = mq.matches;
+    document.body.classList.toggle('sideways', sideways);
+    if(sideways){ heldDir = null; autosave(); }
+    else resize();
+  };
+  if(mq.addEventListener) mq.addEventListener('change', apply); else mq.addListener(apply);
+  apply();
+}
+
+/* Nothing in this game asks you to save, so it saves itself: whenever the app
+   is backgrounded, and at every point worth going back to. A phone call
+   should not cost a morning. */
+let lastAuto = 0;
+function autosave(force){
+  if(!S || mode === 'title') return;
+  const now = Date.now();
+  if(!force && now - lastAuto < 1500) return;
+  lastAuto = now;
+  let okSave = false;
+  try{ okSave = saveGame(); }catch(e){}
+  if(!okSave && !warnedNoStore){
+    warnedNoStore = true;
+    try{ toast('This browser will not store the save. Use Save Code in the menu.'); }catch(e){}
+  }
+}
+let warnedNoStore = false;
+
+function watchLifecycle(){
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.hidden){ heldDir = null; autosave(true); }
+    else if(S && S.opts && S.opts.sound) Sfx.boot();   /* iOS suspends the audio context in the background */
+  });
+  window.addEventListener('pagehide', ()=>autosave(true));
+  window.addEventListener('blur', ()=>{ heldDir = null; autosave(); });
+}
+
+/* A crash must not also cost the save. Report once, keep the progress. */
+function watchErrors(){
+  let told = false;
+  const oops = ()=>{
+    autosave(true);
+    if(told) return; told = true;
+    try{ toast('Something went wrong. Your progress was saved.'); }catch(e){}
+  };
+  window.addEventListener('error', oops);
+  window.addEventListener('unhandledrejection', oops);
+}
+
+/* ==========================================================================
    BOOT
    ========================================================================== */
 function begin(state){
@@ -4306,6 +4397,9 @@ $('btnCont').addEventListener('click', ()=>{
   begin(g);
 });
 
+watchOrientation();
+watchLifecycle();
+watchErrors();
 document.body.classList.add('titling');
 $('titleVer').textContent = 'v' + BUILD;
 buildMap();

@@ -29,13 +29,18 @@ The game reads and writes through a `Store` shim. In a Capacitor build, install
 ```js
 import { Preferences } from '@capacitor/preferences';
 const cache = {};
-for (const k of ['shipit_lodestar_v2'])
+for (const k of ['shipit_lodestar_v2', 'shipit_vanta_v1'])
   cache[k] = (await Preferences.get({ key: k })).value;
 window.__store = {
   get: k => cache[k] ?? null,
-  set: (k, v) => { cache[k] = v; Preferences.set({ key: k, value: v }); }
+  set: (k, v) => { cache[k] = v; Preferences.set({ key: k, value: v }); },
+  del: k => { delete cache[k]; Preferences.remove({ key: k }); }
 };
 ```
+
+`del` is not optional in a native build. The game clears a save it cannot parse
+so the player is never stranded on a Resume button that fails forever; without
+`del` that clear silently misses the native store.
 
 Without this the game still works — it just uses `localStorage`, which iOS may
 clear under storage pressure.
@@ -92,3 +97,86 @@ year to find out.
   archetype.
 - There is no `LICENSE` file, which means all rights reserved by default.
   Decide that deliberately before publishing the source.
+
+
+---
+
+# Submission paperwork
+
+Everything here is answerable from the code, not from a guess. Re-check it if
+the game ever gains a network call, an ad, or an account.
+
+## Privacy — the short version is "none"
+
+The game collects nothing, sends nothing, and has no server. There is no
+analytics, no crash reporting, no ads, no in-app purchase, no login, no
+third-party SDK, and no tracking of any kind. The `store` playtest suite
+asserts zero network requests at runtime, so this stays true by test rather
+than by memory.
+
+- **Apple privacy label:** *Data Not Collected.*
+- **Google Play Data safety:** no data collected, no data shared; saves stay on
+  the device; the player can delete them by clearing app storage.
+- **Privacy policy:** both stores still want a URL. One honest paragraph is
+  enough: the app stores a single save file on your device, collects no
+  personal data, and transmits nothing.
+
+## Age rating
+
+Verified against the script, not assumed:
+
+| Question | Answer |
+|---|---|
+| Profanity | None. A scan of the shipped text finds no swearing. |
+| Violence | None. Conflict is meetings. |
+| Sexual content, nudity | None. |
+| Gambling, simulated gambling | None. |
+| Alcohol, tobacco, drugs | None. Caffeine is a game resource. |
+| Horror, fear | None. |
+| User-generated content, chat | None. |
+| Unrestricted web access | None. There is no network. |
+
+Expected: **Apple 4+**, **Google Play Everyone**, **PEGI 3**, **ESRB Everyone**.
+The satire is workplace comedy and reads well above a child's interest level,
+but nothing in it raises the rating.
+
+## The review risk that actually matters
+
+Apple guideline **4.2 (minimum functionality)** is what rejects wrapped web
+content, and the defence is that this is a real game rather than a site in a
+shell:
+
+- it runs fully offline, with fonts and icons bundled in the binary;
+- it has its own home-screen icon and launch behavior, not a browser chrome;
+- it is a complete game with progression, saves and an ending;
+- it never points at a remote URL, so guideline **4.7** does not apply either.
+
+Keep it that way. The moment the shipped build loads anything over the network,
+both of those arguments weaken.
+
+## Store listing checklist
+
+- [x] App icon — `tools/make-icons.js` writes 180 / 192 / 512 / maskable PNGs
+      into the document. A native build needs the same art at the platform
+      sizes; render it from the same tool rather than redrawing it.
+- [x] Portrait lock — declared in the manifest and enforced in the game, which
+      pauses and asks for portrait on a phone held sideways.
+- [x] Version string — `const BUILD`, shown on the title screen.
+- [ ] Screenshots — 6.7" and 5.5" for Apple, phone and 7"/10" tablet for Google.
+      The office, a desk session mid-interruption, a video-call fight, and the
+      offer letter are the four that sell it.
+- [ ] Short description, long description, keywords.
+- [ ] Support URL and marketing URL.
+- [ ] Privacy policy URL (see above).
+- [ ] Apple: age rating questionnaire, export-compliance answer (no encryption
+      beyond standard HTTPS — and this build makes no requests at all).
+
+## Honest gaps
+
+- **No native shell exists yet.** The Capacitor wrapping in the section above is
+  written but has not been built or run on a device; the numbers and behavior in
+  this repo are verified in Chromium at phone viewports, not on hardware.
+- **Not tested on a real iPhone or Android handset.** Safari and real touch
+  input can differ from headless Chromium.
+- **One floor, one chapter, plus the repeating day loop.** Reviewers will not
+  reject it for length, but see `docs/floor6-draft.md` before a paid release.

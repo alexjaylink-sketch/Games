@@ -560,6 +560,102 @@ SUITES.desk = async browser => {
   return d;
 };
 
+SUITES.mobile = async browser => {
+  const d = await boot(browser);
+  section('mobile — the platform, not the game');
+
+  /* nothing may scroll sideways, at the narrowest phone we support */
+  await d.page.setViewportSize({ width: 320, height: 568 }); await sleep(400);
+  const overflow = await d.state(() => ({
+    doc: document.documentElement.scrollWidth <= window.innerWidth + 1,
+    body: document.body.scrollWidth <= window.innerWidth + 1,
+    w: document.documentElement.scrollWidth + '/' + window.innerWidth
+  }));
+  ok('no sideways scroll at 320px', overflow.doc && overflow.body, overflow.w);
+
+  /* every control you have to hit repeatedly is thumb-sized (44px is the
+     platform guidance on both stores) */
+  const small = await d.state(() => [...document.querySelectorAll('#pad button, .act')]
+    .map(b => ({ id: b.id || b.className, r: b.getBoundingClientRect() }))
+    .filter(x => x.r.width && (x.r.width < 40 || x.r.height < 40))
+    .map(x => x.id + ' ' + Math.round(x.r.width) + 'x' + Math.round(x.r.height)));
+  ok('controls stay thumb-sized on a small phone', small.length === 0, small.join(', '));
+
+  /* the tool card has to fit, not spill off the top */
+  await d.page.evaluate(() => { S.flags.satDown = 1; startDesk(); }); await sleep(700);
+  const card = await d.state(() => {
+    const b = document.querySelector('#tut .b'); if (!b) return null;
+    const r = b.getBoundingClientRect();
+    return { top: r.top, bottom: r.bottom, h: window.innerHeight, fits: r.top >= -1 && r.bottom <= window.innerHeight + 1 };
+  });
+  ok('the tool card fits a small screen', card && card.fits, card && Math.round(card.top) + '..' + Math.round(card.bottom) + ' of ' + card.h);
+  await d.page.evaluate(() => { hideTut(); });
+
+  /* sideways: the game asks for portrait and stops the clock */
+  await d.page.setViewportSize({ width: 568, height: 320 }); await sleep(500);
+  const land = await d.state(() => ({
+    shown: getComputedStyle(document.getElementById('rotate')).display !== 'none',
+    body: document.body.classList.contains('sideways'), paused: sideways
+  }));
+  ok('a phone held sideways is asked to turn back', land.shown && land.body && land.paused, JSON.stringify(land));
+  const c0 = await d.state(() => D && D.clock);
+  await sleep(1200);
+  const c1 = await d.state(() => D && D.clock);
+  ok('  and the desk clock stops while it waits', c0 !== null && c1 === c0, c0 + ' → ' + c1);
+
+  await d.page.setViewportSize({ width: 390, height: 844 }); await sleep(500);
+  const back = await d.state(() => ({ shown: getComputedStyle(document.getElementById('rotate')).display !== 'none', paused: sideways }));
+  ok('  turning back resumes', !back.shown && !back.paused);
+  const c2 = await d.state(() => D && D.clock);
+  await sleep(900);
+  ok('  the clock runs again', await d.state(() => D && D.clock) > c2);
+
+  /* a laptop is landscape too, and must not be nagged */
+  await d.page.setViewportSize({ width: 1280, height: 800 }); await sleep(400);
+  ok('a laptop in landscape is left alone', await d.state(() => !sideways));
+  await d.page.setViewportSize({ width: 390, height: 844 }); await sleep(400);
+  await d.page.evaluate(() => { endDesk('quit'); }); await d.advance();
+
+  /* a save the device mangled must not strand you on a dead Resume button */
+  await d.page.evaluate(() => { localStorage.setItem('shipit_lodestar_v2', '{"build":40,"maxFo'); });
+  ok('a truncated save is not offered as Resume', await d.state(() => hasSave() === false));
+  ok('  and it is cleared, so the title is usable', await d.state(() => !localStorage.getItem('shipit_lodestar_v2')));
+  await d.page.evaluate(() => { localStorage.setItem('shipit_lodestar_v2', 'not json at all'); });
+  ok('  same for junk', await d.state(() => hasSave() === false && !localStorage.getItem('shipit_lodestar_v2')));
+
+  /* a device that refuses writes says so once, instead of failing silently */
+  await d.page.evaluate(() => {
+    window.__realSet = localStorage.setItem.bind(localStorage);
+    localStorage.setItem = () => { throw new Error('QuotaExceededError'); };
+    warnedNoStore = false; lastAuto = 0; autosave(true);
+  });
+  await sleep(200);
+  ok('a full or blocked storage warns the player', await d.state(() => document.getElementById('toast').classList.contains('on')
+    && /will not store/.test(document.getElementById('toast').textContent)));
+  await d.page.evaluate(() => { localStorage.setItem = window.__realSet; });
+
+  /* backgrounding the app writes the save, with no save button pressed */
+  await d.page.evaluate(() => { localStorage.clear(); Object.assign(S, { build: 61, credits: 777, lv: 3 }); });
+  ok('nothing saved yet', await d.state(() => !localStorage.getItem('shipit_lodestar_v2')));
+  await d.page.evaluate(() => {
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await sleep(300);
+  const saved = await d.state(() => { const raw = localStorage.getItem('shipit_lodestar_v2'); return raw ? JSON.parse(raw) : null; });
+  ok('backgrounding the app saves it', saved && saved.build === 61 && saved.credits === 777, saved && ('build ' + saved.build + ', ' + saved.credits + ' credits'));
+
+  /* and a fight is a checkpoint on its own */
+  await d.page.evaluate(() => {
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => false });
+    localStorage.clear(); S.credits = 1234;
+  });
+  await d.page.evaluate(() => { startBattle(['replyall']); }); await sleep(700);
+  await d.fight(); await d.advance(30);
+  ok('a finished fight is a checkpoint', await d.state(() => { const r = localStorage.getItem('shipit_lodestar_v2'); return !!r && JSON.parse(r).credits >= 1234; }));
+  return d;
+};
+
 SUITES.store = async browser => {
   const d = await boot(browser);
   section('store readiness — self-contained, durable, identifiable');

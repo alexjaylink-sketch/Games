@@ -32,7 +32,9 @@ Suites: `smoke` (intro, field, a fight, save), `chain` (desk/office must
 alternate through the gates), `loop` (chapter-one ending → day two → day
 three), `side` (five side quests), `desk` (all five build tools with in-page
 bots, interruption coupling, tutorial card), `store` (no network, fonts,
-manifest, save codes, migration, settings). `desk` is slow on purpose.
+icons, manifest, save codes, migration, settings), `mobile` (the platform:
+no sideways scroll, thumb-sized controls, the portrait guard, autosave on
+backgrounding, corrupt and unwritable saves). `desk` is slow on purpose.
 
 `tools/sim.js` plays thousands of fights with the real enemy tables and skill
 functions eval'd out of the source. Run it after any combat number changes.
@@ -142,8 +144,32 @@ Brayden should take 10–16 rounds at level 4–5 and a button-masher should
 lose. The battle screen is styled as a video call (`.tile`, `#selfview`,
 `#blog`).
 
+### Lifecycle (phones are not browser tabs)
+`watchOrientation()` pauses the game and shows `#rotate` when the viewport is
+landscape **and** under 560px tall — a phone held sideways, never a laptop. The
+global `sideways` flag stops `deskUpdate`, so the desk clock does not run while
+the overlay is up.
+
+`watchLifecycle()` autosaves on `visibilitychange → hidden`, on `pagehide` and
+on `blur`, and re-boots the audio context when the app comes back (iOS suspends
+it in the background and it never resumes on its own). `autosave(force)` is
+throttled to 1.5 s unless forced, and is also called at checkpoints: the end of
+a fight, each approval, and the end of a desk session. Nothing in the game asks
+the player to save.
+
+`watchErrors()` saves and toasts once on an uncaught error or rejection.
+
+**These three are called at the bottom of the file, in `BOOT`.** They were once
+inserted into `quitToTitle()` by an anchor that matched the wrong
+`classList.add('titling')` — autosave then only worked after quitting, and
+stacked a duplicate listener each time. If you move them, check which one you
+matched.
+
 ### Saves
-`SAVEKEY = 'shipit_lodestar_v2'`, `SAVE_VERSION = 2`. `loadGame()` =
+`SAVEKEY = 'shipit_lodestar_v2'`, `SAVE_VERSION = 2`. `hasSave()` parses before
+it answers, and clears a save it cannot read, so a mangled write never leaves a
+Resume button that fails forever. The `window.__store` seam needs `del` as well
+as `get`/`set` in a native build (see STORE.md). `loadGame()` =
 `migrate(Object.assign(newGame(), saved))`, so a new field with a default in
 `newGame()` needs no migration; a renamed or reshaped field does (see
 `migrate()`, which also reads the pre-rename `shipit_vanta_v1` key). Save
