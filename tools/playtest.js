@@ -645,6 +645,23 @@ SUITES.mobile = async browser => {
   const saved = await d.state(() => { const raw = localStorage.getItem('shipit_lodestar_v2'); return raw ? JSON.parse(raw) : null; });
   ok('backgrounding the app saves it', saved && saved.build === 61 && saved.credits === 777, saved && ('build ' + saved.build + ', ' + saved.credits + ' credits'));
 
+  /* the whole point of autosaving: close the app, come back, carry on */
+  await d.page.evaluate(() => {
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await sleep(300);
+  await d.page.reload(); await sleep(1200);
+  ok('a backgrounded session offers Resume after a restart', await d.state(() => getComputedStyle(document.getElementById('btnCont')).display !== 'none'));
+  await d.page.click('#btnCont'); await sleep(800);
+  const resumed = await d.state(() => ({ mode, build: S && S.build, credits: S && S.credits, lv: S && S.lv }));
+  ok('  and picks up where it left off', resumed.mode === 'field' && resumed.build === 61 && resumed.credits === 777, JSON.stringify(resumed));
+  const moved = await d.state(async () => {
+    const y0 = S.y; press('down'); await new Promise(r => setTimeout(r, 400)); release('down');
+    return S.y !== y0 || anim.on;
+  });
+  ok('  and is playable, not just loaded', moved);
+
   /* and a fight is a checkpoint on its own */
   await d.page.evaluate(() => {
     Object.defineProperty(document, 'hidden', { configurable: true, get: () => false });
