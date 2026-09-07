@@ -56,7 +56,7 @@ NODE_PATH=/opt/node22/lib/node_modules node tools/playtest.js --shots /tmp/shots
 | `store` | no network requests, bundled fonts, manifest, versioned saves, save-code round trip, pre-rename save migration, settings |
 | `desk`  | plays all five build tools with in-page bots, and checks that interruptions take you off the keyboard, snooze costs caffeine, and meetings keep the work running |
 
-`desk` is slow on purpose (it plays several tool sessions in real time, about five minutes).
+`desk` is slow on purpose (it plays several tool sessions in real time, about six minutes).
 
 ## `embed-fonts.js` — remove the network dependency
 

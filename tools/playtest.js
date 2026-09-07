@@ -173,7 +173,7 @@ SUITES.chain = async browser => {
   }
   ok('no approvals handed out early', await d.state(() => JSON.stringify(S.approvals)) === '{"code":0,"sec":0,"design":0}');
 
-  await d.page.evaluate(() => { startDesk(); }); await sleep(400);
+  await d.page.evaluate(() => { startDesk(); }); await sleep(400); await d.page.evaluate(() => { hideTut(); });
   ok('build ceiling is 35%', await d.state(() => D.target) === 35);
   ok('ceiling is shown on the bar', (await d.state(() => document.getElementById('buildnote').textContent)).includes('35%'));
   /* progress only comes from the tool now, so cross the ceiling the way a line clear would */
@@ -227,7 +227,7 @@ SUITES.loop = async browser => {
   ok('  hud points at the desk with no ceiling', (await d.hud()).includes('100%'), await d.hud());
 
   /* the desk shows the new ticket */
-  await d.page.evaluate(() => { startDesk(); }); await sleep(500); await d.pickChoice(0); await sleep(400);
+  await d.page.evaluate(() => { startDesk(); }); await sleep(500); await d.pickChoice(0); await sleep(400); await d.page.evaluate(() => { hideTut(); });
   ok('desk header carries the new ticket', await d.state(() => document.querySelector('#deskhead .tick .key').textContent) === 'LDS-4418');
   await d.shot('day-two-desk');
   await d.page.evaluate(() => { endDesk('quit'); }); await d.advance();
@@ -346,7 +346,21 @@ SUITES.desk = async browser => {
   });
 
   const sit = async () => { await d.page.evaluate(() => { startDesk(); }); await sleep(500);
-    if (await d.state(() => document.getElementById('choices').classList.contains('on'))) return true; return false; };
+    if (await d.state(() => document.getElementById('choices').classList.contains('on'))) return true;
+    await d.page.evaluate(() => { if (D && D.tut) hideTut(); }); return false; };
+
+  /* ---- the first time a tool opens, a card explains it and the clock waits ---- */
+  await d.page.evaluate(() => { startDesk(); }); await sleep(700);
+  const tut = await d.state(() => ({ on: document.getElementById('tut').classList.contains('on'), clock: D.clock, ttl: document.getElementById('tutTtl').textContent, flag: S.flags.tut_stack }));
+  ok('first open shows a how-to card', tut.on && /Merge Queue/.test(tut.ttl) && tut.flag === 1, JSON.stringify(tut));
+  ok('  and the clock waits for it', tut.clock === 0);
+  await d.shot('tool-tutorial');
+  await d.page.evaluate(() => pressA()); await sleep(300);
+  ok('  A dismisses it and the desk runs', await d.state(() => !document.getElementById('tut').classList.contains('on') && D.clock > 0));
+  await d.page.evaluate(() => { endDesk('quit'); }); await d.advance();
+  await d.page.evaluate(() => { startDesk(); }); await sleep(500);
+  ok('  it does not come back', await d.state(() => !document.getElementById('tut').classList.contains('on')));
+  await d.page.evaluate(() => { endDesk('quit'); }); await d.advance();
 
   /* ---- Merge Queue: available from day one, no chooser ---- */
   ok('day one offers exactly one tool', await d.state(() => unlockedTools().join(',')) === 'stack');
@@ -358,7 +372,7 @@ SUITES.desk = async browser => {
   await d.shot('tool-merge-queue');
 
   /* passive: touch nothing for 20s */
-  const WINDOW = 20;
+  const WINDOW = 28;
   for (let t = 0; t < WINDOW && await d.mode() === 'desk'; t++) await sleep(1000);
   const passive = await d.state(() => ({ build: S.build, focus: S.focus, max: S.maxFocus, mode }));
   ok('ignoring everything barely builds', passive.build < 8, passive.build + '%');
@@ -434,7 +448,7 @@ SUITES.desk = async browser => {
   ok('code review unlocks a second tool', await d.state(() => unlockedTools().join(',')) === 'stack,breaker');
   const prompted2 = await sit();
   ok('chooser appears with two tools', prompted2 && await d.state(() => document.querySelectorAll('#chList button').length) === 2);
-  await d.pickChoice(1); await sleep(400);
+  await d.pickChoice(1); await sleep(400); await d.page.evaluate(() => { hideTut(); });
   ok('Bug Bash opens', await d.state(() => D && D.tool) === 'breaker');
   await d.page.evaluate(() => D.g.input('a'));
   let broke0 = await d.state(() => D.g.peek().left), b0 = await d.state(() => S.build);
@@ -453,7 +467,7 @@ SUITES.desk = async browser => {
   /* ---- Dependency Chain unlocks with security review ---- */
   await d.set({ approvals: { code: 1, sec: 1, design: 0 }, build: 70, focus: 200, maxFocus: 200 });
   ok('security review unlocks a third tool', await d.state(() => unlockedTools().length) === 3);
-  await sit(); await d.pickChoice(2); await sleep(400);
+  await sit(); await d.pickChoice(2); await sleep(400); await d.page.evaluate(() => { hideTut(); });
   ok('Dependency Chain opens', await d.state(() => D && D.tool) === 'snake');
   let ate = 0, len0 = 3;
   for (let t = 0; t < 120 && await d.mode() === 'desk'; t++) {
@@ -486,7 +500,7 @@ SUITES.desk = async browser => {
   /* ---- Open Floor unlocks with design review ---- */
   await d.set({ approvals: { code: 1, sec: 1, design: 1 }, build: 70, focus: 200, maxFocus: 200 });
   ok('design review unlocks a fourth tool', await d.state(() => unlockedTools().join(',')) === 'stack,breaker,snake,cross');
-  await sit(); await d.pickChoice(3); await sleep(400);
+  await sit(); await d.pickChoice(3); await sleep(400); await d.page.evaluate(() => { hideTut(); });
   ok('Open Floor opens', await d.state(() => D && D.tool) === 'cross');
   let trips = 0, caughtN = 0;
   for (let t = 0; t < 400 && await d.mode() === 'desk'; t++) {
@@ -516,7 +530,7 @@ SUITES.desk = async browser => {
   await d.page.evaluate(() => { setSq('thing', 2); });
   await d.set({ build: 70, focus: 200, maxFocus: 200 });
   ok('the Thing quest unlocks a fifth tool', await d.state(() => unlockedTools().length) === 5);
-  await sit(); await d.pickChoice(4); await sleep(400);
+  await sit(); await d.pickChoice(4); await sleep(400); await d.page.evaluate(() => { hideTut(); });
   ok('Pipeline opens', await d.state(() => D && D.tool) === 'pipes');
   const start = await d.state(() => { const p = D.g.peek(); return { cursor: p.cx + ',' + p.cy, arrive: p.arrive, path: p.grid.flat().filter(c => c.path).length }; });
   ok('  with a countdown and a scrambled path', start.arrive > 5 && start.path >= 15, JSON.stringify(start));
@@ -582,7 +596,7 @@ SUITES.store = async browser => {
   await d.page.click('#btnB'); await sleep(350);
   await d.page.click('#menuBody button:has-text("Settings")'); await sleep(350);
   const labels = await d.state(() => [...document.querySelectorAll('#listBody .g')].map(e => e.firstChild.textContent).join(','));
-  ok('settings expose sound and extra time', /Sound/.test(labels) && /Extra time/.test(labels), labels);
+  ok('settings expose sound, extra time and haptics', /Sound/.test(labels) && /Extra time/.test(labels) && /Haptics/.test(labels), labels);
   const before = await d.state(() => S.opts.extraTime);
   await d.page.click('#listBody button:has-text("Extra time")'); await sleep(300);
   ok('extra time toggles', await d.state(() => S.opts.extraTime) !== before);

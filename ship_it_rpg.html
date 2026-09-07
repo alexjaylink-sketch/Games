@@ -312,6 +312,14 @@ button{font-family:inherit;color:inherit}
   font-family:var(--mono);font-size:11px;letter-spacing:1px;color:var(--warn);
 }
 #away .b small{display:block;font-family:var(--sans);letter-spacing:0;color:var(--dim);font-size:11px;margin-top:4px}
+#tut{position:absolute;inset:0;z-index:7;display:none;align-items:center;justify-content:center;background:rgba(7,9,14,.78);padding:16px}
+#tut.on{display:flex}
+#tut .b{background:var(--panel);border:1px solid var(--brand);border-radius:12px;padding:14px 16px;max-width:340px;width:100%;text-align:left}
+#tut .k{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--brand)}
+#tut .t{font-weight:700;font-size:17px;margin:4px 0 8px}
+#tut .how{font-size:13px;line-height:1.45;color:var(--ink)}
+#tut .why{font-size:12px;line-height:1.45;color:var(--dim);margin-top:8px;border-top:1px solid var(--line);padding-top:8px}
+#tut .btn{display:block;width:100%;margin-top:12px;padding:10px;border-radius:9px;border:1px solid var(--brand);background:var(--brand);color:#fff;font-weight:700;font-size:13px}
 .card-int .fuse{position:absolute;left:0;bottom:0;height:2px;background:var(--warn);transition:width .12s linear}
 
 #work{flex:1 1 auto;min-height:0;position:relative;display:flex;align-items:center;justify-content:center}
@@ -570,6 +578,7 @@ body.fighting #hud, body.fighting #pad{display:none}
         <div id="work">
           <canvas id="workcv"></canvas>
           <div id="away"><div class="b">DEALING WITH IT <span id="awayT"></span><small>Your work keeps going without you.</small></div></div>
+          <div id="tut"><div class="b"><div class="k">NEW BUILD TOOL</div><div class="t" id="tutTtl"></div><div class="how" id="tutHow"></div><div class="why" id="tutWhy"></div><button class="btn" id="tutOk">Got it</button></div></div>
           <div id="autoc">
             <div class="meta"><span id="acStreak">STREAK 0</span><span id="acLeft"></span></div>
             <div class="line" id="acLine"></div>
@@ -1109,7 +1118,7 @@ const Sfx = {
 /* ==========================================================================
    STATE
    ========================================================================== */
-const BUILD = '1.1.0';                       /* shown in the UI so bug reports name a build */
+const BUILD = '1.1.1';                       /* shown in the UI so bug reports name a build */
 const SAVE_VERSION = 2;
 const SAVEKEY = 'shipit_lodestar_v2';
 const LEGACY_KEYS = ['shipit_vanta_v1'];     /* saves written before the rename */
@@ -1134,7 +1143,7 @@ function newGame(){
     bag:{snack:2, brew:1},
     owned:{laptop:1, lanyard:1},
     version: SAVE_VERSION,
-    opts:{sound:1, extraTime:0},
+    opts:{sound:1, extraTime:0, haptics:1},
     flags:{},
     side:{}, pages:{}, asked:{},
     build:0,
@@ -2129,11 +2138,21 @@ const SESSION_CHUNK = 35;         /* what one good sitting is worth */
    Mechanics are not copyrightable; names and specific looks are, so these
    share neither with the games they nod to. */
 const TOOLS = {
-  stack:   {name:'Merge Queue',      sub:'Stack the commits. Clear a full row to merge it.',      hint:'day one',                 unlock:()=>true},
-  breaker: {name:'Bug Bash',         sub:'Knock every bug out of the codebase. Do not drop the fix.', hint:'after code review',   unlock:()=>!!S.approvals.code},
-  snake:   {name:'Dependency Chain', sub:'Grow the service graph. Do not depend on yourself.',     hint:'after security review', unlock:()=>!!S.approvals.sec},
-  cross:   {name:'Open Floor',       sub:'Cross the floor to the kitchen without being talked to.', hint:'after design review',   unlock:()=>!!S.approvals.design},
-  pipes:   {name:'Pipeline',         sub:'Plumb it before the data arrives.',                      hint:'after The Thing In The Corner', unlock:()=>sq('thing') >= 2 || (S.day||1) > 1}
+  stack:   {name:'Merge Queue',      sub:'Stack the commits. Clear a full row to merge it.',      hint:'day one',                 unlock:()=>true,
+    how:'Left and right steer the commit, A rotates it, B drops it. Fill a row all the way across to merge it.',
+    why:'An ignored ping adds a row of debt with one hole. The all-hands locks rows you can never clear. Step away to deal with someone and the queue keeps falling without you.'},
+  breaker: {name:'Bug Bash',         sub:'Knock every bug out of the codebase. Do not drop the fix.', hint:'after code review',   unlock:()=>!!S.approvals.code,
+    how:'Left and right move the paddle. A serves the fix. Every bug it hits builds; clear the wall and it comes back deeper.',
+    why:'An ignored ping pushes the wall down a row. Meetings shrink the paddle. Step away and the paddle stays where you left it, which is usually the wrong place.'},
+  snake:   {name:'Dependency Chain', sub:'Grow the service graph. Do not depend on yourself.',     hint:'after security review', unlock:()=>!!S.approvals.sec,
+    how:'The d-pad turns the chain. Eat a service to grow it. Do not run into a wall, or into yourself.',
+    why:'An ignored ping adds a wall. Meetings add several. Step away and the chain keeps walking in whatever direction it was going.'},
+  cross:   {name:'Open Floor',       sub:'Cross the floor to the kitchen without being talked to.', hint:'after design review',   unlock:()=>!!S.approvals.design,
+    how:'The d-pad moves you one tile. Reach the kitchen row to score, then you start again from your desk.',
+    why:'Everyone on the floor wants a word. An ignored ping adds a person. Deal with cards from the desk row, not halfway across.'},
+  pipes:   {name:'Pipeline',         sub:'Plumb it before the data arrives.',                      hint:'after The Thing In The Corner', unlock:()=>sq('thing') >= 2 || (S.day||1) > 1,
+    how:'The d-pad moves the cursor, A rotates the pipe under it, B runs the data early for a bonus. Route it from the green inlet to the orange outlet.',
+    why:'An ignored ping twists pipes behind your back and shortens the clock. A leak resets the board. Meetings twist more.'}
 };
 const unlockedTools = ()=> Object.keys(TOOLS).filter(k=>TOOLS[k].unlock() && WORK[k]);
 
@@ -2184,8 +2203,20 @@ async function startDesk(){
     workState(D.g.intro);
     renderDeskHud();
     syncHUD();
+    if(!S.flags['tut_'+tool]){ S.flags['tut_'+tool] = 1; showTut(tool); }
   });
 }
+/* the first time a tool opens, one card of instructions; the clock waits */
+function showTut(tool){
+  const t = TOOLS[tool]; if(!D || !t.how) return;
+  D.tut = 1;
+  $('tutTtl').textContent = t.name; $('tutHow').textContent = t.how; $('tutWhy').textContent = t.why;
+  $('tut').classList.add('on');
+}
+function hideTut(){ if(D) D.tut = 0; $('tut').classList.remove('on'); }
+$('tutOk').addEventListener('click', ()=>{ Sfx.blip(); hideTut(); });
+/* a phone buzz for the things that interrupt you; off in settings */
+function buzz(p){ if(S && S.opts.haptics === 0) return; try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }
 
 function workState(t, warn){ const el=$('workstate'); el.textContent=t; el.classList.toggle('blocked',!!warn); }
 
@@ -2236,7 +2267,7 @@ function spawnInterrupt(){
     if(d.cards.some(c=>c.who===t.who)) return;
     d.cards.push(Object.assign({}, t, {life:t.life*stretch, maxLife:t.life*stretch}));
   }
-  Sfx.alert();
+  Sfx.alert(); buzz(30);
   const w = $('work'); w.classList.remove('ping'); void w.offsetWidth; w.classList.add('ping');
   renderCards();
 }
@@ -2286,7 +2317,7 @@ function escalate(c, i){
   d.cards.splice(i,1); renderCards();
   if(c.mtg){ enterMeeting(c.mtg, true); return; }
   d.ignored++;
-  S.focus -= c.thr; syncHUD(); Sfx.hurt();
+  S.focus -= c.thr; syncHUD(); Sfx.hurt(); buzz([40,50,40]);
   workState(c.esc, true);
   if(d.g.punish) d.g.punish();
   if(S.focus <= 0){ endDesk('burnout'); return; }
@@ -2299,13 +2330,13 @@ function enterMeeting(m, late){
   $('mtgttl').textContent = m.ttl;
   $('mtgkind').textContent = late ? 'YOU JOINED LATE' : 'MEETING IN PROGRESS';
   $('mtgfil').style.width = '0%'; $('mtgline').textContent = '';
-  Sfx.meeting();
+  Sfx.meeting(); buzz(70);
   $('meeting').classList.add('on');
 }
 
 /* ---------- the frame ---------- */
 function deskUpdate(ms){
-  const d = D; if(!d || d.over) return;
+  const d = D; if(!d || d.over || d.tut) return;
   const dt = Math.min(0.1, ms/1000);
   d.clock += dt;
 
@@ -2385,6 +2416,7 @@ async function endDesk(reason){
   if(d.g.stop) d.g.stop();
   $('meeting').classList.remove('on');
   $('away').classList.remove('on');
+  $('tut').classList.remove('on');
   $('desk').classList.remove('on');
   document.body.classList.remove('desking');
   setPad('TALK / OK', 'MENU');
@@ -3137,6 +3169,9 @@ function showSettings(){
     {label:'Extra time', sub:'Interruptions at your desk stay on screen 80% longer. The desk is the only timed part of the game — turn this on if reacting under time pressure is not something you want to be tested on.',
      tag:S.opts.extraTime ? 'ON' : 'OFF',
      on:()=>{ S.opts.extraTime = S.opts.extraTime ? 0 : 1; Sfx.blip(); showSettings(); }},
+    {label:'Haptics', sub:'A short buzz when someone interrupts you at your desk, on phones that support it.',
+     tag:S.opts.haptics === 0 ? 'OFF' : 'ON',
+     on:()=>{ S.opts.haptics = S.opts.haptics === 0 ? 1 : 0; if(S.opts.haptics) buzz(30); Sfx.blip(); showSettings(); }},
     {note:'Settings are stored with your save. Build v' + BUILD + '.'}
   ];
   openList('Settings', rows, ()=>{ closeList(); saveGame(); });
@@ -3184,7 +3219,7 @@ function migrate(o){
     o.side = o.side || {}; o.pages = o.pages || {}; o.asked = o.asked || {};
     if(o.build === undefined) o.build = 0;
   }
-  o.opts = Object.assign({sound:1, extraTime:0}, o.opts || {});
+  o.opts = Object.assign({sound:1, extraTime:0, haptics:1}, o.opts || {});
   if(o.build > 0 && o.flags && !o.flags.satDown) o.flags.satDown = 1;
   o.version = SAVE_VERSION;
   return o;
@@ -4020,13 +4055,13 @@ document.querySelectorAll('#dpad button').forEach(b=>{
 });
 
 function pressA(){
-  if(mode==='desk'){ if(D && D.g && !D.meeting && !(D.away > 0)) D.g.input('a'); return; }
+  if(mode==='desk'){ if(D && D.tut){ Sfx.blip(); hideTut(); return; } if(D && D.g && !D.meeting && !(D.away > 0)) D.g.input('a'); return; }
   Sfx.blip();
   if(mode==='dialogue' && dlgResolve) return dlgResolve();
   if(mode==='field') return interact();
 }
 function pressB(){
-  if(mode==='desk'){ if(D && D.g && !D.meeting && !(D.away > 0)) D.g.input('b'); return; }
+  if(mode==='desk'){ if(D && D.tut){ Sfx.blip(); hideTut(); return; } if(D && D.g && !D.meeting && !(D.away > 0)) D.g.input('b'); return; }
   Sfx.blip();
   if(mode==='dialogue' && dlgResolve) return dlgResolve();
   if(mode==='menu' || mode==='shop'){ closeList(); closeMenu(); mode='field'; return; }
