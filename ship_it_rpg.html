@@ -85,13 +85,21 @@ button{font-family:inherit;color:inherit}
 /* ============ DIALOGUE ============ */
 #dlg{
   position:absolute;left:10px;right:10px;bottom:10px;z-index:20;
-  background:var(--panel);border:1px solid var(--edge2);border-radius:10px;
-  box-shadow:0 10px 30px rgba(0,0,0,.6);padding:11px 13px 15px;display:none;
+  background:linear-gradient(180deg,#1a2231,#141b28);border:1px solid var(--edge2);border-radius:12px;
+  box-shadow:0 14px 36px rgba(0,0,0,.66);padding:12px 14px 17px;display:none;
 }
 #dlg.on{display:block}
-#dlg .who{color:var(--brand);font-size:11px;font-weight:600;letter-spacing:.4px;margin-bottom:3px}
-#dlg .txt{font-size:14px;line-height:1.5}
-#dlg .caret{position:absolute;right:12px;bottom:6px;color:var(--dim);font-size:11px;animation:bl 1.1s steps(2,end) infinite}
+#dlg .who{display:flex;align-items:center;gap:8px;margin:-2px 0 7px}
+#dlg .who .av{
+  --h:215;flex:0 0 auto;width:26px;height:26px;border-radius:50%;
+  background:linear-gradient(150deg,hsl(var(--h) 52% 52%),hsl(var(--h) 42% 30%));
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:10px;font-weight:600;color:#fff;
+  box-shadow:0 0 0 2px #141b28,0 0 0 3px hsl(var(--h) 60% 45% / .5);
+}
+#dlg .who .nm{color:#dce8f7;font-size:12px;font-weight:600;letter-spacing:.2px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#dlg .txt{font-size:14px;line-height:1.52}
+#dlg .caret{position:absolute;right:13px;bottom:7px;color:var(--brand);font-size:10px;animation:bl 1.1s steps(2,end) infinite}
 @keyframes bl{50%{opacity:.15}}
 #choices{
   position:absolute;left:10px;right:10px;bottom:10px;z-index:21;display:none;
@@ -139,9 +147,11 @@ button{font-family:inherit;color:inherit}
 
 /* ============ SCREENS ============ */
 .screen{
-  position:absolute;inset:0;z-index:30;background:rgba(10,13,19,.97);
+  position:absolute;inset:0;z-index:30;background:#0a0d13;
   display:none;flex-direction:column;
 }
+#scList,#scSave{z-index:32}
+.screen .body{background:linear-gradient(180deg,rgba(79,140,255,.05),transparent 220px)}
 .screen.on{display:flex}
 .screen header{
   flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:12px 14px;
@@ -170,6 +180,46 @@ button{font-family:inherit;color:inherit}
 .kv span:last-child{font-family:var(--mono);color:var(--ink)}
 .kv span:first-child{color:var(--dim)}
 .note{color:var(--dim);font-size:11px;line-height:1.55}
+/* portal: the hero card */
+.card.hero{background:linear-gradient(160deg,#1b2434,#141b28);border-color:var(--edge2)}
+.hero .idrow{display:flex;align-items:center;gap:11px;margin-bottom:12px}
+.hero .bdg{
+  flex:0 0 auto;font-family:var(--mono);font-size:11px;font-weight:600;color:#bcd3ff;letter-spacing:.5px;
+  padding:7px 10px;border-radius:8px;background:rgba(79,140,255,.12);border:1px solid rgba(79,140,255,.35);
+}
+.hero .nm{min-width:0}
+.hero .nm b{display:block;font-size:15px;color:#fff;font-weight:600;line-height:1.25}
+.hero .nm small{display:block;font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:2px}
+.hero .bar{margin-bottom:9px}
+.hero .bar .lab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;letter-spacing:.8px;color:var(--dim);margin-bottom:4px}
+.hero .bar .lab span:last-child{color:var(--ink)}
+.hero .bar .trk{height:6px;border-radius:4px;background:#0b1018;overflow:hidden;border:1px solid #1e2735}
+.hero .bar .trk i{display:block;height:100%;border-radius:3px;transition:width .3s}
+.hero .bar.xp .trk i{background:linear-gradient(90deg,#4f8cff,#7ec4ff)}
+.hero .bar.f .trk i{background:linear-gradient(90deg,#2f9e6a,#3ecf8e)}
+.hero .bar.c .trk i{background:linear-gradient(90deg,#c98a1e,#f5a524)}
+.hero .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:11px}
+.hero .tl{background:#0e141e;border:1px solid var(--edge);border-radius:8px;padding:8px 9px;text-align:center}
+.hero .tl .v{display:block;font-family:var(--mono);font-size:17px;color:#fff;line-height:1.1}
+.hero .tl .k{display:block;font-size:9.5px;color:var(--dim);margin-top:3px;letter-spacing:.4px}
+.hero .tl .s{display:block;font-family:var(--mono);font-size:9px;color:#5b687e;margin-top:1px}
+/* portal: a checklist step */
+.step{display:flex;align-items:center;gap:9px;font-size:12.5px;padding:7px 0;border-bottom:1px solid #1c2534}
+.step:last-child{border-bottom:0}
+.step i{flex:0 0 auto;width:16px;height:16px;border-radius:50%;border:1.5px solid #39445a;position:relative}
+.step .l{flex:1;min-width:0;color:var(--dim)}
+.step .d{flex:0 0 auto;font-family:var(--mono);font-size:10.5px;color:var(--dim);text-align:right;max-width:52%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.step.done i{background:var(--ok);border-color:var(--ok)}
+.step.done i::after{content:'';position:absolute;left:5px;top:2px;width:3.5px;height:7px;border:solid #08120d;border-width:0 2px 2px 0;transform:rotate(42deg)}
+.step.done .l{color:#8fa0b8}
+.step.done .d{color:var(--ok)}
+.step.now i{border-color:var(--brand);box-shadow:0 0 0 3px rgba(79,140,255,.16)}
+.step.now i::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--brand);animation:bl 1.4s ease-in-out infinite}
+.step.now .l{color:#fff;font-weight:600}
+.step.now .d{color:var(--brand)}
+.step.lock i{border-color:#2a3446;background:#131a26}
+.step.lock i::after{content:'';position:absolute;left:4.5px;top:5px;width:5px;height:4px;border-radius:1px;background:#5a6578}
+.step.lock{opacity:.55}
 .eq{font-family:var(--mono);font-size:11px;color:var(--brand)}
 .screen textarea{
   width:100%;height:96px;resize:none;margin-bottom:9px;
@@ -553,7 +603,7 @@ body.fighting #hud, body.fighting #pad{display:none}
     <canvas id="view"></canvas>
 
     <div id="dlg">
-      <div class="who" id="dlgWho"></div>
+      <div class="who" id="dlgWho"><span class="av" id="dlgAv"></span><span class="nm" id="dlgNm"></span></div>
       <div class="txt" id="dlgTxt"></div>
       <div class="caret">▼</div>
     </div>
@@ -1187,7 +1237,7 @@ const Sfx = {
 /* ==========================================================================
    STATE
    ========================================================================== */
-const BUILD = '1.1.3';                       /* shown in the UI so bug reports name a build */
+const BUILD = '1.2.0';                       /* shown in the UI so bug reports name a build */
 const SAVE_VERSION = 2;
 const SAVEKEY = 'shipit_lodestar_v2';
 const LEGACY_KEYS = ['shipit_vanta_v1'];     /* saves written before the rename */
@@ -1822,8 +1872,14 @@ function say(who, lines){
     const prev = mode; mode = 'dialogue'; heldDir = null;
     let i = 0;
     const show = ()=>{
-      $('dlgWho').textContent = who || '';
+      $('toast').classList.remove('on'); clearTimeout(toastT);
       $('dlgWho').style.display = who ? '' : 'none';
+      if(who){
+        $('dlgNm').textContent = who;
+        const first = String(who).replace(/[^A-Za-z ].*$/,'').trim().split(/\s+/);
+        $('dlgAv').textContent = (first[0]||'?').slice(0,1).toUpperCase() + (first[1]||'').slice(0,1).toUpperCase();
+        $('dlgWho').style.setProperty('--h', hueOf(who));
+      }
       $('dlgTxt').textContent = lines[i];
       $('dlg').classList.add('on');
     };
@@ -2051,7 +2107,7 @@ function openSkills(){
   setMenu(list);
 }
 function openBattleBag(){
-  const keys = Object.keys(S.bag).filter(k=>S.bag[k]>0);
+  const keys = Object.keys(S.bag).filter(k=>S.bag[k]>0 && ITEMS[k]);
   const list = keys.map(k=>({label:ITEMS[k].name, sub:'x'+S.bag[k], on:()=>act(()=>doItem(k))}));
   if(!list.length) list.push({label:'Bag is empty', sub:'', disabled:true, on:()=>{}});
   list.push({label:'← Back', sub:'', on:promptMenu});
@@ -3121,37 +3177,56 @@ function openMenu(){
   mode = 'menu'; heldDir = null;
   const body = $('menuBody'); body.innerHTML = '';
   const need = XPCURVE[S.lv];
-  const card = document.createElement('div'); card.className = 'card';
+  const card = document.createElement('div'); card.className = 'card hero';
+  const xpPct = need !== undefined ? Math.min(100, Math.round(S.xp/need*100)) : 100;
   card.innerHTML =
-    '<h3>Performance</h3>' +
-    kv('Level', title()) +
-    kv('Story points', S.xp + (need!==undefined ? ' / ' + need : ' (max band)')) +
-    kv('Focus', S.focus + ' / ' + S.maxFocus) +
-    kv('Caffeine', S.caf + ' / ' + S.maxCaf) +
-    kv('Impact (ATK)', pAtk() + '  (' + S.atk + ' +' + (ITEMS[S.weapon].atk||0) + ')') +
-    kv('Boundaries (DEF)', pDef() + '  (' + S.def + ' +' + (ITEMS[S.armor].def||0) + ')') +
-    kv('Perk credits', S.credits);
+    '<div class="idrow">' +
+      '<span class="bdg">' + esc(badge()) + '</span>' +
+      '<div class="nm"><b>' + esc(title()) + '</b><small>Day ' + (S.day||1) + ' &middot; ' + esc(clockStr()) + '</small></div>' +
+    '</div>' +
+    '<div class="bar xp"><div class="lab"><span>STORY POINTS</span><span>' +
+      (need !== undefined ? S.xp + ' / ' + need : S.xp + ' (max band)') + '</span></div>' +
+      '<div class="trk"><i style="width:' + xpPct + '%"></i></div></div>' +
+    '<div class="bar f"><div class="lab"><span>FOCUS</span><span>' + S.focus + ' / ' + S.maxFocus + '</span></div>' +
+      '<div class="trk"><i style="width:' + Math.max(0,S.focus)/S.maxFocus*100 + '%"></i></div></div>' +
+    '<div class="bar c"><div class="lab"><span>CAFFEINE</span><span>' + S.caf + ' / ' + S.maxCaf + '</span></div>' +
+      '<div class="trk"><i style="width:' + Math.max(0,S.caf)/S.maxCaf*100 + '%"></i></div></div>' +
+    '<div class="tiles">' +
+      tile('Impact', pAtk(), S.atk + ' +' + (ITEMS[S.weapon].atk||0)) +
+      tile('Boundaries', pDef(), S.def + ' +' + (ITEMS[S.armor].def||0)) +
+      tile('Credits', S.credits, 'perk') +
+    '</div>';
   body.appendChild(card);
 
   const q = document.createElement('div'); q.className='card';
-  const step = (label, doneYet, detail)=> kv(label, doneYet ? 'DONE' : detail);
-  q.innerHTML = '<h3>' + ticket().key + ' — ' + ticket().sum + '</h3>' + ((S.day||1) > 1 ?
-    kv('Day', S.day) +
-    step('1. Build to 100%',     S.build >= 100, S.build + '% — any build tool') +
-    step('2. Roadmap review',    false, readyToShip() ? 'VELOCITY is open' : 'locked') +
-    kv('Reviews', 'carried over') :
-    step('1. Build to 35%',      S.build >= 35,  S.build + '% — at your desk') +
-    step('2. Code review',       !!S.approvals.code,  'Priya') +
-    step('3. Build to 70%',      S.build >= 70,  S.build >= 35 && !S.approvals.code ? 'blocked' : S.build + '% — at your desk') +
-    step('4. Security review',   !!S.approvals.sec,   'Marcus') +
-    step('5. Build to 100%',     S.build >= 100, S.build >= 70 && !S.approvals.sec ? 'blocked' : S.build + '% — at your desk') +
-    step('6. Design review',     !!S.approvals.design,'Kai') +
-    step('7. Roadmap review',    false, readyToShip() ? 'VELOCITY is open' : 'locked'));
+  const steps = (S.day||1) > 1 ? [
+    ['Build to 100%',  S.build >= 100, false, S.build + '% — any build tool'],
+    ['Roadmap review', false,          !readyToShip(), readyToShip() ? 'VELOCITY is open' : 'locked'],
+    ['Reviews',        true,           false, 'carried over', 'carried over']
+  ] : [
+    ['Build to 35%',    S.build >= 35,        false, S.build + '% — at your desk'],
+    ['Code review',     !!S.approvals.code,   false, 'Priya'],
+    ['Build to 70%',    S.build >= 70,        S.build >= 35 && !S.approvals.code, S.build >= 35 && !S.approvals.code ? 'blocked' : S.build + '% — at your desk'],
+    ['Security review', !!S.approvals.sec,    false, 'Marcus'],
+    ['Build to 100%',   S.build >= 100,       S.build >= 70 && !S.approvals.sec, S.build >= 70 && !S.approvals.sec ? 'blocked' : S.build + '% — at your desk'],
+    ['Design review',   !!S.approvals.design, false, 'Kai'],
+    ['Roadmap review',  false,                !readyToShip(), readyToShip() ? 'VELOCITY is open' : 'locked']
+  ];
+  let marked = false;
+  q.innerHTML = '<h3>' + esc(ticket().key + ' — ' + ticket().sum) + '</h3>' + steps.map(([label, done, locked, detail, doneText], i)=>{
+    let st = done ? 'done' : locked ? 'lock' : 'todo';
+    if(st === 'todo' && !marked){ st = 'now'; marked = true; }
+    return '<div class="step ' + st + '"><i></i><span class="l">' + (i+1) + '. ' + esc(label) + '</span>' +
+           '<span class="d">' + esc(done ? (doneText || 'DONE') : detail) + '</span></div>';
+  }).join('');
   body.appendChild(q);
 
   const tc = document.createElement('div'); tc.className='card';
-  tc.innerHTML = '<h3>Build Tools</h3>' + Object.keys(TOOLS).map(k=>
-    kv(TOOLS[k].name, TOOLS[k].unlock() ? 'READY' : 'locked — ' + TOOLS[k].hint)).join('');
+  tc.innerHTML = '<h3>Build Tools</h3>' + Object.keys(TOOLS).map(k=>{
+    const open = TOOLS[k].unlock();
+    return '<div class="step ' + (open ? 'done' : 'lock') + '"><i></i><span class="l">' + esc(TOOLS[k].name) + '</span>' +
+           '<span class="d">' + esc(open ? 'READY' : 'locked — ' + TOOLS[k].hint) + '</span></div>';
+  }).join('');
   body.appendChild(tc);
 
   const open = SIDEQUESTS.filter(q=>sq(q.k) > 0);
@@ -3189,6 +3264,7 @@ function openMenu(){
   $('scMenu').classList.add('on');
 }
 function kv(a,b){ return '<div class="kv"><span>'+esc(a)+'</span><span>'+esc(b)+'</span></div>'; }
+function tile(lab,val,sub){ return '<div class="tl"><span class="v">'+esc(val)+'</span><span class="k">'+esc(lab)+'</span><span class="s">'+esc(sub)+'</span></div>'; }
 function esc(t){ return String(t).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
 function closeMenu(){ $('scMenu').classList.remove('on'); closeList(); if(mode==='menu') mode='field'; }
 
@@ -3209,7 +3285,7 @@ function showBag(){
   openList('Bag', rows, ()=>{ closeList(); });
 }
 function showEquip(){
-  const owned = Object.keys(S.owned);
+  const owned = Object.keys(S.owned).filter(k=>ITEMS[k]);
   const rows = [];
   rows.push({card:'Equipped', html:kv('Setup', ITEMS[S.weapon].name) + kv('Defenses', ITEMS[S.armor].name)});
   owned.filter(k=>ITEMS[k].type==='weapon').forEach(k=>rows.push({
@@ -3311,6 +3387,12 @@ function migrate(o){
     if(o.build === undefined) o.build = 0;
   }
   o.opts = Object.assign({sound:1, extraTime:0, haptics:1}, o.opts || {});
+  /* a save written by another build can name items this one does not have */
+  for(const k of Object.keys(o.bag || {})) if(!ITEMS[k]) delete o.bag[k];
+  for(const k of Object.keys(o.owned || {})) if(!ITEMS[k]) delete o.owned[k];
+  if(!ITEMS[o.weapon] || ITEMS[o.weapon].type !== 'weapon') o.weapon = 'laptop';
+  if(!ITEMS[o.armor]  || ITEMS[o.armor].type  !== 'armor')  o.armor  = 'lanyard';
+  o.owned[o.weapon] = 1; o.owned[o.armor] = 1;
   if(o.build > 0 && o.flags && !o.flags.satDown) o.flags.satDown = 1;
   o.version = SAVE_VERSION;
   return o;
