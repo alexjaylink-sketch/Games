@@ -761,6 +761,57 @@ const MAP = {
   start:{x:15,y:6,dir:'down'}
 };
 
+/* ---------- the ticket, and the tickets after it ---------- */
+const TICKETS = [
+  {key:'LDS-4417', sum:'Add settings toggle'},
+  {key:'LDS-4418', sum:'Remove settings toggle',
+   brief:'quick one — Legal has a concern about the word "settings". also the toggle. pull it, keep the surface. should be small 🙏',
+   pitch:['Okay so. The toggle. Loved it. Legal did not.',
+          'Not the toggle itself. The word. "Settings" implies the user can change something, and Legal feels that is a promise.',
+          'So we remove it and keep the surface. The surface is the story. The toggle was always an implementation detail.',
+          'Let’s align.'],
+   after:['You remove it at 4:47pm. It is the same forty lines with a minus sign in front of them.',
+          'The all-hands deck still has it. The deck is the source of truth now.',
+          'Nobody notices. Nobody noticed the first time either, which is the kind of consistency the company values.']},
+  {key:'LDS-4419', sum:'Add settings toggle',
+   brief:'ok so a customer asked for the toggle back. one customer. it is The Customer. top of your queue 🙏',
+   pitch:['Great news. A customer wants the toggle.',
+          'One customer. But it is the customer. The one on the slide. The logo.',
+          'So it goes back in. Same as before, but this time it was customer-driven, which is a different thing entirely.',
+          'Let’s align.'],
+   after:['It is exactly the same forty lines. The commit message says "reintroduce".',
+          'It is the most honest word in the repository.',
+          'Priya approves it without reading it. She has read it. She read it in the spring.']},
+  {key:'LDS-4420', sum:'Make the toggle AI',
+   brief:'not functionally. in spirit. board deck is thursday. should be small 🙏',
+   pitch:['I need the toggle to be AI.',
+          'Not functionally. Nobody is asking for functionality. In spirit. In the deck.',
+          'Rename something. Add a sparkle. I trust your judgment, which is a thing I am saying.',
+          'Let’s align.'],
+   after:['You rename a variable to aiEnabled and add a sparkle to the label.',
+          'The stock goes up half a percent on Thursday.',
+          'Correlation is not causation, Rand says at the all-hands, and then takes credit.']},
+  {key:'LDS-4421', sum:'Rename toggle to "Lighthouse Lite"',
+   brief:'lighthouse needs a win this quarter. the toggle is a win. do the math 🙏',
+   pitch:['Lighthouse needs a win.',
+          'The toggle is a win. It works, it is in production, and it has a sparkle. That is more than Lighthouse has ever had.',
+          'So the toggle becomes Lighthouse Lite. The narrative gets a feature. The feature gets a narrative. Everyone eats.',
+          'Let’s align.'],
+   after:['Lighthouse ships. Technically. It is your toggle with a different name and a landing page Kai designed three years ago.',
+          'Mara sends you a single thumbs-up from an address that is not a LODESTAR address.',
+          'You do not reply. It is not monitored. That is the arrangement.']}
+];
+function ticket(){
+  const i = S ? (S.ticket||0) : 0;
+  if(TICKETS[i]) return TICKETS[i];
+  const n = i - TICKETS.length;
+  return {key:'LDS-' + (4417 + i), sum: n%2 ? 'Add settings toggle' : 'Remove settings toggle',
+    brief:'toggle again. you know the drill. should be small 🙏',
+    pitch:['You know what this is.', 'I know what this is.', 'Let’s align.'],
+    after:['You do it again. It takes less time each time.', 'That is called seniority.']};
+}
+const WEEKDAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+
 /* ---------- progression ---------- */
 const TITLES = ['SDE I','SDE II','SDE II (Senior-Track)','Senior Engineer','Senior Engineer II','Staff Engineer'];
 const BADGES = ['SDE I','SDE II','SDE II·ST','SR ENG','SR ENG II','STAFF'];
@@ -1058,7 +1109,7 @@ const Sfx = {
 /* ==========================================================================
    STATE
    ========================================================================== */
-const BUILD = '1.0.0';                       /* shown in the UI so bug reports name a build */
+const BUILD = '1.1.0';                       /* shown in the UI so bug reports name a build */
 const SAVE_VERSION = 2;
 const SAVEKEY = 'shipit_lodestar_v2';
 const LEGACY_KEYS = ['shipit_vanta_v1'];     /* saves written before the rename */
@@ -1088,7 +1139,8 @@ function newGame(){
     side:{}, pages:{}, asked:{},
     build:0,
     approvals:{code:0, sec:0, design:0},
-    minutes:0
+    minutes:0,
+    day:1, ticket:0
   };
 }
 
@@ -1421,33 +1473,48 @@ function roundRectCorners(x,y,w,h,r,tl,tr,br,bl){
   cx.closePath();
 }
 
-function drawPerson(px,py,who,dir){
+function drawPerson(px,py,who,dir,walk){
   const s = TS, cxx = px + s*0.5;
   const up = dir==='up', side = dir==='left'||dir==='right';
+  /* a step: the body bobs, the legs scissor */
+  const ph = walk ? Math.sin(walk*Math.PI*2) : 0;
+  const bob = walk ? -Math.abs(Math.sin(walk*Math.PI))*s*0.035 : 0;
   cx.save();
   cx.globalAlpha=.3; cx.fillStyle='#000';
   cx.beginPath(); cx.ellipse(cxx, py+s*0.88, s*0.24, s*0.08, 0,0,7); cx.fill();
   cx.restore();
+  py += bob;
 
   // legs
   cx.fillStyle='#232833';
-  cx.fillRect(cxx-s*0.13, py+s*0.70, s*0.10, s*0.16);
-  cx.fillRect(cxx+s*0.03, py+s*0.70, s*0.10, s*0.16);
+  cx.fillRect(cxx-s*0.13, py+s*0.70 + ph*s*0.03, s*0.10, s*0.16 - ph*s*0.03);
+  cx.fillRect(cxx+s*0.03, py+s*0.70 - ph*s*0.03, s*0.10, s*0.16 + ph*s*0.03);
 
-  // torso
+  // torso, with a soft edge so people read against pale desks
+  cx.fillStyle = 'rgba(0,0,0,.28)';
+  roundRect(cxx-s*0.20, py+s*0.43, s*0.40, s*0.32, s*0.08); cx.fill();
   cx.fillStyle = who.col;
   roundRect(cxx-s*0.19, py+s*0.44, s*0.38, s*0.30, s*0.07); cx.fill();
+  cx.fillStyle='rgba(255,255,255,.12)';
+  cx.fillRect(cxx-s*0.16, py+s*0.46, s*0.32, s*0.05);
   cx.fillStyle='rgba(0,0,0,.16)';
   cx.fillRect(cxx-s*0.19, py+s*0.66, s*0.38, s*0.08);
 
   // arms
   cx.fillStyle = who.col;
-  cx.fillRect(cxx-s*0.25, py+s*0.47, s*0.07, s*0.20);
-  cx.fillRect(cxx+s*0.18, py+s*0.47, s*0.07, s*0.20);
+  cx.fillRect(cxx-s*0.25, py+s*0.47 - ph*s*0.02, s*0.07, s*0.20);
+  cx.fillRect(cxx+s*0.18, py+s*0.47 + ph*s*0.02, s*0.07, s*0.20);
+  cx.fillStyle = who.skin;
+  cx.fillRect(cxx-s*0.25, py+s*0.65 - ph*s*0.02, s*0.07, s*0.04);
+  cx.fillRect(cxx+s*0.18, py+s*0.65 + ph*s*0.02, s*0.07, s*0.04);
 
   // head
+  cx.fillStyle = 'rgba(0,0,0,.28)';
+  cx.beginPath(); cx.arc(cxx, py+s*0.33, s*0.17, 0, 7); cx.fill();
   cx.fillStyle = who.skin;
   cx.beginPath(); cx.arc(cxx, py+s*0.33, s*0.155, 0, 7); cx.fill();
+  cx.fillStyle = 'rgba(255,255,255,.10)';
+  cx.beginPath(); cx.arc(cxx-s*0.04, py+s*0.30, s*0.08, 0, 7); cx.fill();
 
   // hair
   cx.fillStyle = who.hair;
@@ -1591,10 +1658,10 @@ function draw(){
   for(const n of NPCS){
     if(S.flags['gone_'+n.id]) continue;
     if(n.x<x0-1||n.x>x1+1||n.y<y0-1||n.y>y1+1) continue;
-    drawPerson(Math.round(n.x*TS-camX), Math.round(n.y*TS-camY), n, 'down');
+    drawPerson(Math.round(n.x*TS-camX), Math.round(n.y*TS-camY), n, 'down', 0);
   }
 
-  drawPerson(Math.round(pxw*TS-camX), Math.round(pyw*TS-camY), PLAYER, S.dir);
+  drawPerson(Math.round(pxw*TS-camX), Math.round(pyw*TS-camY), PLAYER, S.dir, anim.on ? anim.t : 0);
 
   drawObjective(camX, camY, W, H);
 
@@ -2066,7 +2133,7 @@ const TOOLS = {
   breaker: {name:'Bug Bash',         sub:'Knock every bug out of the codebase. Do not drop the fix.', hint:'after code review',   unlock:()=>!!S.approvals.code},
   snake:   {name:'Dependency Chain', sub:'Grow the service graph. Do not depend on yourself.',     hint:'after security review', unlock:()=>!!S.approvals.sec},
   cross:   {name:'Open Floor',       sub:'Cross the floor to the kitchen without being talked to.', hint:'after design review',   unlock:()=>!!S.approvals.design},
-  pipes:   {name:'Pipeline',         sub:'Plumb it before the data arrives.',                      hint:'after The Thing In The Corner', unlock:()=>sq('thing') >= 2}
+  pipes:   {name:'Pipeline',         sub:'Plumb it before the data arrives.',                      hint:'after The Thing In The Corner', unlock:()=>sq('thing') >= 2 || (S.day||1) > 1}
 };
 const unlockedTools = ()=> Object.keys(TOOLS).filter(k=>TOOLS[k].unlock() && WORK[k]);
 
@@ -2109,6 +2176,8 @@ async function startDesk(){
     $('meeting').classList.remove('on');
     $('away').classList.remove('on');
     $('toolname').textContent = TOOLS[tool].name.toUpperCase();
+    document.querySelector('#deskhead .tick .key').textContent = ticket().key;
+    document.querySelector('#deskhead .tick .sum').textContent = ticket().sum;
     $('desk').classList.add('on');
     $('autoc').classList.remove('on');
     D.g.start();
@@ -2197,7 +2266,7 @@ function handleCard(c){
   if(c.mtg){ enterMeeting(c.mtg); return; }
   d.flow = 1; d.handled++;
   heldDir = null;
-  d.awayMax = d.away = (1.6 + c.thr*0.08) * (S.opts.extraTime ? 0.7 : 1);
+  d.awayMax = d.away = (1.0 + c.thr*0.06) * (S.opts.extraTime ? 0.7 : 1);
   $('away').classList.add('on');
   workState('You deal with it. Your hands are off the keyboard and the work does not wait.');
   renderDeskHud();
@@ -2302,7 +2371,7 @@ function deskUpdate(ms){
   }
   if(d.clock >= d.nextSpawn && d.heads <= 0 && d.cards.length < 3){
     spawnInterrupt();
-    const pressure = 5.2 - (S.build/100)*2.4;   /* the closer to done, the more people want to talk */
+    const pressure = (6.0 - (S.build/100)*2.4) * Math.max(0.7, 1 - 0.07*((S.day||1)-1));   /* the closer to done, the more people want to talk; every day a little more */
     d.nextSpawn = d.clock + pressure*(0.7 + Math.random()*0.7);
   }
   renderDeskHud();
@@ -2943,14 +3012,18 @@ function openMenu(){
 
   const q = document.createElement('div'); q.className='card';
   const step = (label, doneYet, detail)=> kv(label, doneYet ? 'DONE' : detail);
-  q.innerHTML = '<h3>LDS-4417 — Add settings toggle</h3>' +
+  q.innerHTML = '<h3>' + ticket().key + ' — ' + ticket().sum + '</h3>' + ((S.day||1) > 1 ?
+    kv('Day', S.day) +
+    step('1. Build to 100%',     S.build >= 100, S.build + '% — any build tool') +
+    step('2. Roadmap review',    false, readyToShip() ? 'VELOCITY is open' : 'locked') +
+    kv('Reviews', 'carried over') :
     step('1. Build to 35%',      S.build >= 35,  S.build + '% — at your desk') +
     step('2. Code review',       !!S.approvals.code,  'Priya') +
     step('3. Build to 70%',      S.build >= 70,  S.build >= 35 && !S.approvals.code ? 'blocked' : S.build + '% — at your desk') +
     step('4. Security review',   !!S.approvals.sec,   'Marcus') +
     step('5. Build to 100%',     S.build >= 100, S.build >= 70 && !S.approvals.sec ? 'blocked' : S.build + '% — at your desk') +
     step('6. Design review',     !!S.approvals.design,'Kai') +
-    step('7. Roadmap review',    false, readyToShip() ? 'VELOCITY is open' : 'locked');
+    step('7. Roadmap review',    false, readyToShip() ? 'VELOCITY is open' : 'locked'));
   body.appendChild(q);
 
   const tc = document.createElement('div'); tc.className='card';
@@ -3202,7 +3275,7 @@ async function interact(){
     }
     mode = 'dialogue';
     await say(null,'Your desk. Nameplate, one dead plant, a monitor you requisitioned and did not get.');
-    const c = await choose('Sit down and work on LDS-4417?', [
+    const c = await choose('Sit down and work on ' + ticket().key + '?', [
       {label:'Sit down and work', note:'build ' + S.build + '%'},
       {label:'Not right now'}
     ]);
@@ -3732,6 +3805,13 @@ async function npcTalk(n){
 
   if(n.id==='brayden'){
     if(!readyToShip()){ hold(); await say(n.name,'Brayden is on a call. He gestures at you in a way that means later.'); return done(); }
+    if((S.day||1) > 1){
+      hold(); await say(n.name, ticket().pitch);
+      const r = await startBattle(['brayden'], {boss:1, noFlee:1, title:'Roadmap Review — VELOCITY (recurring)',
+        intro:'Brayden shares his screen. It is the same document. The title now says "Vision (v' + S.day + ')".'});
+      if(r==='win') return ending();
+      return done();
+    }
     hold(); await say(n.name,[
       'You made it. Great. Love the hustle on day one, genuinely.',
       'So — I’ve been thinking about your toggle.',
@@ -3768,7 +3848,50 @@ async function lockedRoom(){
 /* ==========================================================================
    ENDING
    ========================================================================== */
+/* Every day after the first: a new ticket, the same toggle. */
+async function nextDay(){
+  S.day = (S.day||1) + 1; S.ticket = (S.ticket||0) + 1;
+  S.flags.finished = 0;
+  S.build = 0; S.minutes = 0;
+  S.approvals = {code:1, sec:1, design:1};
+  S.focus = S.maxFocus; S.caf = S.maxCaf;
+  S.x = MAP.start.x; S.y = MAP.start.y; S.dir = MAP.start.dir;
+  const t = ticket();
+  mode = 'dialogue';
+  await say(null, [
+    WEEKDAYS[(S.day-1) % 5] + '. Day ' + S.day + '.',
+    S.day === 2 ? 'You badge in. The badge works, which is the first surprise.' : 'You badge in. Nobody looks up. You are furniture now, which is a promotion of a kind.'
+  ]);
+  await say('Brayden', ['"' + t.brief + '"', '— sent at 8:51am, so it would be at the top of your queue before you were.']);
+  await say(null, [
+    'Reviews carry over. Nobody re-reads a revert.',
+    'Every build tool is yours now. Build it to 100% however you like, then take it to VELOCITY.'
+  ]);
+  toast(t.key + ' — ' + t.sum);
+  mode = 'field'; syncHUD(); saveGame();
+}
+
+async function endingAgain(){
+  mode = 'dialogue';
+  await flash();
+  const t = ticket();
+  await say('Brayden', ['Okay. Okay! Ship it.', 'Put it in the doc.']);
+  await say(null, t.after);
+  await say(null, [
+    'END OF DAY ' + S.day + '.',
+    'Shipped at ' + clockStr() + ', as ' + title() + '. ' + t.key + ' is in production. Something is always in production.'
+  ]);
+  S.flags.finished = 1; saveGame();
+  const c = await choose('Tomorrow?', [
+    {label:'Come in tomorrow', note:'a new ticket about the same toggle'},
+    {label:'Log off', note:'pick it up later from the title screen'}
+  ]);
+  if(c === 0) return nextDay();
+  quitToTitle();
+}
+
 async function ending(){
+  if((S.day||1) > 1) return endingAgain();
   mode = 'dialogue';
   await flash();
   await say('Brayden',[
@@ -3953,6 +4076,7 @@ function begin(state){
   mode = 'field';
   syncHUD();
   resize();
+  if(S.flags.finished){ setTimeout(()=>{ nextDay(); }, 250); return; }
   if(!S.flags.briefed) setTimeout(()=>{ toast('Talk to Dee — press A when facing her.'); }, 700);
 }
 $('skipIntro').addEventListener('click', ()=>{

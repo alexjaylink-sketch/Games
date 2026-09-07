@@ -80,3 +80,14 @@ title, font import, script and map data survived.
 ```sh
 node tools/build-artifact.js [outfile]   # default: build/ship-it.html
 ```
+
+## `package.js` — itch.io zip
+
+```sh
+node tools/package.js [outfile]   # default: build/ship-it-itch.zip
+```
+
+Zips the standalone document as `index.html` (plus a one-line README) for
+upload as an itch.io HTML project. Refuses to run if fonts are still fetched
+from the network. Uses the system `zip` when present and falls back to a
+small built-in writer otherwise.

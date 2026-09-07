@@ -70,14 +70,16 @@ Xcode, or a CI service (Codemagic, EAS Build).
 apps that feel thin. A ~25-minute game is on the line. What moves it the right
 way, in order of value:
 
-1. **More content.** One floor and one ticket is the honest weak point. All five
-   build tools now exist (the last two unlock off the design review and the
-   Thing quest); a Floor 6 and a second ticket shape would roughly double it.
+1. **More content.** One floor is the honest weak point. All five build tools
+   exist, and after the chapter-one ending the game rolls into a day-two loop
+   (a new ticket about the same toggle each day, reviews carried over, every
+   tool open) so the desk stays playable. A Floor 6 with new people would be
+   the next real expansion.
 2. **Audio** — done, and it was the cheapest item on this list.
 3. **Something that makes it feel like an app, not a page**: haptics on
    interruptions (`@capacitor/haptics`), a proper app icon and splash.
 
-Ship to **itch.io and as an installable PWA first**. Both are free, neither has
+Ship to **itch.io and as an installable PWA first** (`node tools/package.js` makes the itch zip). Both are free, neither has
 a review queue, and you find out whether people finish it before paying $99 a
 year to find out.
 

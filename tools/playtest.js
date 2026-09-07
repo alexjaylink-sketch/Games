@@ -202,6 +202,55 @@ SUITES.chain = async browser => {
   return d;
 };
 
+SUITES.loop = async browser => {
+  const d = await boot(browser);
+  section('loop — day two, same toggle, new ticket');
+
+  /* a senior engineer at the end of day one walks into VELOCITY */
+  await d.set({ build: 100, approvals: { code: 1, sec: 1, design: 1 }, lv: 5, xp: 400, atk: 24, def: 9, focus: 200, maxFocus: 200, caf: 60, maxCaf: 60, bag: { snack: 4, brew: 3 } });
+  await d.page.evaluate(() => { S.flags.satDown = 1; });
+  await d.interact(30, 4, 'up'); await d.advance();
+  ok('Brayden opens the roadmap review', await d.mode() === 'battle');
+  const r1 = await d.fight(400);
+  ok('  and loses it', await d.mode() !== 'battle', r1 + ' turns');
+  await d.advance(40);
+  ok('chapter one ends at the title', await d.mode() === 'title' && await d.state(() => S.flags.finished === 1));
+
+  /* resuming rolls into the next day */
+  await d.page.click('#btnCont'); await sleep(700);
+  ok('day two opens with a briefing', await d.mode() === 'dialogue');
+  const brief = await d.line(); await d.advance();
+  const day2 = await d.state(() => ({ day: S.day, ticket: ticket().key, sum: ticket().sum, build: S.build, appr: JSON.stringify(S.approvals), fin: S.flags.finished, mode }));
+  ok('a new ticket about the same toggle', day2.day === 2 && day2.ticket === 'LDS-4418' && /Remove/.test(day2.sum), JSON.stringify(day2));
+  ok('  reviews carry over and the build resets', day2.appr === '{"code":1,"sec":1,"design":1}' && day2.build === 0 && !day2.fin && day2.mode === 'field');
+  ok('  every tool is open', await d.state(() => unlockedTools().length) === 5);
+  ok('  hud points at the desk with no ceiling', (await d.hud()).includes('100%'), await d.hud());
+
+  /* the desk shows the new ticket */
+  await d.page.evaluate(() => { startDesk(); }); await sleep(500); await d.pickChoice(0); await sleep(400);
+  ok('desk header carries the new ticket', await d.state(() => document.querySelector('#deskhead .tick .key').textContent) === 'LDS-4418');
+  await d.shot('day-two-desk');
+  await d.page.evaluate(() => { endDesk('quit'); }); await d.advance();
+
+  /* portal shows the short list */
+  await d.page.click('#btnB'); await sleep(350);
+  const card = await d.state(() => [...document.querySelectorAll('#menuBody .card')].find(c => /LDS-4418/.test(c.textContent)).textContent.replace(/\s+/g, ' '));
+  ok('portal lists the day-two steps', /Build to 100%/.test(card) && /carried over/.test(card), card.slice(0, 90));
+  await d.page.click('#scMenu .x'); await sleep(200);
+
+  /* ship it again, and choose to come back */
+  await d.set({ build: 100, focus: 200, caf: 60 });
+  await d.interact(30, 4, 'up'); const pitch = await d.line(); await d.advance();
+  ok('Brayden pitches the new ticket', /Legal/.test(pitch) && await d.mode() === 'battle', JSON.stringify(pitch.slice(0, 40)));
+  await d.fight(400); await d.advance(30);
+  ok('the day ends with a choice', await d.mode() === 'choice' || await d.state(() => document.getElementById('choices').classList.contains('on')));
+  await d.pickChoice(0); await d.advance();
+  const day3 = await d.state(() => ({ day: S.day, ticket: ticket().key, mode }));
+  ok('coming back rolls straight into day three', day3.day === 3 && day3.ticket === 'LDS-4419' && day3.mode === 'field', JSON.stringify(day3));
+  ok('save survives the loop', await d.state(() => { saveGame(); const g = loadGame(); return g.day === 3 && g.ticket === 2; }));
+  return d;
+};
+
 SUITES.side = async browser => {
   const d = await boot(browser);
   section('side quests — five optional chains');
