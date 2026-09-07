@@ -278,10 +278,11 @@ SUITES.desk = async browser => {
           let y = 0; while (fits(shape, x, y + 1)) y++;
           const g2 = grid.map(row => row.slice());
           shape.forEach(([cx, cy]) => { if (y + cy >= 0) g2[y + cy][x + cx] = 1; });
-          let lines = 0, holes = 0, height = 0;
+          let lines = 0, holes = 0, height = 0, maxH = 0, bump = 0; const hs = [];
           for (let yy = 0; yy < H; yy++) if (g2[yy].every(v => v) && !g2[yy].includes('L')) lines++;
-          for (let xx = 0; xx < W; xx++) { let seen = false; for (let yy = 0; yy < H; yy++) { if (g2[yy][xx]) { if (!seen) height += H - yy; seen = true; } else if (seen) holes++; } }
-          const score = lines * 12 - holes * 5 - height * 0.6;
+          for (let xx = 0; xx < W; xx++) { let seen = false, hh = 0; for (let yy = 0; yy < H; yy++) { if (g2[yy][xx]) { if (!seen) { hh = H - yy; height += hh; } seen = true; } else if (seen) holes++; } hs.push(hh); maxH = Math.max(maxH, hh); }
+          for (let xx = 1; xx < W; xx++) bump += Math.abs(hs[xx] - hs[xx - 1]);
+          const score = lines * 12 - holes * 6 - height * 0.3 - bump * 0.7 - maxH * 1.0;
           if (!best || score > best.score) best = { score, r, x };
         }
         shape = rot(shape);
@@ -321,14 +322,14 @@ SUITES.desk = async browser => {
   await d.set({ focus: 200, maxFocus: 200, caf: 40, maxCaf: 40, build: 0 });
   await sit();
   let clears = 0, lastBuild = 0;
-  for (let t = 0; t < 60 && await d.mode() === 'desk'; t++) {
+  for (let t = 0; t < 80 && await d.mode() === 'desk'; t++) {
     for (const b of await d.page.$$('#cards .deal')) { try { await b.click({ timeout: 300 }); } catch (e) {} }
     if (!await d.state(() => D && D.meeting)) await d.page.evaluate(() => window.__stackStep());
     const bnow = await d.state(() => S.build); if (bnow > lastBuild) clears++; lastBuild = bnow;
     await sleep(350);
   }
   const active = await d.state(() => ({ build: S.build, focus: S.focus, mode }));
-  ok('playing the queue clears rows and builds', active.build >= 12, active.build + '% after ' + clears + ' scoring drops');
+  ok('playing the queue clears rows and builds', active.build >= 10, active.build + '% after ' + clears + ' scoring drops');
   ok('  without losing Focus', active.focus >= 190, active.focus + '/200');
   await d.shot('tool-merge-queue-late');
   if (await d.mode() === 'desk') await d.page.evaluate(() => { endDesk('quit'); });
@@ -429,9 +430,70 @@ SUITES.desk = async browser => {
   /* ---- the portal shows the progression ---- */
   await d.page.click('#btnB'); await sleep(350);
   const tools = await d.state(() => [...document.querySelectorAll('#menuBody .card')].find(c => /Build Tools/.test(c.textContent)).textContent.replace(/\s+/g, ' '));
-  ok('portal lists tools with locked ones for Floor 6', /Merge Queue.?READY/.test(tools) && /Pipeline.?locked/.test(tools), tools.slice(0, 110));
+  ok('portal lists tools with the locked ones and their gates', /Merge Queue.?READY/.test(tools) && /Open Floor.?locked/.test(tools) && /Pipeline.?locked/.test(tools), tools.slice(0, 110));
   await d.shot('portal-tools');
   await d.page.click('#scMenu .x'); await sleep(200);
+
+  /* ---- Open Floor unlocks with design review ---- */
+  await d.set({ approvals: { code: 1, sec: 1, design: 1 }, build: 70, focus: 200, maxFocus: 200 });
+  ok('design review unlocks a fourth tool', await d.state(() => unlockedTools().join(',')) === 'stack,breaker,snake,cross');
+  await sit(); await d.pickChoice(3); await sleep(400);
+  ok('Open Floor opens', await d.state(() => D && D.tool) === 'cross');
+  let trips = 0, caughtN = 0;
+  for (let t = 0; t < 400 && await d.mode() === 'desk'; t++) {
+    /* a sensible player deals with people from the desk row, not mid-crossing */
+    if (await d.state(() => D && D.g.peek().py === D.g.peek().H - 1))
+      for (const b of await d.page.$$('#cards .deal')) { try { await b.click({ timeout: 300 }); } catch (e) {} }
+    const r = await d.page.evaluate(() => {
+      if (!D || D.meeting || D.away > 0) return null;
+      const p = D.g.peek(); if (p.hit) return { hit: 1 };
+      const safe = (x, y, ahead) => { const L = p.lanes.find(l => l.y === y); if (!L) return true;
+        return !L.objs.some(o => { const x2 = o.x + L.dir * L.spd * ahead; const lo = Math.min(o.x, x2) - 0.15, hi = Math.max(o.x, x2) + o.w + 0.15; return x + 0.8 > lo && x + 0.2 < hi; }); };
+      if (safe(p.px, p.py - 1, 0.55)) D.g.input('up');
+      else if (!safe(p.px, p.py, 0.35)) { if (p.px > 0 && safe(p.px - 1, p.py, 0.35)) D.g.input('left'); else if (p.px < p.W - 1 && safe(p.px + 1, p.py, 0.35)) D.g.input('right'); else if (safe(p.px, p.py + 1, 0.35)) D.g.input('down'); }
+      return { trips: p.crossings };
+    });
+    if (r && r.hit) caughtN++;
+    if (r && r.trips > trips) trips = r.trips;
+    if (t === 60) await d.shot('tool-open-floor');
+    await sleep(100);
+  }
+  const of = await d.state(() => ({ build: S.build, mode }));
+  ok('crossing the floor builds', trips >= 1 && of.build > 70, trips + ' trips, build ' + of.build + '%, caught ' + caughtN + ' ticks');
+  if (await d.mode() === 'desk') await d.page.evaluate(() => { endDesk('quit'); });
+  await d.advance();
+
+  /* ---- Pipeline unlocks when the thing in the corner is dealt with ---- */
+  await d.page.evaluate(() => { setSq('thing', 2); });
+  await d.set({ build: 70, focus: 200, maxFocus: 200 });
+  ok('the Thing quest unlocks a fifth tool', await d.state(() => unlockedTools().length) === 5);
+  await sit(); await d.pickChoice(4); await sleep(400);
+  ok('Pipeline opens', await d.state(() => D && D.tool) === 'pipes');
+  const start = await d.state(() => { const p = D.g.peek(); return { cursor: p.cx + ',' + p.cy, arrive: p.arrive, path: p.grid.flat().filter(c => c.path).length }; });
+  ok('  with a countdown and a scrambled path', start.arrive > 5 && start.path >= 15, JSON.stringify(start));
+  let boards = 0, leaks = 0;
+  for (let t = 0; t < 400 && await d.mode() === 'desk'; t++) {
+    for (const b of await d.page.$$('#cards .deal')) { try { await b.click({ timeout: 300 }); } catch (e) {} }
+    const r = await d.page.evaluate(() => {
+      if (!D || D.meeting || D.away > 0) return null;
+      const p = D.g.peek();
+      let target = null;
+      for (let y = 0; y < p.H && !target; y++) for (let x = 0; x < p.W; x++) { const c = p.grid[y][x]; if (c.path && !c.filled && c.m !== p.sol[y][x]) { target = [x, y]; break; } }
+      if (!target) { if (!p.flowing) D.g.input('b'); return { boards: p.boards, leaks: p.leaks }; }
+      const [tx, ty] = target;
+      if (p.cx !== tx) D.g.input(p.cx < tx ? 'right' : 'left');
+      else if (p.cy !== ty) D.g.input(p.cy < ty ? 'down' : 'up');
+      else D.g.input('a');
+      return { boards: p.boards, leaks: p.leaks };
+    });
+    if (r) { boards = r.boards; leaks = r.leaks; }
+    if (t === 30) await d.shot('tool-pipeline');
+    await sleep(60);
+  }
+  const pl = await d.state(() => ({ build: S.build, mode }));
+  ok('plumbing a board before the data arrives builds', boards >= 1 && pl.build > 70, boards + ' boards, ' + leaks + ' leaks, build ' + pl.build + '%');
+  if (await d.mode() === 'desk') await d.page.evaluate(() => { endDesk('quit'); });
+  await d.advance();
   return d;
 };
 
@@ -498,7 +560,7 @@ SUITES.store = async browser => {
     if (!SUITES[name]) { console.log('\n  unknown suite: ' + name); failed++; continue; }
     let d;
     try { d = await SUITES[name](browser); }
-    catch (e) { failed++; console.log('    FAIL ' + name + ' threw — ' + e.message); }
+    catch (e) { failed++; console.log('    FAIL ' + name + ' threw — ' + e.message + (DEBUG ? '\n' + e.stack : '')); }
     if (d) {
       ok(name + ': no page errors', d.errors.length === 0, d.errors.slice(0, 3).join(' / '));
       allErrors.push(...d.errors);

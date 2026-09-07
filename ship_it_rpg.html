@@ -1955,8 +1955,8 @@ const TOOLS = {
   stack:   {name:'Merge Queue',      sub:'Stack the commits. Clear a full row to merge it.',      hint:'day one',                 unlock:()=>true},
   breaker: {name:'Bug Bash',         sub:'Knock every bug out of the codebase. Do not drop the fix.', hint:'after code review',   unlock:()=>!!S.approvals.code},
   snake:   {name:'Dependency Chain', sub:'Grow the service graph. Do not depend on yourself.',     hint:'after security review', unlock:()=>!!S.approvals.sec},
-  cross:   {name:'Open Floor',       sub:'Cross the floor to the kitchen without being talked to.', hint:'Floor 6',              unlock:()=>false},
-  pipes:   {name:'Pipeline',         sub:'Plumb it before the data arrives.',                      hint:'Floor 6',              unlock:()=>false}
+  cross:   {name:'Open Floor',       sub:'Cross the floor to the kitchen without being talked to.', hint:'after design review',   unlock:()=>!!S.approvals.design},
+  pipes:   {name:'Pipeline',         sub:'Plumb it before the data arrives.',                      hint:'after The Thing In The Corner', unlock:()=>sq('thing') >= 2}
 };
 const unlockedTools = ()=> Object.keys(TOOLS).filter(k=>TOOLS[k].unlock() && WORK[k]);
 
@@ -2519,6 +2519,260 @@ WORK.snake = (()=>{
   return g;
 })();
 
+/* ---------- OPEN FLOOR — cross to the kitchen without being talked to ---------- */
+WORK.cross = (()=>{
+  const W = 11, H = 13;                 /* bottom row: your desk. top row: the kitchen. */
+  const LANE_KINDS = [
+    {n:'walk-and-talk',  w:1.0, col:'#c77dff', spd:1.6},
+    {n:'laptop open',    w:1.4, col:'#f5a524', spd:1.1},
+    {n:'the scooter',    w:0.8, col:'#e0576b', spd:3.0},
+    {n:'standup',        w:2.4, col:'#7ec4ff', spd:0.6},
+    {n:'recruiter tour', w:1.8, col:'#3ecf8e', spd:0.9}
+  ];
+  let px, py, lanes, crossings, coffee, hitT, t;
+  const g = {
+    intro:'The kitchen is eleven rows away. Everyone between here and there has a quick question. Nobody in this building has ever had a quick question.',
+    topped:'The floor has filled in completely. There is no path to the kitchen and there never was.',
+    start(){ lanes = []; crossings = 0; hitT = 0; t = 0; for(let y=1; y<H-1; y++) lanes.push(mkLane(y, crossings)); coffee = null; spawnCoffee(); reset(); setPad('—','—'); },
+    update(dt, auto){
+      t += dt;
+      if(hitT > 0){ hitT -= dt; return; }
+      const mult = (D.pressure ? 1.15 : 1);
+      for(const L of lanes){
+        for(const o of L.objs){
+          o.x += L.dir * L.spd * mult * dt;
+          if(L.dir > 0 && o.x > W + 1) o.x = -o.w - 1 - Math.random()*2;
+          if(L.dir < 0 && o.x + o.w < -1) o.x = W + 1 + Math.random()*2;
+        }
+      }
+      /* did anyone catch you */
+      const L = lanes.find(l=>l.y===py);
+      if(L){
+        for(const o of L.objs){
+          if(px + 0.8 > o.x && px + 0.2 < o.x + o.w){ caught(o, L); return; }
+        }
+      }
+      if(coffee && coffee[0]===px && coffee[1]===py){ workProgress(0.8); workFlow(0.1); Sfx.hit(); workState('Coffee. Nobody saw. Keep moving.'); coffee = null; spawnCoffee(); }
+      if(py === 0){
+        crossings++;
+        workProgress(3.4 + Math.min(2, crossings*0.2)); workFlow(0.45); Sfx.confirm();
+        workState(['Kitchen. You made it. Now back, before someone notices you are free.',
+                   'You reached the kitchen with the question count at zero. Personal best.',
+                   'Made it. The oat milk is gone. It is always gone.'][crossings % 3]);
+        for(const l of lanes){ l.spd = Math.min(l.spd*1.08, 5); }
+        reset();
+      }
+    },
+    input(k){
+      if(hitT > 0) return;
+      if(k==='left' && px > 0) px--;
+      else if(k==='right' && px < W-1) px++;
+      else if(k==='up' || k==='a'){ if(py > 0) py--; }
+      else if(k==='down' && py < H-1) py++;
+    },
+    peek(){ return {W, H, px, py, crossings, hit: hitT > 0, coffee: coffee ? coffee.slice() : null,
+      lanes: lanes.map(l=>({y:l.y, dir:l.dir, spd:l.spd, objs:l.objs.map(o=>({x:o.x, w:o.w}))}))}; },
+    punish(){ /* another person on the floor */
+      const L = lanes[ri(lanes.length)]; L.objs.push(mkObj(L, W + 1 + Math.random()*3));
+      D.flow = 1;
+    },
+    meeting(big){ /* the floor fills in; the standups get wider */
+      for(let n = big ? 3 : 1; n > 0; n--) g.punish();
+      for(const l of lanes) for(const o of l.objs) if(o.k === 3) o.w = Math.min(4, o.w + 0.5);
+    },
+    render(){
+      const {w,h} = workSize();
+      const cell = Math.floor(Math.min((w-8)/W, (h-8)/H));
+      const ox = Math.floor((w-cell*W)/2), oy = Math.floor((h-cell*H)/2);
+      wx.fillStyle = '#0a0d13'; wx.fillRect(0,0,w,h);
+      /* kitchen and desk strips */
+      wx.fillStyle = '#12211a'; wx.fillRect(ox, oy, cell*W, cell);
+      wx.fillStyle = '#141a26'; wx.fillRect(ox, oy+(H-1)*cell, cell*W, cell);
+      for(const L of lanes){ wx.fillStyle = L.y % 2 ? '#0c1017' : '#0e131b'; wx.fillRect(ox, oy+L.y*cell, cell*W, cell); }
+      wx.fillStyle='rgba(219,228,240,.55)'; wx.font='600 '+Math.max(8,cell*0.42)+'px "IBM Plex Mono",monospace'; wx.textAlign='center'; wx.textBaseline='middle';
+      wx.fillText('KITCHEN', ox+cell*W/2, oy+cell/2);
+      wx.fillText('YOUR DESK', ox+cell*W/2, oy+(H-1)*cell+cell/2);
+      if(coffee){ wx.fillStyle='#f5a524'; wx.beginPath(); wx.arc(ox+coffee[0]*cell+cell/2, oy+coffee[1]*cell+cell/2, cell*0.22, 0, 7); wx.fill(); }
+      for(const L of lanes) for(const o of L.objs){
+        const x = ox + o.x*cell, y = oy + L.y*cell;
+        if(x + o.w*cell < ox || x > ox+cell*W) continue;
+        const cx0 = Math.max(ox, x), cx1 = Math.min(ox+cell*W, x+o.w*cell);
+        wx.fillStyle = LANE_KINDS[o.k].col; rr(cx0+1, y+3, cx1-cx0-2, cell-6, 5); wx.fill();
+        if(cx1-cx0 > cell*1.2){ wx.fillStyle='rgba(0,0,0,.55)'; wx.font='600 '+Math.max(7,cell*0.36)+'px "IBM Plex Mono",monospace'; wx.fillText(LANE_KINDS[o.k].n, (cx0+cx1)/2, y+cell/2); }
+      }
+      /* you */
+      const blink = hitT > 0 && Math.floor(t*10) % 2;
+      if(!blink){ wx.fillStyle = D.heads > 0 ? '#3ecf8e' : '#dbe4f0'; rr(ox+px*cell+3, oy+py*cell+3, cell-6, cell-6, 4); wx.fill();
+        wx.fillStyle='#0a0d13'; wx.font='700 '+Math.max(7,cell*0.4)+'px "IBM Plex Mono",monospace'; wx.fillText('you', ox+px*cell+cell/2, oy+py*cell+cell/2+1); }
+      wx.fillStyle='rgba(219,228,240,.6)'; wx.font='600 9px "IBM Plex Mono",monospace'; wx.textAlign='left'; wx.textBaseline='top';
+      wx.fillText('TRIPS ' + crossings, ox+2, Math.max(2, oy-12));
+      wx.strokeStyle='#2c3849'; wx.strokeRect(ox+.5,oy+.5,cell*W-1,cell*H-1);
+    },
+    stop(){}
+  };
+  function rr(x,y,w0,h0,r){ wx.beginPath(); wx.moveTo(x+r,y); wx.arcTo(x+w0,y,x+w0,y+h0,r); wx.arcTo(x+w0,y+h0,x,y+h0,r); wx.arcTo(x,y+h0,x,y,r); wx.arcTo(x,y,x+w0,y,r); wx.closePath(); }
+  function mkObj(L, x){ const k = L.k; return {k, x, w: LANE_KINDS[k].w}; }
+  function mkLane(y){
+    const k = ri(LANE_KINDS.length), dir = Math.random() < 0.5 ? -1 : 1;
+    const L = {y, k, dir, spd: LANE_KINDS[k].spd * (0.85 + Math.random()*0.3), objs: []};
+    const n = k === 3 ? 1 : k === 2 ? 2 : 2 + ri(2);
+    for(let i=0;i<n;i++) L.objs.push(mkObj(L, (i * (W + 4)) / n + Math.random()*2));
+    return L;
+  }
+  function reset(){ px = Math.floor(W/2); py = H-1; }
+  function spawnCoffee(){ coffee = [ri(W), 2 + ri(H-4)]; }
+  function caught(o, L){
+    Sfx.hurt(); D.flow = 1; hitT = 1.1;
+    workState(['"Quick one." It is not quick. It is not one.',
+               'Someone asks what you are working on. You say "the toggle". They say "still?"',
+               'You are pulled into a standing conversation. It has been standing since March.',
+               'The scooter. Every office has one. Nobody knows whose it is.'][o.k === 2 ? 3 : o.k === 3 ? 2 : ri(2)], true);
+    reset();
+  }
+  return g;
+})();
+
+/* ---------- PIPELINE — plumb it before the data arrives ---------- */
+WORK.pipes = (()=>{
+  const W = 7, H = 9;
+  const N=1, E=2, S_=4, W_=8;
+  const OPP = {1:4, 4:1, 2:8, 8:2};
+  const DX = {1:0, 2:1, 4:0, 8:-1}, DY = {1:-1, 2:0, 4:1, 8:0};
+  let grid, sol, cx, cy, arrive, flowing, flow, filled, boards, leaks, t, pathLen, paused = false;
+  const g = {
+    intro:'The data is on its way. Turn the pipes so it has somewhere to go. In the design doc this section says "TBD".',
+    topped:'There is no pipeline. There is a wet floor and a retro.',
+    start(){ boards = 0; leaks = 0; t = 0; newBoard(); setPad('ROTATE','RUN IT'); },
+    update(dt, auto){
+      t += dt;
+      if(paused) return;
+      if(!flowing){
+        arrive -= dt * (D.pressure ? 1.2 : 1);
+        if(arrive <= 0){ arrive = 0; startFlow(); workState('The data arrived. It does not care whether you were ready.', true); }
+        return;
+      }
+      flow.t += dt;
+      const step = 0.42;
+      if(flow.t < step) return;
+      flow.t = 0;
+      advance();
+    },
+    input(k){
+      if(k==='left' && cx > 0) cx--;
+      else if(k==='right' && cx < W-1) cx++;
+      else if(k==='up' && cy > 0) cy--;
+      else if(k==='down' && cy < H-1) cy++;
+      else if(k==='a'){
+        const c = grid[cy][cx];
+        if(c.filled){ Sfx.hurt(); workState('That one is already carrying data. Leave it.'); return; }
+        c.m = rot(c.m); Sfx.blip();
+      } else if(k==='b'){
+        if(!flowing && !paused){ flow = null; startFlow(); workState('You run it early. Brave. The word for it is brave.'); }
+      }
+    },
+    peek(){ return {W, H, cx, cy, arrive, flowing, boards, leaks, pathLen,
+      grid: grid.map(r=>r.map(c=>({m:c.m, filled:!!c.filled, path:!!c.path}))), sol: sol.map(r=>r.slice())}; },
+    punish(){ /* someone touched prod */
+      let n = 2; for(let i=0;i<60 && n>0;i++){ const c = grid[ri(H)][ri(W)]; if(!c.filled){ c.m = rot(c.m); n--; } }
+      arrive = Math.max(0, arrive - 3);
+      D.flow = 1;
+    },
+    meeting(big){ let n = big ? 5 : 3; for(let i=0;i<80 && n>0;i++){ const c = grid[ri(H)][ri(W)]; if(!c.filled){ c.m = rot(c.m); n--; } } arrive = Math.max(0, arrive - (big ? 6 : 3)); },
+    render(){
+      const {w,h} = workSize();
+      const cell = Math.floor(Math.min((w-8)/W, (h-30)/H));
+      const ox = Math.floor((w-cell*W)/2), oy = Math.floor((h-cell*H)/2) + 8;
+      wx.fillStyle = '#0a0d13'; wx.fillRect(0,0,w,h);
+      wx.fillStyle = '#080b11'; wx.fillRect(ox,oy,cell*W,cell*H);
+      const lw = Math.max(4, cell*0.26);
+      for(let y=0;y<H;y++) for(let x=0;x<W;x++){
+        const c = grid[y][x], X = ox+x*cell, Y = oy+y*cell, mx = X+cell/2, my = Y+cell/2;
+        wx.fillStyle = (x+y)%2 ? '#0c1017' : '#0e131b'; wx.fillRect(X, Y, cell, cell);
+        wx.strokeStyle = c.filled ? '#7ec4ff' : c.leak ? '#e0576b' : '#3a4658'; wx.lineWidth = lw; wx.lineCap = 'round';
+        for(const d of [N,E,S_,W_]) if(c.m & d){ wx.beginPath(); wx.moveTo(mx,my); wx.lineTo(mx + DX[d]*cell/2, my + DY[d]*cell/2); wx.stroke(); }
+        wx.fillStyle = wx.strokeStyle; wx.beginPath(); wx.arc(mx,my,lw*0.55,0,7); wx.fill();
+      }
+      /* source and sink */
+      wx.fillStyle='#3ecf8e'; wx.fillRect(ox-6, oy+cell/2-lw/2, 6, lw);
+      wx.fillStyle='#f5a524'; wx.fillRect(ox+cell*W, oy+(H-1)*cell+cell/2-lw/2, 6, lw);
+      /* cursor */
+      wx.strokeStyle = '#dbe4f0'; wx.lineWidth = 2; wx.strokeRect(ox+cx*cell+1.5, oy+cy*cell+1.5, cell-3, cell-3);
+      wx.strokeStyle='#2c3849'; wx.lineWidth = 1; wx.strokeRect(ox+.5,oy+.5,cell*W-1,cell*H-1);
+      /* the countdown */
+      wx.fillStyle='rgba(219,228,240,.7)'; wx.font='600 9px "IBM Plex Mono",monospace'; wx.textAlign='left'; wx.textBaseline='top';
+      wx.fillText(flowing ? 'DATA IN FLIGHT' : 'DATA ARRIVES IN ' + Math.ceil(arrive) + 's', ox+2, Math.max(2, oy-12));
+      wx.textAlign='right'; wx.fillText('BOARDS ' + boards + ' · LEAKS ' + leaks, ox+cell*W-2, Math.max(2, oy-12));
+      if(!flowing){ wx.fillStyle = arrive < 5 ? '#e0576b' : '#f5a524'; wx.fillRect(ox, oy-3, cell*W*Math.min(1, arrive/arriveMax), 2); }
+    },
+    stop(){}
+  };
+  let arriveMax = 20;
+  function rot(m){ return ((m << 1) & 15) | (m >> 3); }
+  function newBoard(){
+    grid = Array.from({length:H}, ()=>Array.from({length:W}, ()=>({m:0, filled:false, leak:false, path:false})));
+    sol = Array.from({length:H}, ()=>Array(W).fill(0));
+    /* carve a self-avoiding path from the top-left (entering from the west) to the bottom-right (leaving east) */
+    let path;
+    for(let tries=0; tries<200; tries++){ path = carve(); if(path) break; }
+    let inD = W_;
+    path.forEach(([x,y], i)=>{
+      const nx = path[i+1];
+      const outD = nx ? (nx[0] > x ? E : nx[0] < x ? W_ : nx[1] > y ? S_ : N) : E;
+      grid[y][x].m = inD | outD; grid[y][x].path = true; sol[y][x] = inD | outD;
+      inD = OPP[outD];
+    });
+    pathLen = path.length;
+    /* filler: two-ended pieces that go nowhere */
+    for(let y=0;y<H;y++) for(let x=0;x<W;x++) if(!grid[y][x].m){ grid[y][x].m = Math.random() < 0.5 ? (N|S_) : (N|E); }
+    /* scramble every tile */
+    for(let y=0;y<H;y++) for(let x=0;x<W;x++){ const k = ri(4); for(let i=0;i<k;i++) grid[y][x].m = rot(grid[y][x].m); }
+    /* never hand the player a board that is already solved at the source */
+    if(grid[0][0].m === sol[0][0]) grid[0][0].m = rot(grid[0][0].m);
+    cx = 0; cy = 0; flowing = false; flow = null; filled = 0; paused = false;
+    arriveMax = Math.max(9, 20 - boards*1.5 - (S.build/100)*3) * (S.opts.extraTime ? 1.6 : 1);
+    arrive = arriveMax;
+  }
+  function carve(){
+    const seen = new Set(); let x = 0, y = 0; const p = [[0,0]]; seen.add('0,0');
+    for(let n=0; n<400; n++){
+      if(x === W-1 && y === H-1) return p;
+      const opts = [[1,0],[0,1],[-1,0],[0,-1]].map(([dx,dy])=>[x+dx,y+dy]).filter(([nx,ny])=>nx>=0&&nx<W&&ny>=0&&ny<H&&!seen.has(nx+','+ny));
+      if(!opts.length) return null;
+      /* mostly toward the sink, sometimes wandering */
+      opts.sort((a,b)=>(Math.abs(W-1-a[0])+Math.abs(H-1-a[1]) + Math.random()*2.6) - (Math.abs(W-1-b[0])+Math.abs(H-1-b[1]) + Math.random()*2.6));
+      [x,y] = opts[0]; p.push([x,y]); seen.add(x+','+y);
+    }
+    return null;
+  }
+  function startFlow(){ flowing = true; flow = {x:0, y:0, inD:W_, t:0}; }
+  function advance(){
+    const f = flow, c = grid[f.y][f.x];
+    if(!(c.m & f.inD)){ leak(c); return; }
+    c.filled = true; filled++;
+    workProgress(0.1);
+    const outD = c.m ^ f.inD;
+    const nx = f.x + DX[outD], ny = f.y + DY[outD];
+    if(nx === W && f.y === H-1 && outD === E){ /* into the sink */
+      boards++;
+      const early = Math.max(0, arrive);
+      workProgress(3.2 + Math.min(2.5, early*0.2)); workFlow(0.5); Sfx.confirm();
+      workState(early > 0 ? 'It ran end to end with ' + Math.ceil(early) + 's to spare. In the doc this is now "known-good".' : 'It ran. Barely. That is called shipping.');
+      newBoard(); return;
+    }
+    if(nx < 0 || nx >= W || ny < 0 || ny >= H || !(grid[ny][nx].m & OPP[outD])){ leak(c); return; }
+    f.x = nx; f.y = ny; f.inD = OPP[outD]; Sfx.hit();
+  }
+  function leak(c){
+    c.leak = true; leaks++; Sfx.hurt(); D.flow = 1;
+    workState(['Data on the floor. Facilities has been notified. Facilities is one person.',
+               'Leak. The retro will say "ownership". It will not say whose.',
+               'The pipe ended. The data did not. Someone is drafting the customer email.'][leaks % 3], true);
+    flowing = false; flow = null; paused = true;
+    setTimeout(()=>{ if(D && D.g === g && !D.over) newBoard(); }, 900);
+  }
+  return g;
+})();
+
 /* ---------- desk buttons ---------- */
 $('btnHeads').addEventListener('click', ()=>{
   const d = D; if(!d || d.over || d.heads>0 || d.cool>0 || S.caf < 10) return;
@@ -2934,9 +3188,11 @@ async function interact(){
       await say(null,[
         'You read the runbook. You find the loop. You fix the loop. It takes nine minutes.',
         'Six years, and it takes nine minutes, because nobody was ever assigned nine minutes.',
-        'You keep the runbook. Whoever wrote it is not here to want it back.'
+        'You keep the runbook. Whoever wrote it is not here to want it back.',
+        'Page thirty-one is a diagram of where the data was supposed to go. You can use that.'
       ]);
       await reward({gear:'runbook', cr:120, xp:70});
+      toast('New build tool: Pipeline');
     }
     mode = 'field';
     return;
@@ -3197,7 +3453,7 @@ async function npcTalk(n){
         'That’s all I needed. Design is about people.',
         'Approved. Put the toggle on the right. Toggles go on the right. I can defend that for an hour and I have.'
       ]);
-      toast('DESIGN REVIEW: approved.');
+      toast('DESIGN REVIEW approved · new build tool: Open Floor');
       return done();
     }
     if(S.build < 100){

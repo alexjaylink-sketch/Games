@@ -54,9 +54,9 @@ NODE_PATH=/opt/node22/lib/node_modules node tools/playtest.js --shots /tmp/shots
 | `chain` | the seven-leg progression: reviewers refuse work that doesn't exist, build ceilings hold, the door opens only when both halves are done |
 | `side`  | all five side quests end to end, the quest log, and save round-tripping |
 | `store` | no network requests, bundled fonts, manifest, versioned saves, save-code round trip, pre-rename save migration, settings |
-| `desk`  | instruments desk mode twice — ignoring every interruption vs handling them — and asserts the difference |
+| `desk`  | plays all five build tools with in-page bots, and checks that interruptions take you off the keyboard, snooze costs caffeine, and meetings keep the work running |
 
-`desk` is slow on purpose (it plays two 40-second sessions in real time).
+`desk` is slow on purpose (it plays several tool sessions in real time, about five minutes).
 
 ## `embed-fonts.js` — remove the network dependency
 

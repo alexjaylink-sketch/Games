@@ -70,8 +70,9 @@ Xcode, or a CI service (Codemagic, EAS Build).
 apps that feel thin. A ~25-minute game is on the line. What moves it the right
 way, in order of value:
 
-1. **More content.** One floor and one ticket is the honest weak point. Floor 6
-   and a second ticket shape would roughly double it.
+1. **More content.** One floor and one ticket is the honest weak point. All five
+   build tools now exist (the last two unlock off the design review and the
+   Thing quest); a Floor 6 and a second ticket shape would roughly double it.
 2. **Audio** — done, and it was the cheapest item on this list.
 3. **Something that makes it feel like an app, not a page**: haptics on
    interruptions (`@capacitor/haptics`), a proper app icon and splash.
