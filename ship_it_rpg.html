@@ -388,29 +388,47 @@ body.desking #btnA b,body.desking #btnB b{color:var(--ok)}
 #intro{position:fixed;inset:0;z-index:110;display:flex;flex-direction:column;background:#0a0e15}
 #intro.off{display:none}
 #mailbar{
-  flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:10px 14px;
-  background:var(--panel);border-bottom:1px solid var(--edge);
-  font-family:var(--mono);font-size:10px;letter-spacing:.5px;color:var(--dim);
+  flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:9px 12px;
+  background:var(--panel);border-bottom:1px solid var(--edge);color:var(--dim);
 }
-#mailbar .dot{width:7px;height:7px;border-radius:50%;background:var(--brand);flex:0 0 auto}
-#mailbar .grow{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#mailscroll{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px 8px;position:relative}
+#mailbar .chev{font-size:24px;line-height:1;color:var(--brand);width:16px;text-align:center;margin-top:-3px}
+#mailbar .grow{flex:1;overflow:hidden;white-space:nowrap;line-height:1.2}
+#mailbar .grow b{display:block;color:var(--ink);font-size:14px;font-weight:600}
+#mailbar .grow small{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.5px}
+#mailbar .ico{width:14px;height:14px;border:1.5px solid var(--dim);border-radius:3px;position:relative;opacity:.7}
+#mailbar .ico::after{content:'';position:absolute;left:2px;right:2px;top:4px;height:1.5px;background:var(--dim);box-shadow:0 3px 0 var(--dim)}
+#mailbar .tm{font-family:var(--mono);font-size:10px}
+#mailscroll{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px 24px;position:relative}
+#mailfade{flex:0 0 auto;height:26px;margin-top:-26px;background:linear-gradient(180deg,rgba(10,14,21,0),#0a0e15);pointer-events:none;position:relative;z-index:1}
 .mail{max-width:62ch;margin:0 auto}
-.mailhead{display:flex;gap:11px;align-items:flex-start;padding-bottom:13px;border-bottom:1px solid var(--edge)}
+.subjline{padding-bottom:12px}
+.subjline h2{margin:0 0 8px;font-size:22px;font-weight:700;letter-spacing:-.3px;color:#fff;line-height:1.2}
+.labels{display:flex;gap:6px;flex-wrap:wrap}
+.lb{font-family:var(--mono);font-size:9px;letter-spacing:1px;padding:3px 7px;border-radius:4px;border:1px solid var(--edge2);color:var(--dim)}
+.lb.offer{color:#3ecf8e;border-color:rgba(62,207,142,.4);background:rgba(62,207,142,.08)}
+.lb.imp{color:#f5a524;border-color:rgba(245,165,36,.4);background:rgba(245,165,36,.08)}
+.mailhead{display:flex;gap:11px;align-items:flex-start;padding:13px 0;border-top:1px solid var(--edge);border-bottom:1px solid var(--edge)}
 .mailhead .av{
-  flex:0 0 auto;width:42px;height:42px;border-radius:50%;
-  background:linear-gradient(150deg,#3f5f9e,#22304a);
+  flex:0 0 auto;width:44px;height:44px;border-radius:50%;
+  background:linear-gradient(150deg,#5a7fd0,#22304a);
   display:flex;align-items:center;justify-content:center;
-  font-family:var(--mono);font-size:14px;font-weight:600;color:#cfe0ff;border:1px solid var(--edge2);
+  font-family:var(--mono);font-size:14px;font-weight:600;color:#fff;box-shadow:0 0 0 2px #0a0e15,0 0 0 3.5px rgba(79,140,255,.5);
 }
-.mailhead .meta{flex:1;min-width:0;font-size:12px;line-height:1.55}
-.mailhead .nm{color:var(--ink);font-weight:600;font-size:13px}
-.mailhead .ad{color:var(--dim);font-family:var(--mono);font-size:10.5px;word-break:break-all}
-.mailhead .sub{margin-top:6px;color:var(--brand);font-size:13px;font-weight:500}
+.mailhead .meta{flex:1;min-width:0;font-size:12px;line-height:1.6}
+.mailhead .nm{color:var(--ink);font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mailhead .ad{color:var(--dim);font-family:var(--mono);font-size:10.5px;word-break:break-word}
+.mailhead .chip{display:inline-block;padding:0 6px;border-radius:999px;background:var(--panel2);border:1px solid var(--edge2);color:var(--ink);font-family:var(--sans);font-size:10.5px}
+.mailhead .chip.dim{color:var(--dim)}
 .mailhead .stamp{
-  display:inline-block;margin-top:7px;font-family:var(--mono);font-size:9px;letter-spacing:1px;
+  display:inline-block;font-family:var(--mono);font-size:8.5px;letter-spacing:1px;font-weight:500;
   color:var(--warn);border:1px solid #4a3a1c;background:#231a0c;border-radius:3px;padding:2px 6px;
 }
+.attach{margin-top:22px;padding-top:14px;border-top:1px solid var(--edge);display:flex;flex-direction:column;gap:6px}
+.attach .at{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;background:var(--panel);border:1px solid var(--edge);font-size:11.5px;color:var(--ink)}
+.attach .ic{flex:0 0 auto;font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:.5px;padding:4px 5px;border-radius:4px;background:#2b3346;color:#fff}
+.attach .ic.pdf{background:#b3383c}.attach .ic.epub{background:#3a6fd8}.attach .ic.cal{background:#2f8f5f}
+.attach .fn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.attach .sz{font-family:var(--mono);font-size:9.5px;color:var(--dim)}
 .letter{font-family:var(--serif);font-size:15.5px;line-height:1.72;color:#dae2ee;padding-top:16px}
 .letter p{margin:0 0 15px}
 .letter em{font-style:italic;color:#f2f6fb}
@@ -461,22 +479,43 @@ body.desking #btnA b,body.desking #btnB b{color:var(--ok)}
 /* ============ TITLE ============ */
 #title{
   position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:16px;padding:26px;text-align:center;
-  background:linear-gradient(170deg,#121a2a 0%,#0b0e15 70%);
+  align-items:center;justify-content:center;padding:26px 20px;text-align:center;
+  background:radial-gradient(120% 80% at 50% 0%,rgba(79,140,255,.14),transparent 55%),linear-gradient(180deg,rgba(9,12,18,.55) 0%,rgba(9,12,18,.88) 55%,rgba(9,12,18,.97) 100%);
 }
 #title.off{display:none}
-#title .logo{font-size:10px;letter-spacing:5px;color:var(--brand);font-family:var(--mono);font-weight:500}
-#title h1{margin:0;font-size:46px;letter-spacing:-1px;font-weight:700;line-height:.95;text-wrap:balance}
-#title .tag{color:var(--dim);font-size:12px;line-height:1.65;max-width:32ch}
-#title .tag em{color:var(--ink);font-style:normal}
-#title button{
-  padding:14px 20px;font-size:13px;background:var(--panel2);border:1px solid var(--edge2);
-  border-radius:10px;min-width:230px;box-shadow:var(--sh);letter-spacing:.5px;
+#title .tcard{display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;max-width:360px}
+#title .logo{
+  display:inline-flex;align-items:center;gap:8px;font-size:10px;letter-spacing:3px;color:#bcd3ff;font-family:var(--mono);font-weight:500;
+  padding:6px 12px 6px 8px;border:1px solid rgba(126,196,255,.28);border-radius:999px;background:rgba(13,17,25,.7);
 }
-#title button.p{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+#title .logo .mark{width:14px;height:14px;border-radius:50%;background:conic-gradient(from 180deg,var(--brand),#7ec4ff,var(--brand));box-shadow:0 0 0 3px rgba(79,140,255,.18);position:relative}
+#title .logo .mark::after{content:'';position:absolute;inset:4px;border-radius:50%;background:#0d1119}
+#title h1{
+  margin:2px 0 0;font-size:66px;letter-spacing:-2.5px;font-weight:700;line-height:.92;text-wrap:balance;
+  background:linear-gradient(180deg,#ffffff 0%,#c9d8f2 70%,#9fb6dc 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 18px 40px rgba(0,0,0,.6);
+}
+#title .tag{color:#aab7cb;font-size:13px;line-height:1.6;max-width:32ch}
+#title .tag em{color:#fff;font-style:normal;font-weight:600}
+#title .ticket{
+  display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:'k s p' 'k b p';column-gap:10px;row-gap:2px;align-items:center;
+  width:100%;text-align:left;padding:10px 12px;border-radius:10px;background:rgba(22,29,42,.85);border:1px solid var(--edge);box-shadow:0 10px 24px rgba(0,0,0,.4);
+}
+#title .ticket .tk{grid-area:k;font-family:var(--mono);font-size:11px;color:var(--brand);padding:3px 6px;border:1px solid rgba(79,140,255,.35);border-radius:5px;background:rgba(79,140,255,.08)}
+#title .ticket .ts{grid-area:s;font-size:13px;font-weight:600;color:var(--ink)}
+#title .ticket .tb{grid-area:b;font-family:var(--mono);font-size:9.5px;color:var(--dim);letter-spacing:.5px}
+#title .ticket .tp{grid-area:p;font-family:var(--mono);font-size:10px;color:var(--warn);border:1px solid #4a3a1c;background:#231a0c;padding:2px 7px;border-radius:999px}
+#title .btns{display:flex;flex-direction:column;gap:9px;width:100%;margin-top:4px}
+#title button{
+  padding:15px 20px;font-size:14px;background:rgba(22,29,42,.9);border:1px solid var(--edge2);color:var(--ink);
+  border-radius:12px;width:100%;box-shadow:var(--sh);letter-spacing:.2px;
+}
+#title button.p{background:linear-gradient(180deg,#5d98ff,#3f7cf0);border-color:#5d98ff;color:#fff;font-weight:700;box-shadow:0 8px 20px rgba(79,140,255,.28),0 3px 0 #2b5fc4}
+#title button.p .arr{display:inline-block;margin-left:6px;transition:transform .15s}
+#title button.p:active .arr{transform:translateX(3px)}
 #title button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.4)}
-#title .fine{color:#4d5a70;font-size:9px;line-height:1.6;max-width:34ch;font-family:var(--mono)}
-#title .ver{color:#3c4759;font-size:9px;font-family:var(--mono);letter-spacing:1px}
+#title .fine{color:#5b687e;font-size:9px;line-height:1.6;max-width:36ch;font-family:var(--mono)}
+#title .ver{position:absolute;bottom:14px;left:0;right:0;color:#3c4759;font-size:9px;font-family:var(--mono);letter-spacing:1px}
 body.titling #hud, body.titling #pad{visibility:hidden}
 body.fighting #hud, body.fighting #pad{display:none}
 #toast{
@@ -619,19 +658,23 @@ body.fighting #hud, body.fighting #pad{display:none}
     <!-- INTRO: THE OFFER -->
     <div id="intro" class="off">
       <div id="mailbar">
-        <span class="dot"></span>
-        <span class="grow">LODESTAR Mail — Inbox (1)</span>
-        <span>Sat 11:48pm</span>
+        <span class="chev">&lsaquo;</span>
+        <span class="grow"><b>Inbox</b><small>LODESTAR Mail &middot; 1 unread</small></span>
+        <span class="ico" aria-hidden="true"></span>
+        <span class="tm">Sat 11:48pm</span>
       </div>
       <div id="mailscroll">
         <div class="mail">
+          <div class="subjline">
+            <h2>you said yes</h2>
+            <div class="labels"><span class="lb offer">OFFER</span><span class="lb imp">IMPORTANT</span><span class="lb ext">External</span></div>
+          </div>
           <div class="mailhead">
             <div class="av">RV</div>
             <div class="meta">
-              <div class="nm">Rand Voss</div>
-              <div class="ad">rand@lodestar.systems &rarr; you</div>
-              <div class="sub">you said yes</div>
-              <div class="stamp">SENT FROM A MOVING VEHICLE</div>
+              <div class="nm">Rand Voss <span class="stamp">SENT FROM A MOVING VEHICLE</span></div>
+              <div class="ad">rand@lodestar.systems</div>
+              <div class="ad">to: <span class="chip">you</span> <span class="chip dim">bcc: all-hands@lodestar.systems</span></div>
             </div>
           </div>
           <div class="letter">
@@ -665,8 +708,14 @@ body.fighting #hud, body.fighting #pad{display:none}
 
             <div class="ps">P.S. &mdash; Do not reply to this address. It is not monitored. Nothing I send is monitored. That is the arrangement.</div>
           </div>
+          <div class="attach">
+            <div class="at"><span class="ic pdf">PDF</span><span class="fn">Offer_Letter_FINAL_v7_final2_USE_THIS.pdf</span><span class="sz">2.1 MB</span></div>
+            <div class="at"><span class="ic epub">EPUB</span><span class="fn">The_LODESTAR_Doctrine_(unabridged).epub</span><span class="sz">41 MB</span></div>
+            <div class="at"><span class="ic cal">ICS</span><span class="fn">Onboarding — Monday 9:00 (recurring, no end date)</span><span class="sz">1 KB</span></div>
+          </div>
         </div>
       </div>
+      <div id="mailfade"></div>
       <div id="mailacts">
         <button class="p" id="btnAccept">Accept Offer</button>
         <button id="btnDecline">Decline</button>
@@ -682,12 +731,22 @@ body.fighting #hud, body.fighting #pad{display:none}
 
     <!-- TITLE -->
     <div id="title">
-      <div class="logo">L O D E S T A R</div>
-      <h1>SHIP IT</h1>
-      <div class="tag">You are a software engineer. It is your first day. You have <em>one feature</em> to ship and <em>everyone in this building</em> has thoughts about it.</div>
-      <button class="p" id="btnNew">Start Onboarding</button>
-      <button id="btnCont">Resume Session</button>
-      <div class="fine">LODESTAR Dynamics is an equal opportunity employer. Employment is at-will. Focus levels are self-reported. By continuing you consent to being looped in.</div>
+      <div class="tcard">
+        <div class="logo"><span class="mark"></span>LODESTAR DYNAMICS</div>
+        <h1>SHIP IT</h1>
+        <div class="tag">You are a software engineer. It is your first day. You have <em>one feature</em> to ship and <em>everyone in this building</em> has thoughts about it.</div>
+        <div class="ticket">
+          <span class="tk">LDS-4417</span>
+          <span class="ts">Add settings toggle</span>
+          <span class="tp">2 pts</span>
+          <span class="tb">Backlog · 11 months</span>
+        </div>
+        <div class="btns">
+          <button class="p" id="btnNew">Start Onboarding <span class="arr">&rarr;</span></button>
+          <button id="btnCont">Resume Session</button>
+        </div>
+        <div class="fine">LODESTAR Dynamics is an equal opportunity employer. Employment is at-will. Focus levels are self-reported. By continuing you consent to being looped in.</div>
+      </div>
       <div class="ver" id="titleVer"></div>
     </div>
   </div>
@@ -1128,7 +1187,7 @@ const Sfx = {
 /* ==========================================================================
    STATE
    ========================================================================== */
-const BUILD = '1.1.2';                       /* shown in the UI so bug reports name a build */
+const BUILD = '1.1.3';                       /* shown in the UI so bug reports name a build */
 const SAVE_VERSION = 2;
 const SAVEKEY = 'shipit_lodestar_v2';
 const LEGACY_KEYS = ['shipit_vanta_v1'];     /* saves written before the rename */
@@ -1379,8 +1438,8 @@ function drawTile(k,px,py,x,y){
         cx.fillStyle='rgba(126,196,255,'+(0.5+0.3*Math.sin(Date.now()/520))+')';
         cx.fillRect(px+s*0.26,py+s*0.24,s*0.26,2); cx.fillRect(px+s*0.26,py+s*0.31,s*0.4,2); cx.fillRect(px+s*0.26,py+s*0.38,s*0.2,2);
         cx.fillStyle='#f5d76e'; cx.fillRect(px+s*0.08,py+s*0.56,s*0.16,s*0.14);
-        cx.fillStyle=S.build>=100?'#3ecf8e':'#e9b44c'; cx.beginPath(); cx.arc(px+s*0.82,py+s*0.64,s*0.07,0,7); cx.fill();
-        if(S.build < buildCap()){
+        cx.fillStyle=S && S.build>=100?'#3ecf8e':'#e9b44c'; cx.beginPath(); cx.arc(px+s*0.82,py+s*0.64,s*0.07,0,7); cx.fill();
+        if(S && S.build < buildCap()){
           cx.strokeStyle='rgba(126,196,255,'+(0.3+0.35*Math.abs(Math.sin(Date.now()/460)))+')';
           cx.lineWidth=2; roundRect(px+2,py+2,s-4,s-4,s*0.14); cx.stroke();
         }
@@ -1651,7 +1710,7 @@ let anim = {on:false, fx:0, fy:0, t:0};
 function draw(){
   const r = cv.getBoundingClientRect(), W = r.width, H = r.height;
   cx.fillStyle = '#0a0d13'; cx.fillRect(0,0,W,H);
-  if(!S) return;
+  if(!S){ if(mode === 'title' && MW) drawTitleScene(W, H); return; }
 
   const pxw = anim.on ? (S.x*(1-anim.t) + anim.fx*anim.t) : S.x;
   const pyw = anim.on ? (S.y*(1-anim.t) + anim.fy*anim.t) : S.y;
@@ -1688,6 +1747,24 @@ function draw(){
   const g = cx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.35, W/2,H/2, Math.max(W,H)*0.75);
   g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,.45)');
   cx.fillStyle=g; cx.fillRect(0,0,W,H);
+}
+
+/* the empty office, drifting past behind the title */
+function drawTitleScene(W, H){
+  const t = performance.now()/1000;
+  const fx = 16 + 12*Math.sin(t*0.07), fy = 11.5 + 5*Math.sin(t*0.05 + 1.3);
+  let camX = fx*TS + TS/2 - W/2, camY = fy*TS + TS/2 - H/2;
+  if(MW*TS <= W) camX = (MW*TS - W)/2; else camX = clamp(camX, 0, MW*TS - W);
+  if(MH*TS <= H) camY = (MH*TS - H)/2; else camY = clamp(camY, 0, MH*TS - H);
+  const x0 = Math.max(0, Math.floor(camX/TS)), x1 = Math.min(MW-1, Math.ceil((camX+W)/TS));
+  const y0 = Math.max(0, Math.floor(camY/TS)), y1 = Math.min(MH-1, Math.ceil((camY+H)/TS));
+  for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++) drawFloor(tinfo(x,y).kind, Math.round(x*TS-camX), Math.round(y*TS-camY), x, y);
+  drawLighting(camX, camY, x0, x1, y0, y1);
+  for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++) drawTile(tinfo(x,y).kind, Math.round(x*TS-camX), Math.round(y*TS-camY), x, y);
+  for(const n of NPCS){
+    if(n.x<x0-1||n.x>x1+1||n.y<y0-1||n.y>y1+1) continue;
+    drawPerson(Math.round(n.x*TS-camX), Math.round(n.y*TS-camY), n, 'down', 0);
+  }
 }
 
 /* ==========================================================================
@@ -1732,7 +1809,7 @@ function loop(t){
   } else if(mode==='field' && heldDir){
     tryMove(heldDir);
   }
-  if(mode!=='desk' && mode!=='battle') draw();
+  if(mode!=='desk' && mode!=='battle') draw();   /* includes the title, which shows the floor behind it */
   requestAnimationFrame(loop);
 }
 
