@@ -36,7 +36,8 @@ for (const [needle, what] of [
   ['<title>SHIP IT</title>', 'title tag'],
   ['</script>', 'game script'],
   ['const FLOOR3', 'map data'],
-  ['rel="manifest"', 'web app manifest']
+  ['rel="manifest"', 'web app manifest'],
+  ['rel="apple-touch-icon"', 'PNG home-screen icon (tools/make-icons.js)']
 ]) {
   if (!out.includes(needle)) throw new Error('lost the ' + what);
 }

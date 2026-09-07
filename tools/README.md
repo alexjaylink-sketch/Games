@@ -91,3 +91,19 @@ Zips the standalone document as `index.html` (plus a one-line README) for
 upload as an itch.io HTML project. Refuses to run if fonts are still fetched
 from the network. Uses the system `zip` when present and falls back to a
 small built-in writer otherwise.
+
+## `make-icons.js` — app icons
+
+```sh
+NODE_PATH=/opt/node22/lib/node_modules node tools/make-icons.js
+```
+
+Draws the app icon (the LDS-4417 toggle) as HTML, screenshots it with the
+same Chromium the playtests use, and writes the PNGs into
+`ship_it_rpg.html` as data URIs between the `icons:start` / `icons:end`
+markers: a 180×180 `apple-touch-icon` (iOS ignores SVG here), a 32×32 tab
+icon, and a manifest carrying 192, 512 and a smaller 512 `maskable` for
+Android's circle crop. Idempotent — run it again after changing the art.
+
+The art is deliberately flat. A full-canvas gradient made the same icons
+319 KB instead of 45 KB, and this file has to carry every byte it ships.

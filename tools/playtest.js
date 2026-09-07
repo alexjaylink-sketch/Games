@@ -569,7 +569,27 @@ SUITES.store = async browser => {
   ok('makes no network requests', reqs.length === 0, reqs.join(', '));
   ok('fonts render from the bundle', await d.state(() => document.fonts.check('600 16px "IBM Plex Sans"')
     && document.fonts.check('400 16px "IBM Plex Serif"') && document.fonts.check('400 16px "IBM Plex Mono"')));
-  ok('declares an installable manifest', await d.state(() => !!document.querySelector('link[rel="manifest"]')));
+  const icons = await d.state(() => {
+    const el = document.querySelector('link[rel="manifest"]');
+    if (!el) return null;
+    const m = JSON.parse(decodeURIComponent(el.getAttribute('href').replace(/^data:application\/manifest\+json,/, '')));
+    const apple = document.querySelector('link[rel="apple-touch-icon"]');
+    return {
+      name: m.name, display: m.display,
+      sizes: m.icons.map(i => i.sizes + ' ' + i.purpose).join(', '),
+      allPng: m.icons.every(i => /^data:image\/png;base64,/.test(i.src)),
+      maskable: m.icons.some(i => i.purpose === 'maskable'),
+      applePng: !!apple && /^data:image\/png;base64,/.test(apple.getAttribute('href'))
+    };
+  });
+  ok('declares an installable manifest', !!icons && icons.name === 'SHIP IT' && icons.display === 'fullscreen');
+  ok('  ships PNG icons, including a maskable one', icons && icons.allPng && icons.maskable, icons && icons.sizes);
+  ok('  and a PNG home-screen icon for iOS', icons && icons.applePng);
+  const iconLoads = await d.state(async () => {
+    const src = document.querySelector('link[rel="apple-touch-icon"]').getAttribute('href');
+    return await new Promise(res => { const i = new Image(); i.onload = () => res(i.width + 'x' + i.height); i.onerror = () => res('broken'); i.src = src; });
+  });
+  ok('  the icon actually decodes', iconLoads === '180x180', String(iconLoads));
   ok('build number is on the title', await d.state(() => /v\d+\.\d+\.\d+/.test(document.getElementById('titleVer').textContent)));
 
   // saves: versioned, exportable, restorable

@@ -189,14 +189,14 @@ Bad: *"Managers like Brayden are what's wrong with tech."* (moralizes.)
    a second map in the `MAP` shape, an elevator transition, NPC entries,
    quest flags, and wiring day two onto it. Keep the harness green; add a
    suite.
-2. Visual pass leftovers: employee portal cards, dialogue box, list menus,
-   shop. The office, title, letter, battle and desk already have the new
-   look; match them.
-3. Store assets: a PNG icon and splash for iOS (the manifest icon is SVG),
-   itch page copy, screenshots. `STORE.md` has the plan.
-4. Encounter rate on the zigzag route feels slightly high; tune with the
+2. Encounter rate on the zigzag route feels slightly high; tune with the
    `chain` suite watching.
-5. A LICENSE file — the owner's call, not ours.
+3. itch.io page copy and store screenshots. `STORE.md` has the plan.
+   (`tools/package.js` makes the zip; `tools/make-icons.js` makes the icons.)
+4. A LICENSE file — the owner's call, not ours.
+
+Done, so do not redo: the visual pass (office, title, offer letter, battle,
+desk, portal, dialogue, list screens all share one look) and the app icons.
 
 ## Things that went wrong before, so you do not repeat them
 
