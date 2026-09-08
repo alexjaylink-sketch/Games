@@ -1002,6 +1002,35 @@ function ticket(){
 }
 const WEEKDAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
 
+/* The toggle is the same every day. The day is not. Each one bends the desk
+   in exactly one direction, and says so at 8:51am. */
+const DAYMODS = [
+  {k:'calm',  ttl:'Offsite', spawn:0,
+   brief:'Half the company is at an offsite. The other half is pretending to be at the offsite.',
+   desk:'The floor is empty. Nothing is going to happen to you today, and that is the strangest part.',
+   after:'You finish by eleven. Nobody notices, because nobody is here to not notice. It is the best day you will have.'},
+  {k:'storm', ttl:'Launch week', spawn:2.1,
+   brief:'It is launch week. It is always launch week, but this week it is on a slide.',
+   desk:'Everyone needs a number by four. Nobody has said which number.',
+   after:'You shipped it during launch week, which means it will be attributed to launch week.'},
+  {k:'down',  ttl:'Merge Queue is down', tool:'stack',
+   brief:'Merge Queue is down. Infra is aware. Infra has been aware since Tuesday.',
+   desk:'The queue is down, so you are working the other way today.',
+   after:'Merge Queue came back at 4:40pm. The incident channel was archived without a write-up.'},
+  {k:'help',  ttl:'Somebody helped', head:34,
+   brief:'A staff engineer picked it up overnight and got it to a third.',
+   desk:'A third of it is already done. None of it is in a branch you can find.',
+   after:'In the retro this is called pairing. You have still not met them.'},
+  {k:'tired', ttl:'You did not sleep', focus:0.6,
+   brief:'You were up at 3am reading the incident channel. There was no incident.',
+   desk:'You are running on less than usual, and everyone can tell, and nobody will mention it.',
+   after:'You shipped it anyway. This will be the day they remember, and not for the reason you would like.'}
+];
+const dayMod = ()=>{
+  if(!S || S.ch !== 1 || (S.day||1) < 2 || !S.flags.ch2done) return null;
+  return DAYMODS[((S.day||1) - 2) % DAYMODS.length];
+};
+
 /* ---------- progression ---------- */
 const TITLES = ['SDE I','SDE II','SDE II (Senior-Track)','Senior Engineer','Senior Engineer II','Staff Engineer'];
 const BADGES = ['SDE I','SDE II','SDE II·ST','SR ENG','SR ENG II','STAFF'];
@@ -1392,7 +1421,7 @@ const Sfx = {
 /* ==========================================================================
    STATE
    ========================================================================== */
-const BUILD = '1.5.0';                       /* shown in the UI so bug reports name a build */
+const BUILD = '1.6.0';                       /* shown in the UI so bug reports name a build */
 const SAVE_VERSION = 2;
 const SAVEKEY = 'shipit_lodestar_v2';
 const LEGACY_KEYS = ['shipit_vanta_v1'];     /* saves written before the rename */
@@ -2575,7 +2604,10 @@ const TOOLS = {
     how:'The d-pad moves the cursor, A rotates the pipe under it, B runs the data early for a bonus. Route it from the green inlet to the orange outlet.',
     why:'An ignored ping twists pipes behind your back and shortens the clock. A leak resets the board. Meetings twist more.'}
 };
-const unlockedTools = ()=> Object.keys(TOOLS).filter(k=>TOOLS[k].unlock() && WORK[k]);
+const unlockedTools = ()=>{
+  const m = dayMod();
+  return Object.keys(TOOLS).filter(k=>TOOLS[k].unlock() && WORK[k] && !(m && m.tool === k));
+};
 
 const wcv = $('workcv'), wx = wcv.getContext('2d');
 function workSize(){
@@ -2823,9 +2855,11 @@ function deskUpdate(ms){
   if(d.progress >= d.target){
     endDesk(d.target >= buildCap() && buildCap() < 100 ? 'capped' : 'done'); return;
   }
-  if(d.clock >= d.nextSpawn && d.heads <= 0 && d.cards.length < 3){
+  const mod = dayMod();
+  const rate = mod && mod.spawn !== undefined ? mod.spawn : 1;
+  if(rate > 0 && d.clock >= d.nextSpawn && d.heads <= 0 && d.cards.length < 3){
     spawnInterrupt();
-    const pressure = (6.0 - (S.build/100)*2.4) * Math.max(0.7, 1 - 0.07*((S.day||1)-1));   /* the closer to done, the more people want to talk; every day a little more */
+    const pressure = (6.0 - (S.build/100)*2.4) * Math.max(0.7, 1 - 0.07*((S.day||1)-1)) / rate;
     d.nextSpawn = d.clock + pressure*(0.7 + Math.random()*0.7);
   }
   renderDeskHud();
@@ -4884,18 +4918,24 @@ async function nextDay(){
   S.approvals = {code:1, sec:1, design:1};
   S.focus = S.maxFocus; S.caf = S.maxCaf;
   S.x = MAP.start.x; S.y = MAP.start.y; S.dir = MAP.start.dir;
-  const t = ticket();
+  const t = ticket(), m = dayMod();
+  if(m && m.head) S.build = m.head;
+  if(m && m.focus) S.focus = Math.max(1, Math.round(S.maxFocus * m.focus));
   mode = 'dialogue';
   await say(null, [
     WEEKDAYS[(S.day-1) % 5] + '. Day ' + S.day + '.',
     S.day === 2 ? 'You badge in. The badge works, which is the first surprise.' : 'You badge in. Nobody looks up. You are furniture now, which is a promotion of a kind.'
   ]);
   await say('Brayden', ['"' + t.brief + '"', '— sent at 8:51am, so it would be at the top of your queue before you were.']);
+  if(m){
+    await say(null, [m.brief, m.desk]);
+  }
   await say(null, [
     'Reviews carry over. Nobody re-reads a revert.',
-    'Every build tool is yours now. Build it to 100% however you like, then take it to VELOCITY.'
+    (m && m.tool) ? 'Every build tool is yours except one. Build it to 100% however you can, then take it to VELOCITY.'
+                  : 'Every build tool is yours now. Build it to 100% however you like, then take it to VELOCITY.'
   ]);
-  toast(t.key + ' — ' + t.sum);
+  toast(m ? (t.key + ' — ' + m.ttl) : (t.key + ' — ' + t.sum));
   mode = 'field'; syncHUD(); saveGame();
 }
 
@@ -4905,6 +4945,8 @@ async function endingAgain(){
   const t = ticket();
   await say('Brayden', ['Okay. Okay! Ship it.', 'Put it in the doc.']);
   await say(null, t.after);
+  const dm = dayMod();
+  if(dm) await say(null, dm.after);
   await say(null, [
     'END OF DAY ' + S.day + '.',
     'Shipped at ' + clockStr() + ', as ' + title() + '. ' + t.key + ' is in production. Something is always in production.'

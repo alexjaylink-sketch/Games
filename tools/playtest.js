@@ -253,6 +253,35 @@ SUITES.loop = async browser => {
   const day3 = await d.state(() => ({ day: S.day, ticket: ticket().key, mode }));
   ok('coming back rolls straight into day three', day3.day === 3 && day3.ticket === 'LDS-4419' && day3.mode === 'field', JSON.stringify(day3));
   ok('save survives the loop', await d.state(() => { saveGame(); const g = loadGame(); return g.day === 3 && g.ticket === 2; }));
+
+  /* every day bends the desk in exactly one direction */
+  const mods = await d.state(() => {
+    const seen = [];
+    const day0 = S.day;
+    for (let day = 2; day <= 2 + DAYMODS.length; day++) {
+      S.day = day;
+      const m = dayMod();
+      seen.push(m ? m.k : null);
+    }
+    S.day = day0;
+    return seen;
+  });
+  ok('each day gets its own twist, then the week repeats',
+     mods.length === 6 && new Set(mods.slice(0, 5)).size === 5 && mods[5] === mods[0], mods.join(' → '));
+
+  await d.page.evaluate(() => { S.day = 2; });   /* offsite */
+  ok('the offsite day leaves you alone', await d.state(() => dayMod().spawn) === 0, await d.state(() => dayMod().ttl));
+  await d.page.evaluate(() => { S.day = 4; });   /* merge queue down */
+  const gone = await d.state(() => ({ tool: dayMod().tool, tools: unlockedTools() }));
+  ok('a day can take a build tool away', gone.tool === 'stack' && !gone.tools.includes('stack'), gone.tools.join(','));
+  ok('  but never all of them', gone.tools.length >= 4);
+  await d.page.evaluate(() => { S.day = 5; });   /* somebody helped */
+  await d.page.evaluate(() => { S.build = 0; S.flags.finished = 1; });
+  ok('a day can start part-built', await d.state(() => dayMod().head) === 34);
+  await d.page.evaluate(() => { S.day = 6; });   /* you did not sleep */
+  ok('a day can start you short on Focus', await d.state(() => dayMod().focus) === 0.6);
+  await d.page.evaluate(() => { S.day = 3; });
+  ok('and launch week doubles the pings', await d.state(() => dayMod().spawn) > 1.8);
   return d;
 };
 
