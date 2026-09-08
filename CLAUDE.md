@@ -127,6 +127,15 @@ every tool open. `TICKETS[]` holds per-day briefs, Brayden pitches and
 endings; `ticket()` generates the add/remove cycle after the table runs out.
 Desk pressure rises 7% per day.
 
+`DAYMODS` bends each post-chapter-two day in exactly one direction, on a
+five-day rotation keyed off `S.day`: an offsite where nothing interrupts you,
+launch week at double the ping rate, a day with Merge Queue taken away, a day
+that starts a third built by someone you never meet, and a day you start short
+on Focus. `dayMod()` returns the day's entry (null during chapters one and
+two); `unlockedTools()`, the spawn cadence in `deskUpdate` and `nextDay()` all
+read it, and `endingAgain()` gives it the last word. Adding a sixth day is a
+table entry plus, at most, one hook.
+
 ### The desk
 `startDesk()` (chooser when more than one tool is unlocked) → `deskUpdate`
 each frame. Progress only comes from the tool via `workProgress(pct)`;
@@ -236,21 +245,19 @@ Bad: *"Managers like Brayden are what's wrong with tech."* (moralizes.)
 
 ## Backlog, in the order it is worth doing
 
-1. **Make the day loop vary.** After chapter two, every day is the same
-   shape with different Brayden dialogue. One structural twist per day
-   (a tool taken away, a gate that moves, a day with no interruptions at
-   all) would add real replay without new maps. This is the cheapest
-   remaining content per hour of work.
-2. itch.io page copy and store screenshots. `STORE.md` has the plan.
+1. itch.io page copy and store screenshots. `STORE.md` has the plan.
    (`tools/package.js` makes the zip; `tools/make-icons.js` makes the icons.)
-3. Encounter rate on the zigzag route feels slightly high; tune with the
+2. Encounter rate on the zigzag route feels slightly high; tune with the
    `chain` suite watching.
-4. A LICENSE file — the owner's call, not ours.
+3. A LICENSE file — the owner's call, not ours.
+4. A third chapter, if the game ever needs to be longer. Do not start it
+   before watching somebody finish chapter two.
 
 Done, so do not redo: the visual pass (office, title, offer letter, battle,
 desk, portal, dialogue, list screens all share one look), the app icons, the
-lifecycle work, chapter two's spine (map, cast, gates, boss, ending), and all
-four Floor 6 side quests. Mara's surname is Okafor, fixed in `ch2Ending()`.
+lifecycle work, chapter two's spine (map, cast, gates, boss, ending), all four
+Floor 6 side quests, and the per-day variation in the loop. Mara's surname is
+Okafor, fixed in `ch2Ending()`.
 
 ### Measured length (v1.5.0)
 Both chapters on the critical path run 40–45 minutes; with every side quest
