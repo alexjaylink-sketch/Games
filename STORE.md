@@ -178,5 +178,6 @@ both of those arguments weaken.
   this repo are verified in Chromium at phone viewports, not on hardware.
 - **Not tested on a real iPhone or Android handset.** Safari and real touch
   input can differ from headless Chromium.
-- **One floor, one chapter, plus the repeating day loop.** Reviewers will not
-  reject it for length, but see `docs/floor6-draft.md` before a paid release.
+- **Two floors, two chapters, plus the repeating day loop.** Longer than it was,
+  still short for a paid release. The four Floor 6 side quests in
+  `docs/floor6-draft.md` are written but not built.

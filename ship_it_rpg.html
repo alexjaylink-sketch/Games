@@ -870,7 +870,11 @@ const TILE = {
   'b':{solid:1,kind:'booth'},
   'T':{solid:1,kind:'tv'},
   'v':{solid:1,kind:'vend'},
-  'e':{solid:1,kind:'elev'}
+  'e':{solid:1,kind:'elev'},
+  'n':{solid:1,kind:'pod'},
+  'a':{solid:1,kind:'art'},
+  'f':{solid:1,kind:'fridge'},
+  'x':{solid:1,kind:'execdesk'}
 };
 
 const FLOOR3 = `
@@ -906,12 +910,45 @@ const FLOOR3 = `
 ##################################
 `;
 
-const MAP = {
-  name:'LODESTAR HQ — Floor 3',
-  short:'Floor 3 — Open Plan',
-  raw:FLOOR3,
-  start:{x:15,y:6,dir:'down'}
+const FLOOR6 = `
+##################################
+##########....a....a....##########
+##.kkkkk.#......ee......#.sss.t.##
+##.......#..............#.......##
+##.ss....#..............#.......##
+##p....p.#..............#.b.....##
+##.......#..............#.......##
+#####-####..............####-#####
+#................................#
+#####-####..............####-#####
+##.......#..............#.......##
+##.ttttt.#...gggggggg...#.n.n.n.##
+##.ttttt.#...gm....mg...#ooooooo##
+##.......#...g..Yw..g...#ooooooo##
+##.......#...g......g...#ooooooo##
+##.wwwww.#...g.c..c.g...#.n.n.n.##
+##.......#...g......g...#.......##
+##########...g......g...##########
+#............ggg-gggg............#
+#####-####............#####-######
+##.......#............#.........##
+##.DDDDD.#............#..xx...a.##
+##.ccccc.#............#.........##
+##f......#............#.ttttt...##
+##########............############
+##################################
+`;
+
+/* Two floors, one shaft. `S.floor` says which one you are standing on. */
+const FLOORS = {
+  f3:{ key:'f3', name:'LODESTAR HQ — Floor 3', short:'Floor 3 — Open Plan',
+       raw:FLOOR3, start:{x:15,y:6,dir:'down'}, back:{x:15,y:6,dir:'down'} },
+  f6:{ key:'f6', name:'LODESTAR HQ — Floor 6', short:'Floor 6 — Leadership',
+       raw:FLOOR6, start:{x:16,y:3,dir:'down'}, back:{x:16,y:3,dir:'down'} }
 };
+const floorKey = ()=> (S && FLOORS[S.floor]) ? S.floor : 'f3';
+const MAP = FLOORS.f3;                       /* the floor you start on */
+const curMap = ()=> FLOORS[floorKey()];
 
 /* ---------- the ticket, and the tickets after it ---------- */
 const TICKETS = [
@@ -954,6 +991,7 @@ const TICKETS = [
           'You do not reply. It is not monitored. That is the arrangement.']}
 ];
 function ticket(){
+  if(ch2()) return {key:CH2KEY, sum:CH2SUM};
   const i = S ? (S.ticket||0) : 0;
   if(TICKETS[i]) return TICKETS[i];
   const n = i - TICKETS.length;
@@ -1108,6 +1146,43 @@ const ENEMIES = {
       {t:'atk',p:1.1,txt:'{E} says this is what we aligned on. You were not in that meeting.'},
       {t:'status',p:0.4,st:'switch',txt:'{E} says "actually, let\'s circle back" and schedules a pre-meeting for the meeting.'},
       {t:'heal',p:0.16,txt:'{E} opens a Google Doc titled "Vision (WIP)" and is restored by it.'}
+    ]}),
+  offsite: E({name:'The Offsite', art:'🏕️', hp:210, atk:24, def:10, sp:62, cr:44,
+    weak:'scope',
+    moves:[
+      {t:'atk',p:1.0,txt:'{E} proposes a trust fall. There is nobody behind you.'},
+      {t:'status',p:0.45,st:'switch',txt:'{E} breaks you into groups. You are the group.'},
+      {t:'atk',p:1.15,txt:'{E} asks everyone to share one thing nobody knows about them.'}
+    ]}),
+  slide14: E({name:'Slide 14', art:'📑', hp:265, atk:16, def:17, sp:70, cr:48,
+    weak:'scope',
+    moves:[
+      {t:'atk',p:0.8,txt:'{E} has been in every deck for three years. Nobody has read it.'},
+      {t:'atk',p:0.9,txt:'{E} contains a diagram. The diagram contains {E}.'},
+      {t:'skip',p:0,txt:'{E} is skipped for time, as it always is, and survives.'}
+    ]}),
+  mentor: E({name:'Someone\u2019s Mentor', art:'🧓', hp:230, atk:26, def:12, sp:66, cr:46,
+    weak:'cite',
+    moves:[
+      {t:'atk',p:1.1,txt:'{E} asks what you really want. You want to leave the quiet room.'},
+      {t:'atk',p:1.0,txt:'{E} tells you a story about 2011. It does not end.'},
+      {t:'status',p:0.35,st:'switch',txt:'{E} suggests you grab coffee sometime and means it, which is worse.'}
+    ]}),
+  execreply: E({name:'Reply-All Storm (Executive)', art:'📨', hp:240, atk:27, def:9, sp:72, cr:52,
+    moves:[
+      {t:'atk',p:1.0,txt:'{E} adds four more people. Each of them has an assistant, who also replies.'},
+      {t:'atk',p:1.2,txt:'Someone replies "adding {E} for visibility." {E} was already on it.'},
+      {t:'atk',p:1.1,txt:'A calendar invite arrives from the thread. It is recurring.'}
+    ]}),
+  rand: E({name:'Rand Voss', art:'🕶️', hp:395, atk:23, def:11, sp:340, cr:260, boss:1, healPct:0.05,
+    weak:'cite',
+    moves:[
+      {t:'atk',p:1.0,txt:'{E} explains that autonomy is solved. The explanation takes six years.'},
+      {t:'atk',p:1.15,txt:'{E} says he sleeps four hours and wakes up correct. You feel tired on his behalf.'},
+      {t:'atk',p:1.1,txt:'{E} quotes the Doctrine. The Doctrine quotes {E}.'},
+      {t:'atk',p:1.2,txt:'{E} says it was not inevitable, it was him. The room gets warmer.'},
+      {t:'status',p:0.35,st:'switch',txt:'{E} asks what you would do with a billion dollars, and waits.'},
+      {t:'heal',p:0.14,txt:'{E} is handed a photograph of a lighthouse. He has still not noticed it is not ours.'}
     ]})
 };
 
@@ -1147,6 +1222,51 @@ const INTERRUPTS = [
    msg:'main is red. Your commit is not in the failing range. You are the most recent committer.',
    esc:'Four people have now asked, separately, whether main is red.'}
 ];
+
+/* Upstairs the interruptions have better manners and worse consequences. */
+const INTERRUPTS6 = [
+  {who:'Teddy Vance', art:'🎧', act:'Answer', thr:10, life:10,
+   msg:'quick one \u2014 can the toggle be a button? not functionally. emotionally.',
+   esc:'Teddy has written it as a button in the deck. It is a button now.'},
+  {who:'Priyanka Rao', art:'⚖️', act:'Acknowledge', thr:12, life:9, noSnooze:1,
+   msg:'Do not reply to Teddy.',
+   esc:'You replied to Teddy. Legal is now on the thread, which is where Legal lives.'},
+  {who:'Ines Ferreira', art:'📉', act:'Confirm', thr:11, life:10,
+   msg:'Is the toggle in the forecast? It is now. Confirm.',
+   esc:'It is in the forecast either way. You have simply not seen the number.'},
+  {who:'Reception', art:'🛎️', act:'Go down', thr:13, life:8,
+   msg:'Your 2pm is here. You do not have a 2pm.',
+   esc:'Your 2pm waited forty minutes and left a card. The card is blank.'},
+  {who:'Rand Voss', art:'🕶️', act:'Listen', thr:15, life:7, noSnooze:1,
+   msg:'walking past. thought out loud at you. it was about weather',
+   esc:'You missed it. He will say it again on stage, and you will not recognise it.'},
+  {who:'#launch-readiness', art:'🚢', act:'React \U0001f44d', thr:8, life:12,
+   msg:'nine owners have been tagged. one of them is you. the other eight are a distribution list.',
+   esc:'The channel has decided the toggle is blocked on you. It has always been blocked on you.'}
+];
+const intTable = ()=> (typeof ch2 === 'function' && ch2()) ? INTERRUPTS6 : INTERRUPTS;
+
+const MEETINGS6 = [
+  {ttl:'Launch Readiness Sync (catered)', secs:12, lines:[
+    'There is food. Nobody is eating it, because eating is a posture.',
+    'Nine owners are listed. Four are on the call. Two are muted and will not unmute.',
+    'Someone asks who owns the toggle. Everyone looks at their own camera.',
+    'It is agreed that we are broadly on track.'
+  ]},
+  {ttl:'Narrative Alignment (45 min, 12 slides, 1 idea)', secs:13, lines:[
+    'Teddy presents the story so far. The story so far is your toggle.',
+    'Slide 6 is a photograph of a lighthouse. It is not ours.',
+    'Slide 14 is skipped for time.',
+    'The one idea arrives at minute forty-one and is that it should feel inevitable.'
+  ]},
+  {ttl:'Founder Fireside (no fire, no side)', secs:15, lines:[
+    'Rand takes a question that was not asked.',
+    'He answers a different question, at length, and correctly.',
+    'Somebody types "so good" in the chat. Nobody types anything else.',
+    'The recording will be shared. The recording is never shared.'
+  ]}
+];
+const mtgTable = ()=> (typeof ch2 === 'function' && ch2()) ? MEETINGS6 : MEETINGS;
 
 const MEETINGS = [
   {ttl:'Sprint Refinement (recurring, no agenda)', secs:11, lines:[
@@ -1219,6 +1339,9 @@ const SIDEQUESTS = [
 ];
 
 const ENCOUNTERS = ['replyall','flaky','merge','creep','quickq','recruiter','legacy','standup'];
+/* Nobody expects to be ambushed in the room with the nap pods. */
+const ENCOUNTERS6 = ['offsite','slide14','mentor','execreply'];
+const encTable = ()=> (typeof ch2 === 'function' && ch2()) ? ENCOUNTERS6 : ENCOUNTERS;
 
 /* ==========================================================================
    SOUND — synthesised, so there are no assets to ship or license
@@ -1261,7 +1384,7 @@ const Sfx = {
 /* ==========================================================================
    STATE
    ========================================================================== */
-const BUILD = '1.3.0';                       /* shown in the UI so bug reports name a build */
+const BUILD = '1.4.0';                       /* shown in the UI so bug reports name a build */
 const SAVE_VERSION = 2;
 const SAVEKEY = 'shipit_lodestar_v2';
 const LEGACY_KEYS = ['shipit_vanta_v1'];     /* saves written before the rename */
@@ -1292,7 +1415,8 @@ function newGame(){
     build:0,
     approvals:{code:0, sec:0, design:0},
     minutes:0,
-    day:1, ticket:0
+    day:1, ticket:0, floor:'f3',
+    ch:1, sign:{legal:0, comms:0, finance:0}
   };
 }
 
@@ -1300,7 +1424,7 @@ function newGame(){
    MAP
    ========================================================================== */
 function buildMap(){
-  const rows = MAP.raw.split('\n').filter(r=>r.length>0);
+  const rows = curMap().raw.split('\n').filter(r=>r.length>0);
   MW = Math.max(...rows.map(r=>r.length));
   MH = rows.length;
   grid = rows.map(r => (r + '#'.repeat(MW)).slice(0, MW).split(''));
@@ -1310,20 +1434,39 @@ const tinfo  = (x,y)=> TILE[tileAt(x,y)] || TILE['#'];
 
 /* ---------- floor signage: real offices label their zones, so this one does ---------- */
 const SIGNS = [
-  {x:4.5,  y:9.35, t:'YOUR DESK'},
-  {x:4.5,  y:5.5,  t:'KITCHEN'},
-  {x:15.5, y:2.6,  t:'LOBBY'},
-  {x:27.5, y:5.4,  t:'VELOCITY'},
-  {x:16.5, y:8.5,  t:'OPEN PLAN'},
-  {x:4.5,  y:21.5, t:'FOCUS ROOMS'},
-  {x:15.5, y:21.5, t:'EVENT SPACE'},
-  {x:27.5, y:21.5, t:'IT & SUPPLIES'},
-  {x:27.5, y:24.4, t:'SECURITY'}
+  {f:'f3', x:4.5,  y:9.35, t:'YOUR DESK'},
+  {f:'f3', x:4.5,  y:5.5,  t:'KITCHEN'},
+  {f:'f3', x:15.5, y:2.6,  t:'LOBBY'},
+  {f:'f3', x:27.5, y:5.4,  t:'VELOCITY'},
+  {f:'f3', x:16.5, y:8.5,  t:'OPEN PLAN'},
+  {f:'f3', x:4.5,  y:21.5, t:'FOCUS ROOMS'},
+  {f:'f3', x:15.5, y:21.5, t:'EVENT SPACE'},
+  {f:'f3', x:27.5, y:21.5, t:'IT & SUPPLIES'},
+  {f:'f3', x:27.5, y:24.4, t:'SECURITY'},
+  {f:'f6', x:5.5,  y:5.5,  t:'RECEPTION'},
+  {f:'f6', x:28.5, y:6.4,  t:'COMMS'},
+  {f:'f6', x:5.5,  y:13.5, t:'LEGAL'},
+  {f:'f6', x:16.5, y:16.6, t:'LIGHTHOUSE'},
+  {f:'f6', x:28.5, y:16.5, t:'QUIET ROOM'},
+  {f:'f6', x:5.5,  y:23.5, t:'FINANCE'},
+  {f:'f6', x:27.5, y:20.4, t:'THE FOUNDER'},
+  {f:'f6', x:26.5, y:24.4, t:'BOARD ROOM'}
 ];
 
 /* Where the player is supposed to be going right now, for the on-screen marker. */
 function objectiveTarget(){
   if(!S) return null;
+  if(ch2()){
+    if(floorKey() !== 'f6') return null;
+    if(readyToShip())        return {x:26, y:20, label:'THE FOUNDER', sign:'THE FOUNDER'};
+    if(S.build < buildCap()) return {x:16, y:13, label:'WAR ROOM',    sign:'LIGHTHOUSE'};
+    const g = CH2GATES.find(g=>!okc(g.k));
+    if(g && g.k==='legal')   return {x:4,  y:13, label:'PRIYANKA', sign:'LEGAL'};
+    if(g && g.k==='comms')   return {x:29, y:4,  label:'TEDDY',    sign:'COMMS'};
+    if(g && g.k==='finance') return {x:5,  y:20, label:'INES',     sign:'FINANCE'};
+    return {x:26, y:20, label:'THE FOUNDER', sign:'THE FOUNDER'};
+  }
+  if(floorKey() !== 'f3') return null;
   if(readyToShip())        return {x:27, y:7,  label:'VELOCITY',  sign:'VELOCITY'};
   if(S.build < buildCap()) return {x:4,  y:10, label:'YOUR DESK', sign:'YOUR DESK'};
   if(!S.approvals.code)    return {x:9,  y:13, label:'PRIYA'};
@@ -1335,18 +1478,25 @@ function objectiveTarget(){
 /* ---------- entities ---------- */
 const PLAYER = {col:'#4f8cff', hair:'#2e2118', skin:'#c68b62', prop:'laptop'};
 const NPCS = [
-  {id:'dee',    x:18,y:4,  col:'#6f7ce0', hair:'#3b2a1c', skin:'#e0ac69', prop:'badge',     name:'Dee, Onboarding Buddy'},
-  {id:'kai',    x:4, y:3,  col:'#c77dff', hair:'#1d1a24', skin:'#8d5524', prop:'mug',       name:'Kai, Design'},
-  {id:'priya',  x:9, y:13, col:'#3ecf8e', hair:'#231a14', skin:'#a9713f', prop:'cans',      name:'Priya, Staff Engineer'},
-  {id:'jordan', x:17,y:15, col:'#f5a524', hair:'#6b4a2a', skin:'#f1c27d', prop:'clipboard', name:'Jordan, Project Manager'},
-  {id:'marcus', x:26,y:26, col:'#2f3a4c', hair:'#15100c', skin:'#5c3a21', prop:'shades',    name:'Marcus, Security'},
-  {id:'sandeep',x:25,y:23, col:'#4f8cff', hair:'#1c1510', skin:'#8d5524', prop:'badge',     name:'Sandeep, IT'},
-  {id:'brooke', x:15,y:23, col:'#e0576b', hair:'#c9a227', skin:'#f1c27d', prop:'flag',      name:'Brooke, Culture & Engagement'},
-  {id:'brayden',x:30,y:3,  col:'#e5484d', hair:'#8a6a3a', skin:'#f1c27d', prop:'cap',       name:'Brayden, Product Manager'},
-  {id:'devon',  x:24,y:9,  col:'#8996ab', hair:'#2a2118', skin:'#c68b62', prop:'laptop',    name:'Devon'},
-  {id:'mara',   x:8, y:18, col:'#7a8ea8', hair:'#4a4a55', skin:'#e0ac69', prop:'mug',       name:'Mara'}
+  {f:'f3', id:'dee',    x:18,y:4,  col:'#6f7ce0', hair:'#3b2a1c', skin:'#e0ac69', prop:'badge',     name:'Dee, Onboarding Buddy'},
+  {f:'f3', id:'kai',    x:4, y:3,  col:'#c77dff', hair:'#1d1a24', skin:'#8d5524', prop:'mug',       name:'Kai, Design'},
+  {f:'f3', id:'priya',  x:9, y:13, col:'#3ecf8e', hair:'#231a14', skin:'#a9713f', prop:'cans',      name:'Priya, Staff Engineer'},
+  {f:'f3', id:'jordan', x:17,y:15, col:'#f5a524', hair:'#6b4a2a', skin:'#f1c27d', prop:'clipboard', name:'Jordan, Project Manager'},
+  {f:'f3', id:'marcus', x:26,y:26, col:'#2f3a4c', hair:'#15100c', skin:'#5c3a21', prop:'shades',    name:'Marcus, Security'},
+  {f:'f3', id:'sandeep',x:25,y:23, col:'#4f8cff', hair:'#1c1510', skin:'#8d5524', prop:'badge',     name:'Sandeep, IT'},
+  {f:'f3', id:'brooke', x:15,y:23, col:'#e0576b', hair:'#c9a227', skin:'#f1c27d', prop:'flag',      name:'Brooke, Culture & Engagement'},
+  {f:'f3', id:'brayden',x:30,y:3,  col:'#e5484d', hair:'#8a6a3a', skin:'#f1c27d', prop:'cap',       name:'Brayden, Product Manager'},
+  {f:'f3', id:'devon',  x:24,y:9,  col:'#8996ab', hair:'#2a2118', skin:'#c68b62', prop:'laptop',    name:'Devon'},
+  {f:'f6', id:'dee6',     x:5, y:3,  col:'#6f7ce0', hair:'#3b2a1c', skin:'#e0ac69', prop:'badge',     name:'Dee, Chief of Staff (interim)'},
+  {f:'f6', id:'priyanka', x:4, y:13, col:'#3f6fb5', hair:'#1b1410', skin:'#8d5524', prop:'clipboard', name:'Priyanka Rao, General Counsel'},
+  {f:'f6', id:'teddy',    x:29,y:4,  col:'#e08a3c', hair:'#6b4a2a', skin:'#f1c27d', prop:'cans',      name:'Teddy Vance, VP Communications'},
+  {f:'f6', id:'ines',     x:5, y:20, col:'#2f8f6a', hair:'#2a1c14', skin:'#c68b62', prop:'clipboard', name:'Ines Ferreira, VP Finance'},
+  {f:'f6', id:'rand',     x:26,y:20, col:'#8a8f98', hair:'#5a5a5a', skin:'#f1c27d', prop:'shades',    name:'Rand Voss'},
+  {f:'f6', id:'marcus6',  x:26,y:10, col:'#2f3a4c', hair:'#15100c', skin:'#5c3a21', prop:'shades',    name:'Marcus, Security'},
+  {f:'f3', id:'mara',   x:8, y:18, col:'#7a8ea8', hair:'#4a4a55', skin:'#e0ac69', prop:'mug',       name:'Mara'}
 ];
-const npcAt = (x,y)=> NPCS.find(n=>n.x===x&&n.y===y && !(S.flags['gone_'+n.id]));
+const onFloor = n => (n.f || 'f3') === floorKey();
+const npcAt = (x,y)=> NPCS.find(n=>onFloor(n) && n.x===x && n.y===y && !(S.flags['gone_'+n.id]));
 
 /* ==========================================================================
    CANVAS / RENDER
@@ -1390,15 +1540,18 @@ const PAL = {
 function drawFloor(k,px,py,x,y){
   const s = TS;
   const nearStone = k==='floor' || (wallish(k) || k==='door') && (kindAt(x,y-1)==='floor'||kindAt(x,y+1)==='floor'||kindAt(x-1,y)==='floor'||kindAt(x+1,y)==='floor');
+  const up = floorKey() === 'f6';
   if(nearStone){
     /* polished concrete in the lobby wing: big 2×2 slabs with a faint seam */
-    cx.fillStyle = ((x>>1)+(y>>1))%2 ? PAL.stone : PAL.stoneAlt; cx.fillRect(px,py,s,s);
+    cx.fillStyle = up ? (((x>>1)+(y>>1))%2 ? '#3a3730' : '#3c3932') : (((x>>1)+(y>>1))%2 ? PAL.stone : PAL.stoneAlt);
+    cx.fillRect(px,py,s,s);
     cx.fillStyle = 'rgba(255,255,255,.035)';
     if(x%2===0) cx.fillRect(px,py,1,s);
     if(y%2===0) cx.fillRect(px,py,s,1);
   } else {
     /* carpet tiles, laid in 2×2 squares like every office since 1998 */
-    cx.fillStyle = ((x>>1)+(y>>1))%2 ? PAL.carpet : PAL.carpetAlt; cx.fillRect(px,py,s,s);
+    cx.fillStyle = up ? (((x>>1)+(y>>1))%2 ? '#2e2c2a' : '#31302c') : (((x>>1)+(y>>1))%2 ? PAL.carpet : PAL.carpetAlt);
+    cx.fillRect(px,py,s,s);
     cx.fillStyle = 'rgba(0,0,0,.10)';
     if(x%2===0) cx.fillRect(px,py,1,s);
     if(y%2===0) cx.fillRect(px,py,s,1);
@@ -1422,7 +1575,9 @@ function drawLighting(camX, camY, x0, x1, y0, y1){
     if(x<0||y<0||x>=MW||y>=MH || wallish(kindAt(x,y))) continue;
     const lx = x*s + s/2 - camX, ly = y*s + s/2 - camY;
     const g = cx.createRadialGradient(lx,ly,0, lx,ly, s*2.6);
-    g.addColorStop(0,'rgba(255,238,205,.075)'); g.addColorStop(1,'rgba(255,238,205,0)');
+    const warm = floorKey() === 'f6';
+    g.addColorStop(0, warm ? 'rgba(255,226,178,.115)' : 'rgba(255,238,205,.075)');
+    g.addColorStop(1, warm ? 'rgba(255,226,178,0)' : 'rgba(255,238,205,0)');
     cx.fillStyle = g; cx.fillRect(lx-s*2.6, ly-s*2.6, s*5.2, s*5.2);
   }
   cx.fillStyle = 'rgba(0,0,0,.22)';
@@ -1592,6 +1747,38 @@ function drawTile(k,px,py,x,y){
       cx.fillStyle='rgba(255,255,255,.18)'; cx.fillRect(px+s*0.2,py+s*0.18,s*0.12,s*0.5);
       cx.fillStyle = h>0.5 ? '#3ecf8e' : '#e5484d'; cx.beginPath(); cx.arc(px+s*0.5,py+s*0.84,s*0.04,0,7); cx.fill();
       break; }
+    case 'pod': {   /* a nap pod. Nobody has ever been seen getting into one. */
+      cx.fillStyle='rgba(0,0,0,.26)'; cx.fillRect(px+s*0.1,py+s*0.16,s*0.84,s*0.78);
+      cx.fillStyle='#e7e9ee'; roundRect(px+s*0.08,py+s*0.1,s*0.84,s*0.8,s*0.34); cx.fill();
+      cx.fillStyle='#141b28'; roundRect(px+s*0.16,py+s*0.2,s*0.68,s*0.5,s*0.26); cx.fill();
+      cx.fillStyle='rgba(126,196,255,.18)'; roundRect(px+s*0.16,py+s*0.2,s*0.68,s*0.5,s*0.26); cx.fill();
+      cx.fillStyle = h>0.5 ? '#3ecf8e' : '#e5484d';
+      cx.beginPath(); cx.arc(px+s*0.5,py+s*0.79,s*0.045,0,7); cx.fill();
+      break; }
+    case 'art': {   /* a canvas that says VELOCITY in a different font every time */
+      if([kindAt(x-1,y),kindAt(x+1,y),kindAt(x,y-1),kindAt(x,y+1)].some(wallish)) wallBar(px,py,x,y,0.36,PAL.wall);
+      cx.fillStyle='#2b3346'; cx.fillRect(px+s*0.06,py+s*0.12,s*0.88,s*0.66);
+      cx.fillStyle= h>0.66 ? '#1d2a3f' : h>0.33 ? '#2a1f2e' : '#1f2a24';
+      cx.fillRect(px+s*0.1,py+s*0.16,s*0.8,s*0.58);
+      cx.fillStyle='rgba(219,228,240,.5)';
+      cx.font='600 '+Math.max(6,s*0.15)+'px '+(h>0.5?'"IBM Plex Mono",monospace':'"IBM Plex Serif",serif');
+      cx.textAlign='center'; cx.textBaseline='middle';
+      cx.fillText('VELOCITY', px+s*0.5, py+s*0.45);
+      break; }
+    case 'fridge': {
+      cx.fillStyle='rgba(0,0,0,.28)'; cx.fillRect(px+s*0.12,py+s*0.06,s*0.84,s*0.9);
+      cx.fillStyle='#dfe3ea'; roundRect(px+s*0.1,py,s*0.82,s*0.94,s*0.06); cx.fill();
+      cx.fillStyle='#c3c9d3'; cx.fillRect(px+s*0.1,py+s*0.44,s*0.82,2);
+      cx.fillStyle='#8d97a8'; cx.fillRect(px+s*0.76,py+s*0.28,s*0.05,s*0.14);
+      cx.fillStyle='#8d97a8'; cx.fillRect(px+s*0.76,py+s*0.54,s*0.05,s*0.14);
+      break; }
+    case 'execdesk': {
+      const L2 = kindAt(x-1,y)==='execdesk', R2 = kindAt(x+1,y)==='execdesk';
+      cx.fillStyle='rgba(0,0,0,.28)'; cx.fillRect(px,py+s*0.18,s,s*0.76);
+      cx.fillStyle='#2f261d';
+      roundRectSides(px+(L2?0:s*0.02), py+s*0.1, s-(L2?0:s*0.02)-(R2?0:s*0.02), s*0.76, s*0.08, !L2, !R2); cx.fill();
+      cx.fillStyle='rgba(255,255,255,.07)'; cx.fillRect(px+(L2?0:s*0.02), py+s*0.1, s-(L2?0:s*0.02)-(R2?0:s*0.02), 2);
+      break; }
     case 'vend': {
       cx.fillStyle='rgba(0,0,0,.28)'; cx.fillRect(px+s*0.1,py+s*0.08,s*0.86,s*0.9);
       cx.fillStyle='#1a2130'; roundRect(px+s*0.08,py+s*0.02,s*0.84,s*0.92,s*0.06); cx.fill();
@@ -1730,6 +1917,7 @@ function drawSigns(camX, camY, W, H){
   cx.font = '600 ' + size + 'px "IBM Plex Mono", ui-monospace, monospace';
   try{ cx.letterSpacing = Math.round(size*0.3) + 'px'; }catch(e){}
   for(const sg of SIGNS){
+    if((sg.f || 'f3') !== floorKey()) continue;
     const px = sg.x*TS - camX, py = sg.y*TS - camY;
     if(px < -160 || px > W+160 || py < -40 || py > H+40) continue;
     const lit = target && target.sign === sg.t;
@@ -1808,7 +1996,7 @@ function draw(){
   drawSigns(camX, camY, W, H);
 
   for(const n of NPCS){
-    if(S.flags['gone_'+n.id]) continue;
+    if(!onFloor(n) || S.flags['gone_'+n.id]) continue;
     if(n.x<x0-1||n.x>x1+1||n.y<y0-1||n.y>y1+1) continue;
     drawPerson(Math.round(n.x*TS-camX), Math.round(n.y*TS-camY), n, 'down', 0);
   }
@@ -1836,9 +2024,28 @@ function drawTitleScene(W, H){
   drawLighting(camX, camY, x0, x1, y0, y1);
   for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++) drawTile(tinfo(x,y).kind, Math.round(x*TS-camX), Math.round(y*TS-camY), x, y);
   for(const n of NPCS){
+    if(!onFloor(n)) continue;
     if(n.x<x0-1||n.x>x1+1||n.y<y0-1||n.y>y1+1) continue;
     drawPerson(Math.round(n.x*TS-camX), Math.round(n.y*TS-camY), n, 'down', 0);
   }
+}
+
+/* Riding between floors: same shaft, different company. */
+async function goFloor(key){
+  if(!FLOORS[key] || floorKey() === key) return;
+  mode = 'dialogue';
+  await flash();
+  S.floor = key;
+  const m = curMap();
+  S.x = m.start.x; S.y = m.start.y; S.dir = m.start.dir;
+  heldDir = null; anim = {on:false, fx:0, fy:0, t:0};
+  buildMap(); resize(); syncHUD(); autosave(true);
+  await say(null, key === 'f6'
+    ? ['Six. The doors open onto carpet you can hear yourself walk on.',
+       'There is a plant here that is real, and a person at a desk whose whole job is that you have arrived.']
+    : ['Three. The doors open onto the noise.',
+       'Somebody is explaining something to somebody at a standing desk. They have been at it since you left.']);
+  mode = 'field';
 }
 
 /* ==========================================================================
@@ -1858,7 +2065,8 @@ function tryMove(dir){
   const [dx,dy] = DIRS[dir];
   const nx = S.x+dx, ny = S.y+dy;
   if(blocked(nx,ny)) return;
-  if(nx===27 && ny===7 && !readyToShip()){ lockedRoom(); return; }
+  if(!ch2() && nx===27 && ny===7 && !readyToShip()){ lockedRoom(); return; }
+  if(ch2() && floorKey()==='f6' && nx===27 && ny===19 && !readyToShip()){ lockedRoom(); return; }
   anim = {on:true, fx:nx, fy:ny, t:0};
 }
 
@@ -1869,7 +2077,8 @@ function arrive(){
     steps++;
     if(steps > encCooldown && Math.random() < 0.11){
       steps = 0; encCooldown = 5 + ri(6);
-      startBattle([ENCOUNTERS[ri(ENCOUNTERS.length)]]);
+      const tbl = encTable();
+      startBattle([tbl[ri(tbl.length)]]);
     }
   }
 }
@@ -1958,17 +2167,41 @@ const pAtk = ()=> S.atk + (ITEMS[S.weapon].atk||0);
 const pDef = ()=> S.def + (ITEMS[S.armor].def||0);
 const title = ()=> TITLES[Math.min(S.lv-1, TITLES.length-1)];
 const badge = ()=> BADGES[Math.min(S.lv-1, BADGES.length-1)];
-const allApprovals = ()=> S.approvals.code && S.approvals.sec && S.approvals.design;
+/* Chapter two runs on the sixth floor, where the gates are sign-offs and the
+   people who hold them do not write code. */
+const CH2GATES = [
+  {at:25, k:'legal',   who:'Priyanka Rao',  what:'legal sign-off',
+   line:'It exists now, which means Legal has an opinion about it. Priyanka is west, behind the glass.'},
+  {at:50, k:'comms',   who:'Teddy Vance',   what:'the narrative',
+   line:'Comms cannot sell half a thing. Teddy is east, wearing a headset connected to nothing.'},
+  {at:75, k:'finance', who:'Ines Ferreira', what:'the forecast',
+   line:'Finance funds second halves, not promises. Ines is south-west, watching the only real numbers in the building.'}
+];
+const ch2  = ()=> !!(S && S.ch === 2);
+const okc  = k => !!(S.sign && S.sign[k]);
+const CH2KEY = 'LDS-5001', CH2SUM = 'Lighthouse launch readiness';
+
+const allApprovals = ()=> ch2()
+  ? CH2GATES.every(g=>okc(g.k))
+  : (S.approvals.code && S.approvals.sec && S.approvals.design);
 const readyToShip  = ()=> allApprovals() && S.build >= 100;
 
 /* You cannot build past a wall until the office clears it, and the office
    will not look at work that does not exist yet. That alternation is the game. */
 function buildCap(){
+  if(ch2()){
+    for(const g of CH2GATES) if(!okc(g.k)) return g.at;
+    return 100;
+  }
   if(!S.approvals.code) return 35;
   if(!S.approvals.sec)  return 70;
   return 100;
 }
 function capBlocker(){
+  if(ch2()){
+    for(const g of CH2GATES) if(!okc(g.k)) return {who:g.who, what:g.what, line:g.line};
+    return null;
+  }
   if(!S.approvals.code) return {who:'Priya', what:'code review',
     line:'You have gone as far as you can without someone reading it. Priya is in the pod farm.'};
   if(!S.approvals.sec)  return {who:'Marcus', what:'security review',
@@ -1977,6 +2210,14 @@ function capBlocker(){
 }
 function nextStep(){
   if(!S) return '';
+  if(ch2()){
+    if(floorKey() !== 'f6') return '→ Elevator · Floor 6';
+    if(readyToShip())        return '→ THE FOUNDER';
+    if(S.build < buildCap()) return '→ War room · ' + buildCap() + '%';
+    const g = CH2GATES.find(g=>!okc(g.k));
+    return g ? '→ ' + g.who.split(' ')[0] + ' · ' + g.what : '→ THE FOUNDER';
+  }
+  if(floorKey() !== 'f3') return curMap().short;
   if(readyToShip())        return '→ VELOCITY';
   if(S.build < buildCap()) return '→ Desk · ' + buildCap() + '%';
   if(!S.approvals.code)    return '→ Priya · review';
@@ -2431,11 +2672,13 @@ function spawnInterrupt(){
   const stretch = S.opts.extraTime ? 1.8 : 1;
   if(mtgOk && Math.random() < 0.2){
     d.lastMtg = d.clock;
-    const m = MEETINGS[ri(MEETINGS.length)];
+    const mt = mtgTable();
+    const m = mt[ri(mt.length)];
     d.cards.push({mtg:m, who:'Calendar', art:'📅', act:'Attend', thr:0,
       msg:'"' + m.ttl + '" is starting now.', life:6*stretch, maxLife:6*stretch, esc:''});
   } else {
-    const t = INTERRUPTS[ri(INTERRUPTS.length)];
+    const it = intTable();
+    const t = it[ri(it.length)];
     if(d.cards.some(c=>c.who===t.who)) return;
     d.cards.push(Object.assign({}, t, {life:t.life*stretch, maxLife:t.life*stretch}));
   }
@@ -3424,6 +3667,9 @@ function migrate(o){
     if(o.build === undefined) o.build = 0;
   }
   o.opts = Object.assign({sound:1, extraTime:0, haptics:1}, o.opts || {});
+  if(!FLOORS[o.floor]) o.floor = 'f3';
+  if(!o.ch) o.ch = 1;
+  o.sign = Object.assign({legal:0, comms:0, finance:0}, o.sign || {});
   /* a save written by another build can name items this one does not have */
   for(const k of Object.keys(o.bag || {})) if(!ITEMS[k]) delete o.bag[k];
   for(const k of Object.keys(o.owned || {})) if(!ITEMS[k]) delete o.owned[k];
@@ -3507,6 +3753,40 @@ async function interact(){
   const n = npcAt(tx,ty);
   if(n) return npcTalk(n);
   const k = tinfo(tx,ty).kind;
+
+  if(k==='mydesk' && floorKey() === 'f6'){
+    if(!S.flags.saw_plate){
+      S.flags.saw_plate = 1;
+      mode = 'dialogue';
+      await say(null, [
+        'The war room desk. There is a nameplate on it.',
+        'It says LIGHTHOUSE \u2014 TECH LEAD. It does not say a name.',
+        'Nobody changed it, because nobody knew whose it was.',
+        'Taped under the desk there is a runbook. Pages forty-one to eighty. The handwriting is the same as the one in the corner on 3.'
+      ]);
+      await say(null, [
+        'The monitor wakes. There is one unread message, six weeks old, from an address that no longer resolves.',
+        'subject: (no subject)',
+        '"It works. It always worked. The top is the part that keeps breaking. Don\u2019t let them rename the bottom. \u2014 M"'
+      ]);
+      mode = 'field'; syncHUD();
+      return;
+    }
+    if(S.build >= 100)
+      return say(null,['The war room desk. Lighthouse launch readiness is at 100%.','There is nothing left to do here but be seen at it.']);
+    const b2 = capBlocker();
+    if(b2 && S.build >= buildCap()){
+      return say(null,['There is nothing here you can move without ' + b2.what + '. ' + b2.line]);
+    }
+    mode = 'dialogue';
+    const c2 = await choose('Sit down and work on ' + CH2KEY + '?', [
+      {label:'Sit down and work', note:'build ' + S.build + '%'},
+      {label:'Not right now'}
+    ]);
+    if(c2 !== 0){ mode = 'field'; return; }
+    mode = 'field';
+    return startDesk();
+  }
 
   if(k==='mydesk'){
     if(S.build >= 100)
@@ -3653,11 +3933,24 @@ async function interact(){
     ]);
   }
   if(k==='elev'){
-    return say(null,[
-      'The elevator. Your badge opens Floor 3, the lobby, and a supply closet nobody has been able to explain.',
-      'Floors 4 and above need a different badge. Lighthouse is on 6.',
-      'You press 6 anyway. The panel thinks about it, and returns you to 3.'
+    if(!S.flags.ch2){
+      return say(null,[
+        'The elevator. Your badge opens Floor 3, the lobby, and a supply closet nobody has been able to explain.',
+        'Floors 4 and above need a different badge. Lighthouse is on 6.',
+        'You press 6 anyway. The panel thinks about it, and returns you to 3.'
+      ]);
+    }
+    mode = 'dialogue';
+    const here = floorKey();
+    const c = await choose('The panel lights up for you now.', [
+      {label:'Floor 3 — Open Plan', note: here==='f3' ? 'you are here' : 'your old desk'},
+      {label:'Floor 6 — Leadership', note: here==='f6' ? 'you are here' : 'Lighthouse'},
+      {label:'Stay where you are'}
     ]);
+    mode = 'field';
+    if(c === 0 && here !== 'f3') return goFloor('f3');
+    if(c === 1 && here !== 'f6') return goFloor('f6');
+    return;
   }
   if(k==='board'){
     if(ty<8) return say('Whiteboard',['Someone has written Q3 PRIORITIES, and beneath it six items.','All six are numbered 1.']);
@@ -4048,6 +4341,185 @@ async function npcTalk(n){
     return done();
   }
 
+  if(n.id==='dee6'){
+    hold(); await say(n.name,[
+      'They moved me up here to be near the decisions. I have not seen one. I have seen forty decks.',
+      'Legal is west, Comms is east, Finance is the one with the dashboards.',
+      'Rand\u2019s door is north-east and it does not open for people. It opens for sign-offs.',
+      'The war room is yours. Don\u2019t move anything on the wall. Nobody knows what the sticky notes mean and everyone is afraid of the blank one.'
+    ]);
+    if(!F.saw_plate) { hold(); await say(n.name,'Your desk up here has a nameplate. Don\u2019t read it yet.'); }
+    else { hold(); await say(n.name,'You read it. Okay. Then you know what this floor is.'); }
+    return done();
+  }
+
+  if(n.id==='marcus6'){
+    hold(); await say(n.name,[
+      'I\u2019m up here because someone put the launch password on a sticky note in a glass room.',
+      'I am the sticky note now.'
+    ]);
+    return done();
+  }
+
+  if(n.id==='priyanka'){
+    if(okc('legal')){
+      hold(); await say(n.name,'It is a preference now. I feel nothing about this, which is how I know it is correct.');
+      return done();
+    }
+    if(S.build < 25){
+      hold(); await say(n.name,[
+        'You are the toggle person. Sit. No, do not sit. This will be short.',
+        'I have three questions and the answers are no, no, and we will see.',
+        'Come back when it does something. I cannot review a promise.'
+      ]);
+      return done();
+    }
+    hold(); await say(n.name,[
+      'Item one. The surface must not be described as AI unless it is AI.',
+      'Is it AI?'
+    ]);
+    const a1 = await choose('Is it AI?', [
+      {label:'Yes'}, {label:'No'}, {label:'It has a sparkle'}
+    ]);
+    hold();
+    if(a1===0) await say(n.name,[
+      'Then I need the model card, the training data provenance, and a named human who will go to prison.',
+      '\u2026I will put you down as "no".'
+    ]);
+    else if(a1===1) await say(n.name,'Good. Item two.');
+    else await say(n.name,'I have seen the sparkle. Item two.');
+    hold(); await say(n.name,'Item two. The word "settings" implies the user can change something. Can they?');
+    const a2 = await choose('Can they?', [{label:'Yes. That is the toggle.'}, {label:'Technically.'}]);
+    hold(); await say(n.name,[
+      'Then we call it a "preference". Preferences are not promises.',
+      'Item three is that I have a call. Approved.',
+      'Do not quote me. Nothing I say is quotable. I have that in writing, from me.'
+    ]);
+    S.sign.legal = 1; toast('LEGAL sign-off: approved.'); autosave(true);
+    return done();
+  }
+
+  if(n.id==='teddy'){
+    if(okc('comms')){
+      hold(); await say(n.name,[
+        'The narrative is locked. Don\u2019t change anything.',
+        'If you change anything, change it quietly, and tell me first, so I can be surprised on stage.'
+      ]);
+      return done();
+    }
+    if(S.build < 50){
+      hold(); await say(n.name,[
+        'Hey! Hey. You\u2019re the story. Sorry \u2014 you\u2019re the engineer. Same thing up here.',
+        'What I need from you is a moment. The toggle is not a moment. The toggle is a Tuesday.',
+        'Come back when I can feel it.'
+      ]);
+      return done();
+    }
+    hold(); await say(n.name,'Talk to me. What does the user feel when they flip it?');
+    const a1 = await choose('What do they feel?', [
+      {label:'Relief.'}, {label:'Nothing. It is a setting.'}, {label:'They feel seen.'}
+    ]);
+    hold();
+    if(a1===0) await say(n.name,'Relief is a story. "Relief, delivered." Keep going.');
+    else if(a1===1) await say(n.name,'That is honest, and honest is a story, and I hate that it is. "The setting that asks nothing of you."');
+    else await say(n.name,'Yes. YES. Say less. Actually say more, I\u2019m writing.');
+    hold(); await say(n.name,'Now. Lighthouse. Can I say the toggle is Lighthouse?');
+    const a2 = await choose('Can he?', [{label:'No.'}, {label:'You are going to anyway.'}]);
+    hold();
+    if(a2===0) await say(n.name,[
+      'I am, though. I\u2019m going to say "powered by".',
+      '"Powered by" is legally nothing. Priyanka signed off on it in 2021 and has regretted it every quarter since.'
+    ]);
+    else await say(n.name,'See, you get it.');
+    hold(); await say(n.name,'Approved. I\u2019m putting you in the deck. Not your name \u2014 your energy.');
+    S.sign.comms = 1; toast('COMMS sign-off: approved.'); autosave(true);
+    return done();
+  }
+
+  if(n.id==='ines'){
+    if(okc('finance')){
+      hold(); await say(n.name,'The toggle is on the balance sheet now. Under "other". That is the highest honor Finance has.');
+      return done();
+    }
+    if(S.build < 75){
+      hold(); await say(n.name,[
+        'Lighthouse has cost forty-one million dollars and shipped a toggle.',
+        'That is not a complaint. It is the best ratio we have.',
+        'Come back when it\u2019s half done. I do not fund promises. I fund the second half of things.'
+      ]);
+      return done();
+    }
+    hold(); await say(n.name,'How many engineers does the toggle need to keep working?');
+    const a1 = await choose('How many?', [
+      {label:'Zero.'}, {label:'One, occasionally.'}, {label:'It is forty lines.'}
+    ]);
+    hold();
+    if(a1===0) await say(n.name,'Correct answer. Wrong, but correct.');
+    else if(a1===1) await say(n.name,'Then it is a team of one, and a team is a line item. Say zero next time. Say it to me now.');
+    else await say(n.name,[
+      'I do not know what a line costs. Nobody has ever been able to tell me.',
+      'I have stopped asking, and that is how I know I have been here too long.'
+    ]);
+    hold(); await say(n.name,[
+      'Second question. Lighthouse will be cancelled in the spring.',
+      'When it is, does the toggle keep working?'
+    ]);
+    const a2 = await choose('Does it?', [
+      {label:'Yes. It does not depend on Lighthouse.'}, {label:'I would have to check.'}
+    ]);
+    hold();
+    if(a2===0) await say(n.name,[
+      'Good. Then it is the only part of Lighthouse that survives, and the only part that was never in the budget.',
+      'Approved.'
+    ]);
+    else await say(n.name,[
+      'Check. Then come back and say yes. Approved, conditionally.',
+      'Everything I approve is conditional. The condition is that I was right.'
+    ]);
+    S.sign.finance = 1; toast('FINANCE sign-off: approved.'); autosave(true);
+    return done();
+  }
+
+  if(n.id==='rand'){
+    if(!readyToShip()){
+      hold(); await say(null,[
+        'Through the glass, Rand is standing, speaking to someone who is not there.',
+        'A sign on the door: IN FLOW. DO NOT KNOCK. KNOCKING IS A DECISION.'
+      ]);
+      return done();
+    }
+    hold(); await say(n.name,[
+      'The toggle. Come in. Do not sit; sitting is a posture of the past.',
+      'I read the deck. I did not read it. I received it.',
+      'Teddy says you are the story. Ines says you are the only thing that works. Priyanka says nothing, which is her highest praise.',
+      'I want you to understand what you have built. You think it is a preference. It is a lighthouse.',
+      'A light that does not move, so that everyone else can.',
+      'I built the first one. 2019. Two of us, one winter.'
+    ]);
+    if(sq('thing') >= 2 || F.saw_plate){
+      hold(); await say(null,'Mara said that sentence about herself. Word for word, in the pod farm, on a Tuesday.');
+      const c = await choose('He is waiting for you to agree.', [
+        {label:'Say nothing', note:'he is the founder'},
+        {label:'"Mara built the bottom of it."', note:'she is not here to say it'}
+      ]);
+      hold();
+      if(c === 1){
+        F.said_mara = 1;
+        await say(n.name,[
+          '\u2026Yes. That is a more accurate history.',
+          'Write it down. Not in the deck.'
+        ]);
+      } else {
+        await say(null,'You say nothing. It is the easiest thing you do all week.');
+      }
+    }
+    hold(); await say(n.name,'Now. Let\u2019s align.');
+    const r = await startBattle(['rand'], {boss:1, noFlee:1, title:'1:1 (no agenda) \u2014 THE FOUNDER',
+      intro:'Rand shares his screen. It is a photograph of a lighthouse. He has not noticed it is not ours.'});
+    if(r === 'win') return ch2Ending();
+    return done();
+  }
+
   if(n.id==='brayden'){
     if(!readyToShip()){ hold(); await say(n.name,'Brayden is on a call. He gestures at you in a way that means later.'); return done(); }
     if((S.day||1) > 1){
@@ -4079,22 +4551,102 @@ async function lockedRoom(){
   mode = 'dialogue';
   const missing = [];
   if(S.build < 100) missing.push('a feature that exists (build is at ' + S.build + '%)');
-  if(!S.approvals.code) missing.push('code review');
-  if(!S.approvals.sec) missing.push('security review');
-  if(!S.approvals.design) missing.push('design review');
-  await say(null,[
-    'VELOCITY is booked. Through the glass, Brayden is talking to nobody with great conviction.',
-    'You are not walking in there without: ' + missing.join(', ') + '.',
-    'Nobody has ever gone into that room and won an argument they had not prepared for.'
-  ]);
+  if(ch2()){
+    for(const g of CH2GATES) if(!okc(g.k)) missing.push(g.what);
+    await say(null,[
+      'The door does not open for people. It opens for sign-offs.',
+      'You are not walking in there without: ' + missing.join(', ') + '.',
+      'Through the glass, Rand is standing, explaining something to a room with nobody in it.'
+    ]);
+  } else {
+    if(!S.approvals.code) missing.push('code review');
+    if(!S.approvals.sec) missing.push('security review');
+    if(!S.approvals.design) missing.push('design review');
+    await say(null,[
+      'VELOCITY is booked. Through the glass, Brayden is talking to nobody with great conviction.',
+      'You are not walking in there without: ' + missing.join(', ') + '.',
+      'Nobody has ever gone into that room and won an argument they had not prepared for.'
+    ]);
+  }
   mode = 'field';
 }
 
 /* ==========================================================================
    ENDING
    ========================================================================== */
+/* The toggle shipped, so the sixth floor noticed it. */
+async function startCh2(){
+  S.ch = 2; S.day = 2; S.ticket = 0;
+  S.flags.ch2 = 1; S.flags.finished = 0;
+  S.build = 0; S.minutes = 0;
+  S.sign = {legal:0, comms:0, finance:0};
+  S.focus = S.maxFocus; S.caf = S.maxCaf;
+  S.floor = 'f3'; S.x = MAP.start.x; S.y = MAP.start.y; S.dir = MAP.start.dir;
+  buildMap(); resize();
+  mode = 'dialogue';
+  await say(null, ['Monday. Six weeks later.', 'The toggle is in production. Nobody has mentioned it since the all-hands.']);
+  await say('Brayden', [
+    '"big news. leadership loved the surface. they want it to BE lighthouse for the launch."',
+    '"i know. i KNOW. come up to 6 when you\u2019re in. bring the toggle \uD83D\uDE4F"',
+    '\u2014 sent at 6:02am, so it would be at the top of your queue before you were.'
+  ]);
+  await say(null, [
+    'Your badge works on 6 now. Nobody told you that either; it simply does.',
+    'Your ticket is ' + CH2KEY + '. It is not a feature. It is a checklist with nine owners.',
+    'You are the only one of the nine who can be found.'
+  ]);
+  toast(CH2KEY + ' \u2014 ' + CH2SUM);
+  mode = 'field'; syncHUD(); autosave(true);
+}
+
+/* The board room. Teddy on stage, and one slide that decides what this was. */
+async function ch2Ending(){
+  mode = 'dialogue';
+  await flash();
+  await say('Rand', ['Obviously.', 'On this floor, that is a signature.']);
+  await say(null, [
+    'The launch is on a Thursday, in the board room, to eleven people and a camera.',
+    'The slide says LIGHTHOUSE \u2014 POWERED BY LODESTAR INTELLIGENCE. Underneath, in smaller type: a preference.'
+  ]);
+  await say(null, [
+    'Teddy says "moment" eleven times. It is, to be fair, a moment.',
+    'The demo is your toggle. Teddy flips it. Nothing happens, because nothing is supposed to happen, and the room applauds the nothing.',
+    'Rand speaks for nineteen minutes about weather.',
+    'Ines watches the stock. It goes up half a percent. She writes the number down and underlines it, which is the only time you will see her feel anything.',
+    'Priyanka is not in the room. She is in the hallway, on a call, saying "no" in a way that sounds like "we\u2019ll see."'
+  ]);
+  if(S.flags.said_mara){
+    await say(null, [
+      'The last slide is credits. It is the one slide Teddy did not write.',
+      'It says: Lighthouse \u2014 foundation: M. Okafor, 2019.',
+      'Nobody in the room knows who that is.',
+      'One person, in the hallway, on a call, stops talking for a second.'
+    ]);
+  } else {
+    await say(null, [
+      'The last slide is credits. It says: Lighthouse \u2014 a LODESTAR original.',
+      'It is not wrong. That is what makes it the kind of true this floor prefers.'
+    ]);
+  }
+  await say(null, [
+    'You go back downstairs. Your desk on 3 is still there.',
+    'Someone has left a sandwich on it with your name on it, spelled almost right.',
+    'END OF CHAPTER TWO.',
+    'Day ' + S.day + ', ' + clockStr() + ', as ' + title() + '. ' + CH2KEY + ' is closed. Something is always in production.'
+  ]);
+  S.ch = 1; S.flags.ch2done = 1; S.flags.finished = 1; S.floor = 'f3';
+  buildMap(); saveGame();
+  const c = await choose('Tomorrow?', [
+    {label:'Come in tomorrow', note:'the toggle is not finished with you'},
+    {label:'Log off', note:'pick it up later from the title screen'}
+  ]);
+  if(c === 0) return nextDay();
+  quitToTitle();
+}
+
 /* Every day after the first: a new ticket, the same toggle. */
 async function nextDay(){
+  if((S.day||1) === 1 && S.ch === 1 && !S.flags.ch2done) return startCh2();
   S.day = (S.day||1) + 1; S.ticket = (S.ticket||0) + 1;
   S.flags.finished = 0;
   S.build = 0; S.minutes = 0;
@@ -4136,6 +4688,7 @@ async function endingAgain(){
 }
 
 async function ending(){
+  if(ch2()) return ch2Ending();
   if((S.day||1) > 1) return endingAgain();
   mode = 'dialogue';
   await flash();

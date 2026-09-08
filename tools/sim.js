@@ -174,6 +174,13 @@ console.log('\nFINAL BOSS — with gear you can realistically afford');
 console.log('\nFINAL BOSS — fully kitted');
 [4,5,6].forEach(lv => row('Brayden', lv, ['brayden'], 'monitor', 'block'));
 
+console.log('\nCHAPTER TWO — the quiet room on six');
+[5,6].forEach(lv => ['offsite','slide14','mentor','execreply'].forEach(k =>
+  row(ENEMIES[k].name, lv, [k], 'monitor', 'block')));
+console.log('\nCHAPTER TWO — the founder');
+[5,6].forEach(lv => row('Rand Voss', lv, ['rand'], 'keeb', 'cans'));
+[6].forEach(lv => row('Rand Voss (kitted)', lv, ['rand'], 'monitor', 'block'));
+
 console.log('\nROUTE — xp available on the critical path');
 let xp = 0;
 const step = (n, label) => {

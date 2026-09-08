@@ -34,7 +34,9 @@ three), `side` (five side quests), `desk` (all five build tools with in-page
 bots, interruption coupling, tutorial card), `store` (no network, fonts,
 icons, manifest, save codes, migration, settings), `mobile` (the platform:
 no sideways scroll, thumb-sized controls, the portrait guard, autosave on
-backgrounding, corrupt and unwritable saves). `desk` is slow on purpose.
+backgrounding, corrupt and unwritable saves), `ch2` (the sixth floor end to
+end: the elevator, the nameplate, three sign-offs, the founder's door, the
+fight and the slide). `desk` is slow on purpose.
 
 `tools/sim.js` plays thousands of fights with the real enemy tables and skill
 functions eval'd out of the source. Run it after any combat number changes.
@@ -88,11 +90,35 @@ furniture). `SIGNS` are floor labels; `objectiveTarget()` drives the pulsing
 marker and the edge pill, `nextStep()` the HUD text. Random encounters only
 on `o` tiles and only after `S.flags.satDown`.
 
+### Two floors
+`FLOORS` holds `f3` and `f6`; `S.floor` says which you are on and `curMap()`
+resolves it. `buildMap()` rebuilds the grid on arrival. Every entry in `NPCS`
+and `SIGNS` carries `f`, and `onFloor()` filters both the renderer and
+`npcAt()`. Floor 6 gets a warmer carpet and closer lights in `drawFloor`, so
+upstairs reads as a different building. `goFloor(key)` is the ride.
+
 ### Progression (chapter one)
 `buildCap()` is 35 until code review (Priya), 70 until security review
 (Marcus), 100 after; `capBlocker()` explains; design review (Kai) needs the
 CTF; `readyToShip()` = all approvals and build 100 → VELOCITY → Brayden boss
 → `ending()`. The portal card lists the seven steps.
+
+### Chapter two (the sixth floor)
+`S.ch` is 1 or 2. Finishing chapter one sets `flags.finished`; resuming calls
+`nextDay()`, which routes the first time into `startCh2()` instead of another
+toggle day. Chapter two runs on `LDS-5001`, gated by `CH2GATES` at 25 / 50 /
+75 (Legal → Comms → Finance) with `S.sign`, and `buildCap()`, `capBlocker()`,
+`allApprovals()`, `nextStep()`, `objectiveTarget()` and `lockedRoom()` all
+branch on `ch2()`. The founder's door at (27,19) on f6 is the VELOCITY
+equivalent. `ch2Ending()` closes it, sets `flags.ch2done`, and hands back to
+the toggle day-loop, so `nextDay()` resumes the LDS-4418 cycle afterwards.
+
+The chapter turns on one flag: `flags.said_mara`, offered only if the player
+read the war-room nameplate or finished the Thing quest. It changes the last
+slide and nothing else. Leave it that way — it is the point.
+
+Floor 6 swaps the tables: `encTable()`, `intTable()` and `mtgTable()` return
+the `*6` variants during chapter two.
 
 ### Day two and after
 `ending()` sets `flags.finished`; resuming (or "Come in tomorrow") calls
@@ -210,19 +236,19 @@ Bad: *"Managers like Brayden are what's wrong with tech."* (moralizes.)
 
 ## Backlog, in the order it is worth doing
 
-1. **Floor 6 / chapter two content.** See `docs/floor6-draft.md` for the
-   written draft (people, dialogue, ticket, side quests). Building it means:
-   a second map in the `MAP` shape, an elevator transition, NPC entries,
-   quest flags, and wiring day two onto it. Keep the harness green; add a
-   suite.
-2. Encounter rate on the zigzag route feels slightly high; tune with the
-   `chain` suite watching.
-3. itch.io page copy and store screenshots. `STORE.md` has the plan.
+1. **Floor 6 side quests.** The four in `docs/floor6-draft.md` are still
+   unbuilt: the blank sticky note, the launch password, the fridge, and the
+   nameplate (that last one is done — reading the desk sets `saw_plate`).
+2. itch.io page copy and store screenshots. `STORE.md` has the plan.
    (`tools/package.js` makes the zip; `tools/make-icons.js` makes the icons.)
+3. Encounter rate on the zigzag route feels slightly high; tune with the
+   `chain` suite watching.
 4. A LICENSE file — the owner's call, not ours.
 
 Done, so do not redo: the visual pass (office, title, offer letter, battle,
-desk, portal, dialogue, list screens all share one look) and the app icons.
+desk, portal, dialogue, list screens all share one look), the app icons, the
+lifecycle work, and chapter two's spine (map, cast, gates, boss, ending).
+Mara's surname is Okafor, fixed in `ch2Ending()`.
 
 ## Things that went wrong before, so you do not repeat them
 

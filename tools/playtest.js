@@ -204,9 +204,13 @@ SUITES.chain = async browser => {
 
 SUITES.loop = async browser => {
   const d = await boot(browser);
-  section('loop — day two, same toggle, new ticket');
+  section('loop — the days after chapter two, same toggle');
 
-  /* a senior engineer at the end of day one walks into VELOCITY */
+  /* Chapter two is covered by its own suite; this one is about what the game
+     does once it is behind you, so start from a save that has been there. */
+  await d.page.evaluate(() => { S.flags.ch2done = 1; });
+
+  /* a senior engineer at the end of a day walks into VELOCITY */
   await d.set({ build: 100, approvals: { code: 1, sec: 1, design: 1 }, lv: 5, xp: 400, atk: 24, def: 9, focus: 200, maxFocus: 200, caf: 60, maxCaf: 60, bag: { snack: 4, brew: 3 } });
   await d.page.evaluate(() => { S.flags.satDown = 1; });
   await d.interact(30, 4, 'up'); await d.advance();
@@ -218,13 +222,14 @@ SUITES.loop = async browser => {
 
   /* resuming rolls into the next day */
   await d.page.click('#btnCont'); await sleep(700);
-  ok('day two opens with a briefing', await d.mode() === 'dialogue');
+  ok('the next day opens with a briefing', await d.mode() === 'dialogue');
   const brief = await d.line(); await d.advance();
   const day2 = await d.state(() => ({ day: S.day, ticket: ticket().key, sum: ticket().sum, build: S.build, appr: JSON.stringify(S.approvals), fin: S.flags.finished, mode }));
   ok('a new ticket about the same toggle', day2.day === 2 && day2.ticket === 'LDS-4418' && /Remove/.test(day2.sum), JSON.stringify(day2));
   ok('  reviews carry over and the build resets', day2.appr === '{"code":1,"sec":1,"design":1}' && day2.build === 0 && !day2.fin && day2.mode === 'field');
   ok('  every tool is open', await d.state(() => unlockedTools().length) === 5);
   ok('  hud points at the desk with no ceiling', (await d.hud()).includes('100%'), await d.hud());
+  ok('  and it is not chapter two', await d.state(() => S.ch) === 1);
 
   /* the desk shows the new ticket */
   await d.page.evaluate(() => { startDesk(); }); await sleep(500); await d.pickChoice(0); await sleep(400); await d.page.evaluate(() => { hideTut(); });
@@ -248,6 +253,99 @@ SUITES.loop = async browser => {
   const day3 = await d.state(() => ({ day: S.day, ticket: ticket().key, mode }));
   ok('coming back rolls straight into day three', day3.day === 3 && day3.ticket === 'LDS-4419' && day3.mode === 'field', JSON.stringify(day3));
   ok('save survives the loop', await d.state(() => { saveGame(); const g = loadGame(); return g.day === 3 && g.ticket === 2; }));
+  return d;
+};
+
+SUITES.ch2 = async browser => {
+  const d = await boot(browser);
+  section('chapter two — the sixth floor');
+
+  /* the elevator is a joke until the toggle ships */
+  await d.interact(15, 6, 'up'); const locked = await d.line(); await d.advance();
+  ok('the badge does not reach 6 in chapter one', /Your badge opens Floor 3/.test(locked), JSON.stringify(locked.slice(0, 40)));
+
+  /* finish chapter one and take the offer to come back */
+  await d.set({ build: 100, approvals: { code: 1, sec: 1, design: 1 }, lv: 5, xp: 400, atk: 24, def: 9,
+                focus: 220, maxFocus: 220, caf: 60, maxCaf: 60, bag: { snack: 4, brew: 3 } });
+  await d.page.evaluate(() => { S.flags.satDown = 1; });
+  await d.interact(30, 4, 'up'); await d.advance();
+  await d.fight(400); await d.advance(60);
+  ok('chapter one ends at the title', await d.mode() === 'title' && await d.state(() => !!S.flags.finished));
+  await d.page.click('#btnCont'); await sleep(900); await d.advance(40);
+
+  const open2 = await d.state(() => ({ ch: S.ch, day: S.day, build: S.build, floor: S.floor,
+                                       key: ticket().key, cap: buildCap(), mode }));
+  ok('chapter two opens instead of another toggle day', open2.ch === 2 && open2.key === 'LDS-5001', JSON.stringify(open2));
+  ok('  it starts you on 3, with the build reset', open2.floor === 'f3' && open2.build === 0 && open2.mode === 'field');
+  ok('  and the first ceiling is 25%', open2.cap === 25);
+  ok('  the HUD sends you to the elevator', (await d.hud()).includes('Floor 6'), await d.hud());
+
+  /* the badge works now */
+  await d.interact(15, 6, 'up'); await sleep(300);
+  ok('the elevator now offers both floors', await d.state(() => document.querySelectorAll('#chList button').length) === 3);
+  await d.pickChoice(1); await sleep(700); await d.advance();
+  const up = await d.state(() => ({ floor: S.floor, x: S.x, y: S.y, mode }));
+  ok('riding up lands you on 6', up.floor === 'f6' && up.mode === 'field', JSON.stringify(up));
+  await d.shot('ch2-arrive');
+
+  /* the desk you inherit, and whose it was */
+  await d.interact(16, 14, 'up'); const plate = await d.line(); await d.advance(8);
+  ok('the war room desk has a nameplate on it', /nameplate|TECH LEAD/.test(plate), JSON.stringify(plate.slice(0, 46)));
+  ok('  and reading it is remembered', await d.state(() => !!S.flags.saw_plate));
+  await d.interact(16, 14, 'up'); await sleep(400);
+  ok('  after that it opens the work', await d.state(() => document.getElementById('choices').classList.contains('on')));
+  await d.pickChoice(1); await d.advance();
+
+  /* the three sign-offs, each refusing work that does not exist yet */
+  await d.interact(4, 14, 'up'); const p1 = await d.line(); await d.advance(6);
+  ok('Legal will not review a promise', /toggle person|three questions/.test(p1), JSON.stringify(p1.slice(0, 44)));
+  ok('  and hands out nothing', await d.state(() => S.sign.legal) === 0);
+
+  await d.set({ build: 25 });
+  await d.interact(4, 14, 'up'); await d.advance(4);
+  if (await d.state(() => document.getElementById('choices').classList.contains('on'))) { await d.pickChoice(1); await d.advance(4); }
+  if (await d.state(() => document.getElementById('choices').classList.contains('on'))) { await d.pickChoice(0); await d.advance(8); }
+  ok('Legal signs off once it does something', await d.state(() => S.sign.legal) === 1);
+  ok('  and the ceiling lifts to 50%', await d.state(() => buildCap()) === 50);
+
+  await d.set({ build: 50 });
+  await d.interact(29, 5, 'up'); await d.advance(4);
+  for (let i = 0; i < 2; i++) if (await d.state(() => document.getElementById('choices').classList.contains('on'))) { await d.pickChoice(0); await d.advance(6); }
+  ok('Comms signs off when it is a moment', await d.state(() => S.sign.comms) === 1);
+
+  await d.set({ build: 75 });
+  await d.interact(5, 21, 'up'); await d.advance(4);
+  for (let i = 0; i < 2; i++) if (await d.state(() => document.getElementById('choices').classList.contains('on'))) { await d.pickChoice(0); await d.advance(6); }
+  ok('Finance signs off on the second half', await d.state(() => S.sign.finance) === 1);
+  ok('  and the ceiling is finally 100%', await d.state(() => buildCap()) === 100);
+
+  /* the founder's door opens for sign-offs, not for people */
+  await d.set({ build: 90 });
+  await d.standAt(27, 18, 'down');
+  await d.page.keyboard.down('ArrowDown'); await sleep(260); await d.page.keyboard.up('ArrowDown'); await sleep(500);
+  ok('the door stays shut below 100%', await d.state(() => S.y) === 18, 'y=' + await d.state(() => S.y));
+  await d.advance();
+  await d.set({ build: 100 });
+  await d.standAt(27, 18, 'down');
+  await d.page.keyboard.down('ArrowDown'); await sleep(280); await d.page.keyboard.up('ArrowDown'); await sleep(550);
+  ok('  and opens when everything is signed', await d.state(() => S.y) > 18, 'y=' + await d.state(() => S.y));
+  ok('the HUD points at the founder', (await d.hud()).includes('FOUNDER'), await d.hud());
+  await d.shot('ch2-founder');
+
+  /* the fight, the choice, and the slide that decides what this was */
+  await d.set({ focus: 260, maxFocus: 260, caf: 80, lv: 6, atk: 30, def: 12 });
+  await d.page.evaluate(() => { S.flags.saw_plate = 1; });
+  await d.interact(26, 21, 'up'); await d.advance(8);
+  ok('Rand asks you to agree', await d.state(() => document.getElementById('choices').classList.contains('on')));
+  await d.pickChoice(1); await d.advance(6);
+  ok('  saying her name is remembered', await d.state(() => !!S.flags.said_mara));
+  ok('  and then he aligns with you', await d.mode() === 'battle');
+  const rounds = await d.fight(400);
+  await d.advance(60);
+  ok('the launch happens', await d.state(() => !!S.flags.ch2done), rounds + ' turns');
+  ok('  and it credits her', await d.state(() => !!S.flags.said_mara));
+  const after = await d.state(() => ({ ch: S.ch, floor: S.floor, mode }));
+  ok('  chapter two closes back on 3', after.ch === 1 && after.floor === 'f3', JSON.stringify(after));
   return d;
 };
 
