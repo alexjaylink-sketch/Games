@@ -163,6 +163,22 @@ calls `tool.punish()`. Meetings do not pause: the tool runs at 0.7× behind a
 translucent overlay; only the all-hands (`secs >= 14`) calls
 `tool.meeting(true)`. Inputs are gated while away or in a meeting.
 
+**The first two sittings are gentler**, because the first playtester found day
+one unlearnable. `S.sessions` counts finished desk sessions (quits included).
+`firstPing()` sets the opening quiet stretch — 26–32 s on session 0, 12–16 s on
+session 1, 5–8 s after — and `pingEase()` stretches the recurring cadence by
+×1.9 then ×1.35 then ×1. Merge Queue multiplies its fall interval by 1.5 then
+1.2 on the same counter. `migrate()` seeds `sessions` at 3 for a save from
+before the counter existed, so a returning player is not put back in training.
+The `desk` suite asserts the ramp is monotonic in both directions.
+
+**Rotation is on two buttons.** A rotates, and so does the d-pad's up arrow —
+which is the one a left thumb can reach without letting go of left/right, so
+`setPad(a, b, up)` takes a third label and swaps ▲ for ↻ while Merge Queue is
+open. Leaving the desk puts the arrow back. Do not remove the glyph: the
+playtester read "you need to be able to rotate the pieces" off a screen where
+rotation worked fine on a button they were not looking at.
+
 ### Build tools (`WORK.*`, registry `TOOLS`)
 Each tool implements `start / update(dt, auto) / input(k) / render / punish /
 meeting(big) / peek / stop` plus `intro`, and `how`/`why` text for the
@@ -263,6 +279,8 @@ Bad: *"Managers like Brayden are what's wrong with tech."* (moralizes.)
    (`tools/package.js` makes the zip; `tools/make-icons.js` makes the icons.)
 2. Encounter rate on the zigzag route feels slightly high; tune with the
    `chain` suite watching. Wait for playtest feel before touching it.
+   Ask the playtester whether the new day-one desk ramp (v1.7.0) is now too
+   slow before touching the numbers again — it moved a long way in one step.
 3. A LICENSE file — the owner's call, not ours.
 4. A third chapter, if the game ever needs to be longer. Do not start it
    before watching somebody finish chapter two.

@@ -134,6 +134,7 @@ button{font-family:inherit;color:inherit}
   border:1px solid var(--edge2);border-radius:9px;font-size:15px;line-height:1;color:var(--dim);
 }
 #dpad button.hot{background:var(--brand);border-color:var(--brand);color:#fff}
+#dpad button.alt{color:var(--brand);font-size:20px}
 #dpad .u{left:48px;top:0}
 #dpad .l{left:0;top:48px}
 #dpad .r{left:96px;top:48px}
@@ -754,28 +755,23 @@ body.sideways #rotate{display:flex}
           <div class="letter">
             <p>Dear <span class="merge">{{FIRST_NAME}}</span>,</p>
 
-            <p>I do not write these anymore. I am writing this one because I read your file and I had a <em>feeling</em>, and my feelings have outperformed the S&amp;P for nine consecutive years.</p>
+            <p>I do not write these anymore. I read your file and I had a <em>feeling</em>. My feelings have outperformed the S&amp;P for nine consecutive years.</p>
 
-            <p>Somewhere in year four I stopped thinking of LODESTAR as a company. A company makes a thing and sells it. What we are doing here is closer to <em>weather</em>. Counsel has asked me to stop saying that. I say it to you because you are inside now.</p>
+            <p><strong>Autonomy is solved.</strong> I solved it. What remains is regulatory, cultural, and &mdash; I will be candid, because you are one of us now &mdash; a small and shrinking number of edge cases involving pedestrians.</p>
 
-            <p><strong>Autonomy is solved.</strong> I solved it. It has been solved for six years. What remains is regulatory, cultural, and &mdash; I will be candid, because you are one of us now &mdash; a small and shrinking number of edge cases involving pedestrians.</p>
-
-            <p>On compensation: your offer is below market. Deliberately. Market rate attracts people who want a job, and I am not staffing a job. The balance is paid in <em>proximity</em>.</p>
+            <p>On compensation: your offer is below market. Deliberately. Market rate attracts people who want a job. I am not staffing a job. The balance is paid in <em>proximity</em>.</p>
 
             <p>I sleep four hours in a room with no windows and I wake up <em>correct</em>.</p>
 
-            <p>You are joining <strong>Project Lighthouse</strong>. When they write about this decade &mdash; and <span class="merge">{{FIRST_NAME}}</span>, they will write about this decade &mdash; Lighthouse is the part they will get wrong, because they will make it sound inevitable.</p>
+            <p>You are joining <strong>Project Lighthouse</strong>. When they write about this decade they will make Lighthouse sound inevitable. It was not inevitable. It was me.</p>
 
-            <p>It was not inevitable. It was me.</p>
-
-            <p>Welcome aboard. History is a queue, and I have moved you to the front of it.</p>
+            <p>Welcome aboard. History is a queue. I have moved you to the front of it.</p>
 
             <div class="sig">
               <div class="who">Rand Voss</div>
               <div class="role">
                 Founder &middot; Chief Visionary Officer<br>
                 Interim CEO (3rd term)<br>
-                Author, <em>The LODESTAR Doctrine</em><br>
                 LODESTAR Dynamics &mdash; <em>Building the Future, Responsibly&trade;</em>
               </div>
             </div>
@@ -1421,7 +1417,7 @@ const Sfx = {
 /* ==========================================================================
    STATE
    ========================================================================== */
-const BUILD = '1.6.1';                       /* shown in the UI so bug reports name a build */
+const BUILD = '1.7.0';                       /* shown in the UI so bug reports name a build */
 const SAVE_VERSION = 2;
 const SAVEKEY = 'shipit_lodestar_v2';
 const LEGACY_KEYS = ['shipit_vanta_v1'];     /* saves written before the rename */
@@ -1452,7 +1448,7 @@ function newGame(){
     build:0,
     approvals:{code:0, sec:0, design:0},
     minutes:0,
-    day:1, ticket:0, floor:'f3',
+    day:1, ticket:0, floor:'f3', sessions:0,
     ch:1, sign:{legal:0, comms:0, finance:0}
   };
 }
@@ -2591,7 +2587,7 @@ const SESSION_CHUNK = 35;         /* what one good sitting is worth */
    share neither with the games they nod to. */
 const TOOLS = {
   stack:   {name:'Merge Queue',      sub:'Stack the commits. Clear a full row to merge it.',      hint:'day one',                 unlock:()=>true,
-    how:'Left and right steer the commit, A rotates it, B drops it. Fill a row all the way across to merge it.',
+    how:'Left and right steer the commit. A or the up arrow rotates it. B drops it. Fill a row all the way across to merge it.',
     why:'An ignored ping adds a row of debt with one hole. The all-hands locks rows you can never clear. Step away to deal with someone and the queue keeps falling without you.'},
   breaker: {name:'Bug Bash',         sub:'Knock every bug out of the codebase. Do not drop the fix.', hint:'after code review',   unlock:()=>!!S.approvals.code,
     how:'Left and right move the paddle. A serves the fix. Every bug it hits builds; clear the wall and it comes back deeper.',
@@ -2623,7 +2619,15 @@ function workSize(){
   wx.setTransform(dpr,0,0,dpr,0,0);
   return {w,h};
 }
-function setPad(a,b){ $('btnA').querySelector('span').textContent = a; $('btnB').querySelector('span').textContent = b; }
+/* the third label is the d-pad's up arrow: in a tool where up rotates, the
+   arrow becomes a rotate glyph, so the thumb already on the pad can do it */
+function setPad(a,b,up){
+  $('btnA').querySelector('span').textContent = a;
+  $('btnB').querySelector('span').textContent = b;
+  const u = document.querySelector('#dpad .u');
+  u.textContent = up || '\u25b2';
+  u.classList.toggle('alt', !!up);
+}
 
 async function startDesk(){
   const tools = unlockedTools();
@@ -2643,7 +2647,7 @@ async function startDesk(){
       flow: 1, clock: 0, cards: [], meeting: null, pressure: 0,
       heads: 0, cool: 0, over: false, handled: 0, ignored: 0, met: 0, snoozed: 0, lastMtg: -99,
       away: 0, awayMax: 0, later: [],
-      nextSpawn: 4 + Math.random()*2, res
+      nextSpawn: firstPing(), res
     };
     $('cards').innerHTML = '';
     $('toast').classList.remove('on');
@@ -2661,6 +2665,11 @@ async function startDesk(){
     if(!S.flags['tut_'+tool]){ S.flags['tut_'+tool] = 1; showTut(tool); }
   });
 }
+/* Nobody has noticed you yet. The first sitting gets a long quiet stretch to
+   learn the tool in; by the third the floor knows where your desk is. */
+function pingEase(){ const n = S.sessions|0; return n === 0 ? 1.9 : n === 1 ? 1.35 : 1; }
+function firstPing(){ const n = S.sessions|0; return n === 0 ? 26 + Math.random()*6 : n === 1 ? 12 + Math.random()*4 : 5 + Math.random()*3; }
+
 /* the first time a tool opens, one card of instructions; the clock waits */
 function showTut(tool){
   const t = TOOLS[tool]; if(!D || !t.how) return;
@@ -2861,7 +2870,7 @@ function deskUpdate(ms){
   const rate = mod && mod.spawn !== undefined ? mod.spawn : 1;
   if(rate > 0 && d.clock >= d.nextSpawn && d.heads <= 0 && d.cards.length < 3){
     spawnInterrupt();
-    const pressure = (6.0 - (S.build/100)*2.4) * Math.max(0.7, 1 - 0.07*((S.day||1)-1)) / rate;
+    const pressure = (6.0 - (S.build/100)*2.4) * pingEase() * Math.max(0.7, 1 - 0.07*((S.day||1)-1)) / rate;
     d.nextSpawn = d.clock + pressure*(0.7 + Math.random()*0.7);
   }
   renderDeskHud();
@@ -2873,6 +2882,7 @@ async function endDesk(reason){
   autosave(true);
   const res = d.res;
   S.build = Math.min(100, Math.floor(d.progress));
+  S.sessions = (S.sessions|0) + 1;
   if(d.g.stop) d.g.stop();
   $('meeting').classList.remove('on');
   $('away').classList.remove('on');
@@ -2936,12 +2946,15 @@ WORK.stack = (()=>{
     start(){
       grid = Array.from({length:H}, ()=>Array(W).fill(0));
       next = mk(); spawn(); fallT = 0; held = null; dasT = 0; over = false;
-      setPad('ROTATE', 'DROP');
+      setPad('ROTATE', 'DROP', '\u21bb');
     },
     update(dt, auto){
       if(over) return;
       const leg = S.build < 35 ? 0 : S.build < 70 ? 1 : 2;
-      let iv = [0.85, 0.72, 0.6][leg] - 0.22*((D.progress - (D.target - SESSION_CHUNK))/SESSION_CHUNK);
+      let iv = [0.95, 0.78, 0.64][leg] - 0.20*((D.progress - (D.target - SESSION_CHUNK))/SESSION_CHUNK);
+      /* your first two sittings are slower: you are learning where the buttons
+         are while somebody is already walking towards you */
+      iv *= [1.5, 1.2][S.sessions|0] || 1;
       if(D.pressure) iv *= 0.75;
       unattended = !!auto;
       if(auto) iv = Math.min(iv, 0.3);            /* nobody is steering: it falls and it lands wherever the queue put it */
@@ -2972,8 +2985,9 @@ WORK.stack = (()=>{
     },
     render(){
       const {w,h} = workSize();
-      const cell = Math.floor(Math.min((w-8)/W, (h-8)/H));
-      const ox = Math.floor((w - cell*W)/2), oy = Math.floor((h - cell*H)/2);
+      const top = 14;                                   /* room for the NEXT label */
+      const cell = Math.floor(Math.min((w-8)/W, (h-8-top)/H));
+      const ox = Math.floor((w - cell*W)/2), oy = top + Math.floor((h - top - cell*H)/2);
       wx.fillStyle = '#0a0d13'; wx.fillRect(0,0,w,h);
       wx.fillStyle = '#080b11'; wx.fillRect(ox,oy,cell*W,cell*H);
       wx.strokeStyle = 'rgba(255,255,255,.035)'; wx.lineWidth = 1;
@@ -3726,6 +3740,8 @@ function migrate(o){
   if(!ITEMS[o.armor]  || ITEMS[o.armor].type  !== 'armor')  o.armor  = 'lanyard';
   o.owned[o.weapon] = 1; o.owned[o.armor] = 1;
   if(o.build > 0 && o.flags && !o.flags.satDown) o.flags.satDown = 1;
+  /* a save written before the desk counted sittings has plainly had a few */
+  if(!o.sessions) o.sessions = o.day > 1 || o.approvals.code ? 3 : 0;
   o.version = SAVE_VERSION;
   return o;
 }
@@ -4145,20 +4161,15 @@ async function npcTalk(n){
       F.briefed = 1;
       hold(); await say(n.name,[
         'You must be the new engineer. Welcome! Laptop’s provisioned, badge opens two of the four doors.',
-        'You’re the Lighthouse hire, right? The letter?',
-        'Right. So. Slight thing.',
-        'Lighthouse is fully staffed. It has been fully staffed since before your req went out. I don’t know why the req went out.',
+        'You’re the Lighthouse hire. Right. Slight thing.',
+        'Lighthouse has been fully staffed since before your req went out. I don’t know why the req went out.',
         'You’re on Platform. Platform is where we put people while we work out where to put them. It is not a demotion, it is a placement.',
-        'And you’re already redesigning the onboarding in your head. I can see it. Don’t. Someone did that. It’s in Kubernetes now.',
+        'And you’re already redesigning the onboarding in your head. Don’t. Someone did that. It’s in Kubernetes now.',
         'Your first ticket is LDS-4417. A settings toggle. Eleven months in the backlog, estimated at two points.',
         'Ship it and you’re real. Nobody on this floor is real until they have shipped something.',
-        'It goes like this, and it always goes like this.',
-        'You build a bit at your desk — the pod behind me, the one with the nameplate. Then you hit something you cannot clear on your own.',
+        'You build at your desk — the pod behind me — until you hit something you cannot clear on your own.',
         'So you get up. You find the person. You wait for the person. You come back and build a bit more.',
         'Build, then Priya. Build, then Marcus. Build, then Kai. Then the Roadmap Review.',
-        'The build tool on your desk is a queue. Commits come down it, you stack them, a full row merges. Do not ask why. It was a hackathon.',
-        'Fair warning about the desk. Sitting down is the easy bit. Staying down is the job.',
-        'When you have all three, you take it to the Roadmap Review in VELOCITY — the glass room, northeast.',
         'And don’t cross the open floor unless you have to. People see you walking and it reminds them they have questions.'
       ]);
       toast('Go to your desk — the pod behind Dee.');
@@ -5128,7 +5139,7 @@ $('dlg').addEventListener('click', ()=>{ if(dlgResolve) dlgResolve(); });
 document.addEventListener('keydown', (e)=>{
   const k = e.key;
   const map = {ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right',W:'up',S:'down',A:'left',D:'right'};
-  if(map[k]){ e.preventDefault(); press(map[k]); return; }
+  if(map[k]){ e.preventDefault(); if(e.repeat && mode === 'desk') return; press(map[k]); return; }
   if(k===' '||k==='Enter'||k==='z'||k==='Z'){ e.preventDefault(); pressA(); return; }
   if(k==='Escape'||k==='x'||k==='X'){ e.preventDefault(); pressB(); return; }
 });

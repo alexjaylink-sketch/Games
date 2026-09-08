@@ -526,6 +526,24 @@ SUITES.desk = async browser => {
   ok('  it does not come back', await d.state(() => !document.getElementById('tut').classList.contains('on')));
   await d.page.evaluate(() => { endDesk('quit'); }); await d.advance();
 
+  /* ---- your first sittings are gentler on purpose ---- */
+  const ramp = await d.state(() => {
+    const was = S.sessions, out = [];
+    for (const n of [0, 1, 2]) {
+      S.sessions = n;
+      const leg = 0, base = [0.95, 0.78, 0.64][leg] * ([1.5, 1.2][n] || 1);
+      out.push({ n, fall: base, ping: firstPing(), ease: pingEase() });
+    }
+    S.sessions = was;
+    return out;
+  });
+  ok('the first sitting falls slowest and is left alone longest',
+     ramp[0].fall > ramp[1].fall && ramp[1].fall > ramp[2].fall &&
+     ramp[0].ping > ramp[1].ping && ramp[1].ping > ramp[2].ping,
+     ramp.map(r => 's' + r.n + ' ' + r.fall.toFixed(2) + 's/row, first ping ' + r.ping.toFixed(0) + 's').join(' | '));
+  ok('  and nobody pings you for at least 20s on your very first', ramp[0].ping >= 20 && ramp[0].ease > 1.5);
+  ok('  while a seasoned sitting is back to full pressure', ramp[2].ease === 1 && ramp[2].ping < 10);
+
   /* ---- Merge Queue: available from day one, no chooser ---- */
   ok('day one offers exactly one tool', await d.state(() => unlockedTools().join(',')) === 'stack');
   const prompted1 = await sit();
@@ -533,6 +551,10 @@ SUITES.desk = async browser => {
   ok('desk opens in Merge Queue', await d.mode() === 'desk' && await d.state(() => D.tool) === 'stack');
   ok('d-pad stays on screen for the tool', await d.state(() => getComputedStyle(document.getElementById('pad')).display) !== 'none');
   ok('A/B relabelled', await d.state(() => document.querySelector('#btnA span').textContent) === 'ROTATE');
+  ok('  and the d-pad up arrow says it rotates too',
+     await d.state(() => { const u = document.querySelector('#dpad .u'); return u.textContent !== '\u25b2' && u.classList.contains('alt'); }));
+  const spun = await d.state(() => { if (!D || !D.g) return false; const b = JSON.stringify(D.g.peek().piece.c); press('up'); return JSON.stringify(D.g.peek().piece.c) !== b; });
+  ok('  and pressing up actually rotates the commit', spun);
   await d.shot('tool-merge-queue');
 
   /* passive: touch nothing for 20s */
@@ -562,6 +584,8 @@ SUITES.desk = async browser => {
   if (await d.mode() === 'desk') await d.page.evaluate(() => { endDesk('quit'); });
   await d.advance();
   ok('A/B restored on leaving', await d.state(() => document.querySelector('#btnA span').textContent) === 'TALK / OK');
+  ok('  and the up arrow is an arrow again',
+     await d.state(() => { const u = document.querySelector('#dpad .u'); return u.textContent === '\u25b2' && !u.classList.contains('alt'); }));
 
   /* garbage and locked rows */
   await d.set({ build: 0 }); await sit(); await sleep(200);
