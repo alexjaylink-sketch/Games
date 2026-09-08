@@ -477,6 +477,7 @@ SUITES.desk = async browser => {
   /* in-page bots: a greedy stacker, a paddle that tracks the ball, a snake that walks to food */
   await d.page.evaluate(() => {
     window.__stackStep = () => {
+      if (!D || D.over || !D.g) return;
       const p = D.g.peek(); if (!p.piece) return;
       const { W, H, grid, piece } = p;
       const fits = (c, x, y) => c.length > 0 && c.every(([cx, cy]) => { const gx = x + cx, gy = y + cy; return gx >= 0 && gx < W && gy < H && (gy < 0 || !grid[gy][gx]); });
@@ -500,6 +501,7 @@ SUITES.desk = async browser => {
       }
       if (!best) return;
       for (let i = 0; i < best.r; i++) D.g.input('a');
+      if (!D || D.over || !D.g) return;
       const now = D.g.peek().piece; if (!now) return;
       const dx = best.x - now.x;
       for (let i = 0; i < Math.abs(dx); i++) D.g.input(dx < 0 ? 'left' : 'right');
@@ -576,10 +578,10 @@ SUITES.desk = async browser => {
   await d.page.click('#cards .deal'); await sleep(80);
   const away = await d.state(() => ({ away: D.away, on: document.getElementById('away').classList.contains('on'), cards: D.cards.length, handled: D.handled }));
   ok('Deal puts you away from the keyboard', away.away > 1 && away.on && away.cards === 0 && away.handled === 1, JSON.stringify(away));
-  const moved = await d.state(() => { const x0 = D.g.peek().piece.x; press('left'); press('left'); pressA(); return D.g.peek().piece.x !== x0; });
+  const moved = await d.state(() => { if (!D || !D.g) return false; const x0 = D.g.peek().piece.x; press('left'); press('left'); pressA(); return D.g.peek().piece.x !== x0; });
   ok('  and your inputs are ignored while away', !moved);
-  const y0 = await d.state(() => D.g.peek().piece.y); await sleep(700);
-  ok('  while the queue keeps falling', await d.state(() => D.g.peek().piece.y) > y0 || await d.state(() => D.g.peek().grid.flat().filter(v => v).length) > 0);
+  const y0 = await d.state(() => D && D.g ? D.g.peek().piece.y : -1); await sleep(700);
+  ok('  while the queue keeps falling', await d.state(() => D && D.g ? D.g.peek().piece.y : 99) > y0 || await d.state(() => D && D.g ? D.g.peek().grid.flat().filter(v => v).length : 1) > 0);
   await d.shot('desk-away');
   for (let t = 0; t < 40 && await d.state(() => D.away > 0); t++) await sleep(100);
   ok('  then you come back', await d.state(() => D.away === 0 && !document.getElementById('away').classList.contains('on')));
@@ -598,7 +600,7 @@ SUITES.desk = async browser => {
   /* meetings do not pause the work */
   await d.page.evaluate(() => enterMeeting(MEETINGS[0]));
   const before = await d.state(() => { const p = D.g.peek(); return { y: p.piece.y, filled: p.grid.flat().filter(v => v).length }; });
-  const mMoved = await d.state(() => { const x0 = D.g.peek().piece.x; press('right'); pressB(); return D.g.peek().piece.x !== x0; });
+  const mMoved = await d.state(() => { if (!D || !D.g) return false; const x0 = D.g.peek().piece.x; press('right'); pressB(); return D.g.peek().piece.x !== x0; });
   await sleep(900);
   const after = await d.state(() => { const p = D.g.peek(); return { y: p.piece.y, filled: p.grid.flat().filter(v => v).length, mtg: !!D.meeting }; });
   ok('a meeting keeps the queue falling while you cannot touch it', after.mtg && !mMoved && (after.y > before.y || after.filled > before.filled), JSON.stringify({ before, after }));
@@ -612,8 +614,8 @@ SUITES.desk = async browser => {
   ok('chooser appears with two tools', prompted2 && await d.state(() => document.querySelectorAll('#chList button').length) === 2);
   await d.pickChoice(1); await sleep(400); await d.page.evaluate(() => { hideTut(); });
   ok('Bug Bash opens', await d.state(() => D && D.tool) === 'breaker');
-  await d.page.evaluate(() => D.g.input('a'));
-  let broke0 = await d.state(() => D.g.peek().left), b0 = await d.state(() => S.build);
+  await d.page.evaluate(() => { if (D && D.g) D.g.input('a'); });
+  let broke0 = await d.state(() => D && D.g ? D.g.peek().left : 0), b0 = await d.state(() => S.build);
   for (let t = 0; t < 90 && await d.mode() === 'desk'; t++) {
     for (const b of await d.page.$$('#cards .deal')) { try { await b.click({ timeout: 300 }); } catch (e) {} }
     await d.page.evaluate(() => { if (!D || D.meeting) return; const p = D.g.peek(); heldDir = p.ball.x < p.pad.x - 6 ? 'left' : p.ball.x > p.pad.x + 6 ? 'right' : null; D.g.input('a'); });
@@ -636,6 +638,7 @@ SUITES.desk = async browser => {
     for (const b of await d.page.$$('#cards .deal')) { try { await b.click({ timeout: 300 }); } catch (e) {} }
     const len = await d.page.evaluate(() => {
       if (!D || D.meeting) return 0;
+      if (!D || D.over || !D.g) return 0;
       const p = D.g.peek(); const [hx, hy] = p.body[0]; const [fx, fy] = p.food;
       const blocked = (x, y) => x < 0 || x >= p.W || y < 0 || y >= p.H || p.walls.includes(x + ',' + y) || p.body.some(([bx, by]) => bx === x && by === y);
       const opts = [['left', -1, 0], ['right', 1, 0], ['up', 0, -1], ['down', 0, 1]].filter(([, dx, dy]) => !blocked(hx + dx, hy + dy));
@@ -671,6 +674,7 @@ SUITES.desk = async browser => {
       for (const b of await d.page.$$('#cards .deal')) { try { await b.click({ timeout: 300 }); } catch (e) {} }
     const r = await d.page.evaluate(() => {
       if (!D || D.meeting || D.away > 0) return null;
+      if (!D || D.over || !D.g) return null;
       const p = D.g.peek(); if (p.hit) return { hit: 1 };
       const safe = (x, y, ahead) => { const L = p.lanes.find(l => l.y === y); if (!L) return true;
         return !L.objs.some(o => { const x2 = o.x + L.dir * L.spd * ahead; const lo = Math.min(o.x, x2) - 0.15, hi = Math.max(o.x, x2) + o.w + 0.15; return x + 0.8 > lo && x + 0.2 < hi; }); };
@@ -832,6 +836,131 @@ SUITES.mobile = async browser => {
   await d.page.evaluate(() => { startBattle(['replyall']); }); await sleep(700);
   await d.fight(); await d.advance(30);
   ok('a finished fight is a checkpoint', await d.state(() => { const r = localStorage.getItem('shipit_lodestar_v2'); return !!r && JSON.parse(r).credits >= 1234; }));
+  return d;
+};
+
+/* The one suite that cheats at nothing structural: it starts a new game and
+   reaches the end of chapter two through the real gates, the real doors and
+   the real fights. Everything else jumps ahead with d.set(), which means a
+   progression dead-end could hide behind the jump. Build progress comes from
+   workProgress(), the same call the build tools make. */
+SUITES.journey = async browser => {
+  const d = await boot(browser);
+  section('journey — a new save to the end of chapter two, no shortcuts');
+
+  /* the game must always be able to tell you what to do next */
+  const notStuck = async where => {
+    const st = await d.state(() => ({
+      step: nextStep(), build: S.build, cap: buildCap(),
+      blocked: !!capBlocker(), ready: readyToShip(), mode
+    }));
+    const dead = st.build >= st.cap && !st.blocked && !st.ready && st.cap < 100;
+    ok('  ' + where + ' leaves you somewhere to go', st.step.length > 2 && !dead,
+       st.step + '  (build ' + st.build + '/' + st.cap + ')');
+    return st;
+  };
+
+  /* build the way the tools do, in one session, and stop where the game stops you */
+  const buildTo = async () => {
+    await d.page.evaluate(() => { startDesk(); }); await sleep(500);
+    await d.advance(4);
+    if (await d.state(() => document.getElementById('choices').classList.contains('on'))) { await d.pickChoice(0); await sleep(400); }
+    await d.page.evaluate(() => { if (D && D.tut) hideTut(); });
+    for (let i = 0; i < 60 && await d.mode() === 'desk'; i++) {
+      await d.page.evaluate(() => { if (D && !D.over) workProgress(3); });
+      await sleep(60);
+    }
+    await d.advance(20);
+  };
+
+  await d.interact(18, 5, 'up'); await d.advance(30);
+  ok('Dee explains the job', await d.state(() => !!S.flags.briefed));
+  await notStuck('the briefing');
+
+  await d.interact(4, 9, 'down'); await d.advance(4); await sleep(300);
+  if (await d.state(() => document.getElementById('choices').classList.contains('on'))) await d.pickChoice(0);
+  await sleep(500); await d.page.evaluate(() => { if (D && D.tut) hideTut(); });
+  ok('the desk opens on day one', await d.mode() === 'desk');
+  for (let i = 0; i < 60 && await d.mode() === 'desk'; i++) { await d.page.evaluate(() => { if (D && !D.over) workProgress(3); }); await sleep(60); }
+  await d.advance(20);
+  ok('the first session stops at the ceiling', await d.state(() => S.build) >= 35 && await d.state(() => S.build) < 40, 'build ' + await d.state(() => S.build));
+  await notStuck('35%');
+
+  /* a few fights on the way, the way walking the floor gives them to you */
+  for (let i = 0; i < 6; i++) {
+    await d.page.evaluate(n => { S.focus = S.maxFocus; const t = encTable(); startBattle([t[n % t.length]]); }, i); await sleep(500);
+    await d.fight(80); await d.advance(30);
+  }
+  const lv = await d.state(() => S.lv);
+  ok('six fights on the floor get you levels', lv >= 3, 'level ' + lv);
+
+  await d.interact(9, 12, 'down'); await d.advance(30);
+  ok('Priya sends you at Jordan first', await d.state(() => !!S.flags.priya_task && !S.approvals.code));
+  ok('  and the arrow follows her, not the checklist', (await d.hud()).includes('Jordan'), await d.hud());
+  await d.interact(17, 14, 'down'); await d.advance(30);
+  if (await d.mode() === 'battle') { await d.fight(200); await d.advance(40); }
+  ok('  Jordan comes off her calendar', await d.state(() => !!S.flags.jordan_done));
+  await d.interact(9, 12, 'down'); await d.advance(30);
+  ok('Priya reviews it once it exists', await d.state(() => !!S.approvals.code));
+  await notStuck('code review');
+  await buildTo();
+  ok('the second session stops at 70%', await d.state(() => S.build) >= 70 && await d.state(() => S.build) < 75, 'build ' + await d.state(() => S.build));
+
+  await d.interact(25, 26, 'right'); await d.advance(20);
+  ok('Marcus finds something that is not yours', await d.mode() === 'battle');
+  await d.fight(200); await d.advance(40);
+  ok('  and approves the security review', await d.state(() => !!S.approvals.sec));
+  await notStuck('security review');
+  await buildTo();
+  ok('the third session reaches 100%', await d.state(() => S.build) === 100, 'build ' + await d.state(() => S.build));
+
+  await d.interact(15, 22, 'down'); await d.advance(20);
+  ok('the team-building is mandatory/optional', await d.mode() === 'battle');
+  await d.fight(200); await d.advance(40);
+  ok('  and gets Kai notified', await d.state(() => !!S.flags.ctf_done));
+  await d.interact(4, 4, 'up'); await d.advance(30);
+  ok('Kai signs off on where the toggle goes', await d.state(() => !!S.approvals.design));
+  const ready = await notStuck('design review');
+  ok('  and now it can ship', ready.ready);
+
+  /* the door, the boss, the ending — all through the real path */
+  await d.standAt(27, 8, 'up');
+  await d.page.keyboard.down('ArrowUp'); await sleep(300); await d.page.keyboard.up('ArrowUp'); await sleep(600);
+  ok('VELOCITY opens', await d.state(() => S.y) < 8, 'y=' + await d.state(() => S.y));
+  await d.page.evaluate(() => { S.focus = S.maxFocus; S.caf = S.maxCaf; });
+  await d.interact(30, 4, 'up'); await d.advance(20);
+  ok('Brayden takes the meeting', await d.mode() === 'battle');
+  const r1 = await d.fight(400); await d.advance(60);
+  ok('chapter one can actually be finished', await d.mode() === 'title' && await d.state(() => !!S.flags.finished), r1 + ' turns');
+
+  /* chapter two, same rules */
+  await d.page.click('#btnCont'); await sleep(900); await d.advance(40);
+  ok('chapter two follows from it', await d.state(() => S.ch) === 2 && await d.state(() => ticket().key) === 'LDS-5001');
+  await notStuck('the summons');
+  await d.interact(15, 6, 'up'); await sleep(400); await d.pickChoice(1); await sleep(800); await d.advance(20);
+  ok('the elevator takes you up', await d.state(() => S.floor) === 'f6');
+
+  await d.interact(16, 14, 'up'); await d.advance(12);   /* the nameplate */
+  const gates = [[4, 14, 'up', 'legal'], [29, 5, 'up', 'comms'], [5, 21, 'up', 'finance']];
+  for (const [x, y, dir, key] of gates) {
+    await buildTo();
+    await notStuck('before ' + key);
+    await d.interact(x, y, dir); await d.advance(6);
+    for (let i = 0; i < 3; i++) if (await d.state(() => document.getElementById('choices').classList.contains('on'))) { await d.pickChoice(0); await d.advance(6); }
+    ok(key + ' signs off on the real path', await d.state(k => !!S.sign[k], key));
+  }
+  await buildTo();
+  ok('the build reaches 100% upstairs', await d.state(() => S.build) === 100, 'build ' + await d.state(() => S.build));
+
+  await d.standAt(27, 18, 'down');
+  await d.page.keyboard.down('ArrowDown'); await sleep(300); await d.page.keyboard.up('ArrowDown'); await sleep(600);
+  ok('the founder door opens', await d.state(() => S.y) > 18, 'y=' + await d.state(() => S.y));
+  await d.page.evaluate(() => { S.focus = S.maxFocus; S.caf = S.maxCaf; });
+  await d.interact(26, 21, 'up'); await d.advance(10);
+  if (await d.state(() => document.getElementById('choices').classList.contains('on'))) { await d.pickChoice(1); await d.advance(8); }
+  ok('Rand aligns with you', await d.mode() === 'battle');
+  const r2 = await d.fight(400); await d.advance(60);
+  ok('chapter two can actually be finished', await d.state(() => !!S.flags.ch2done), r2 + ' turns');
   return d;
 };
 

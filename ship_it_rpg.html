@@ -1421,7 +1421,7 @@ const Sfx = {
 /* ==========================================================================
    STATE
    ========================================================================== */
-const BUILD = '1.6.0';                       /* shown in the UI so bug reports name a build */
+const BUILD = '1.6.1';                       /* shown in the UI so bug reports name a build */
 const SAVE_VERSION = 2;
 const SAVEKEY = 'shipit_lodestar_v2';
 const LEGACY_KEYS = ['shipit_vanta_v1'];     /* saves written before the rename */
@@ -1506,7 +1506,9 @@ function objectiveTarget(){
   if(floorKey() !== 'f3') return null;
   if(readyToShip())        return {x:27, y:7,  label:'VELOCITY',  sign:'VELOCITY'};
   if(S.build < buildCap()) return {x:4,  y:10, label:'YOUR DESK', sign:'YOUR DESK'};
-  if(!S.approvals.code)    return {x:9,  y:13, label:'PRIYA'};
+  if(!S.approvals.code)    return (S.flags.priya_task && !S.flags.jordan_done)
+    ? {x:17, y:15, label:'JORDAN', sign:'OPEN PLAN'}
+    : {x:9,  y:13, label:'PRIYA'};
   if(!S.approvals.sec)     return {x:26, y:26, label:'MARCUS',    sign:'SECURITY'};
   if(!S.approvals.design)  return {x:4,  y:3,  label:'KAI',       sign:'KITCHEN'};
   return {x:27, y:7, label:'VELOCITY', sign:'VELOCITY'};
@@ -2257,7 +2259,7 @@ function nextStep(){
   if(floorKey() !== 'f3') return curMap().short;
   if(readyToShip())        return '→ VELOCITY';
   if(S.build < buildCap()) return '→ Desk · ' + buildCap() + '%';
-  if(!S.approvals.code)    return '→ Priya · review';
+  if(!S.approvals.code)    return S.flags.priya_task && !S.flags.jordan_done ? '→ Jordan · get him off her calendar' : '→ Priya · review';
   if(!S.approvals.sec)     return '→ Marcus · security';
   if(!S.approvals.design)  return '→ Kai · design';
   return '→ VELOCITY';

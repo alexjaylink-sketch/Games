@@ -36,7 +36,14 @@ icons, manifest, save codes, migration, settings), `mobile` (the platform:
 no sideways scroll, thumb-sized controls, the portrait guard, autosave on
 backgrounding, corrupt and unwritable saves), `ch2` (the sixth floor end to
 end: the elevator, the nameplate, three sign-offs, the founder's door, the
-fight and the slide). `desk` is slow on purpose.
+fight and the slide), `journey` (a new save to the end of chapter two through
+the real gates, doors and fights — the only suite that takes no structural
+shortcut, and the one that proves the game is finishable). `desk` and
+`journey` are slow on purpose.
+
+`journey` is the suite to trust when you change progression. Every other suite
+jumps ahead with `d.set()`, so a dead-end can hide behind the jump — that is
+how the Priya→Jordan prerequisite went unnoticed until it was written.
 
 `tools/sim.js` plays thousands of fights with the real enemy tables and skill
 functions eval'd out of the source. Run it after any combat number changes.
@@ -100,8 +107,15 @@ upstairs reads as a different building. `goFloor(key)` is the ride.
 ### Progression (chapter one)
 `buildCap()` is 35 until code review (Priya), 70 until security review
 (Marcus), 100 after; `capBlocker()` explains; design review (Kai) needs the
-CTF; `readyToShip()` = all approvals and build 100 → VELOCITY → Brayden boss
-→ `ending()`. The portal card lists the seven steps.
+CTF (Brooke); `readyToShip()` = all approvals and build 100 → VELOCITY →
+Brayden boss → `ending()`. The portal card lists the seven steps.
+
+Two gates have a person in front of the person: **Priya will not review until
+Jordan is off her calendar** (`flags.priya_task` → `flags.jordan_done`), and
+**Kai will not sign off until the CTF is done** (`flags.ctf_done`, from
+Brooke). `nextStep()` and `objectiveTarget()` both re-point at Jordan while
+that detour is open, because the arrow saying "Priya" while Priya is saying
+"go and find Jordan" is the kind of thing that reads as a bug.
 
 ### Chapter two (the sixth floor)
 `S.ch` is 1 or 2. Finishing chapter one sets `flags.finished`; resuming calls
@@ -248,7 +262,7 @@ Bad: *"Managers like Brayden are what's wrong with tech."* (moralizes.)
 1. itch.io page copy and store screenshots. `STORE.md` has the plan.
    (`tools/package.js` makes the zip; `tools/make-icons.js` makes the icons.)
 2. Encounter rate on the zigzag route feels slightly high; tune with the
-   `chain` suite watching.
+   `chain` suite watching. Wait for playtest feel before touching it.
 3. A LICENSE file — the owner's call, not ours.
 4. A third chapter, if the game ever needs to be longer. Do not start it
    before watching somebody finish chapter two.
@@ -267,6 +281,13 @@ chunk in 18s (a human is 4–5× slower), Brayden is 22s of raw tapping and Rand
 sees roughly half. Keep it in the 60–90 minute band; the wit is the product
 and padding kills it.
 
+## Playtest save codes
+
+`docs/playtest-codes.md` holds verified Save Codes for the start of each
+chapter, the founder's door, and the day loop, so a tester does not have to
+replay twenty minutes to reach the part being tested. Regenerate them with
+`node tools/save-codes.js` after any change to the save shape.
+
 ## Things that went wrong before, so you do not repeat them
 
 - Building before the concept was agreed. Ask, then build.
@@ -278,5 +299,10 @@ and padding kills it.
   relaunch in the same shell command.
 - Test bots that top out: the stacker heuristic needs holes, bumpiness and
   max height, not just aggregate height.
+- Referring to a Node-side variable inside `page.evaluate(() => ...)`. It runs
+  in the browser and the variable is not there; pass it as the second argument.
+  This has cost time three times now.
+- Suites that inject state to skip ahead cannot find a progression dead-end.
+  That is what `journey` is for; run it after any change to a gate.
 - Artifact comment notifications never reach these sessions (the wake
   subscription is refused). Feedback comes in chat.
