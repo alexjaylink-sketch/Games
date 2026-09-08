@@ -1049,7 +1049,9 @@ const ITEMS = {
   keeb:    {name:'Mechanical Keyboard',type:'weapon',price:110,atk:6,    desc:'Blues. Four percent faster, forty percent louder. Your podmates have filed no formal complaint.'},
   monitor: {name:'Second Monitor',     type:'weapon',price:225,atk:12,   desc:'Approved after four weeks. Productivity, allegedly, doubles.'},
   runbook: {name:'The Runbook',        type:'armor',price:0,   def:9,     desc:'Forty pages, handwritten, found taped under a desk. Everything anyone knew.'},
-  lanyard: {name:'Lanyard',            type:'armor', price:0, def:0,     desc:'Badge. Photo taken before you understood the job.'}
+  lanyard: {name:'Lanyard',            type:'armor', price:0, def:0,     desc:'Badge. Photo taken before you understood the job.'},
+  custody: {name:'Chain of Custody',   type:'armor',price:0,   def:11,    desc:'A signed form saying the thing was handled. It is the form that protects you, not the handling.'},
+  blank:   {name:'The Blank Note',     type:'use',  price:0,   focus:0,   desc:'A yellow square with nothing on it. Held one floor hostage for a year. Does nothing.'}
 };
 
 /* ---------- enemies ---------- */
@@ -1335,7 +1337,13 @@ const SIDEQUESTS = [
   {k:'mon',    ttl:'A Different Justification', giver:'Sandeep',
    steps:['Get a justification that carries weight','Take it back to Sandeep']},
   {k:'thing',  ttl:'The Thing In The Corner',   giver:'Mara',
-   steps:['Find whatever is paging at 3am','Deal with it']}
+   steps:['Find whatever is paging at 3am','Deal with it']},
+  {k:'sticky', ttl:'The Blank Sticky Note',      giver:'the war room wall',
+   steps:['Ask what it means','Decide whether to take it down']},
+  {k:'pass',   ttl:'Chain of Custody',           giver:'Marcus',
+   steps:['Find the password','Get it rotated']},
+  {k:'fridge', ttl:'The Sandwich',               giver:'a fridge',
+   steps:['Ask whose it is','Decide']}
 ];
 
 const ENCOUNTERS = ['replyall','flaky','merge','creep','quickq','recruiter','legacy','standup'];
@@ -1384,7 +1392,7 @@ const Sfx = {
 /* ==========================================================================
    STATE
    ========================================================================== */
-const BUILD = '1.4.0';                       /* shown in the UI so bug reports name a build */
+const BUILD = '1.5.0';                       /* shown in the UI so bug reports name a build */
 const SAVE_VERSION = 2;
 const SAVEKEY = 'shipit_lodestar_v2';
 const LEGACY_KEYS = ['shipit_vanta_v1'];     /* saves written before the rename */
@@ -3507,7 +3515,12 @@ function openMenu(){
       else if(q.k==='own')    st = sq('own')>=2 ? 'DONE' : ['Priya','Sandeep','Mara'].filter(x=>!S.asked[x.toLowerCase()]).join(', ') || 'tell Devon';
       else if(q.k==='laptop') st = sq('laptop')===1 ? 'LOCKED IT' : 'POSTED';
       else if(q.k==='mon')    st = sq('mon')>=2 ? 'DONE' : (S.flags.justif ? 'take it to Sandeep' : 'ask Jordan');
-      else                    st = sq('thing')>=2 ? 'DONE' : 'north-east corner';
+      else if(q.k==='thing')  st = sq('thing')>=2 ? 'DONE' : 'north-east corner';
+      else if(q.k==='sticky')  st = sq('sticky')>=3 ? 'DONE' : sq('sticky')>=2 ? 'back to the wall' :
+        ['Teddy','Ines','Priyanka'].filter(x=>!S.asked['note_'+x.toLowerCase()]).join(', ') || 'back to the wall';
+      else if(q.k==='pass')    st = sq('pass')>=3 ? 'DONE' : sq('pass')>=2 ? 'back to Marcus' : sq('pass')>=1 ? 'the Gantt, in the war room' : 'ask Marcus';
+      else                    st = sq('fridge')>=3 ? 'DONE' : sq('fridge')>=2 ? 'decide at the fridge' :
+        ['Dee','Ines'].filter(x=>!S.asked['sw_'+x.toLowerCase()]).join(', ') || 'decide at the fridge';
       return kv(q.ttl, st);
     }).join('');
     body.appendChild(sqc);
@@ -3709,6 +3722,7 @@ function importSave(code){
    SIDE QUESTS
    ========================================================================== */
 const sq  = (k)=> (S.side && S.side[k]) || 0;
+const askedAll = (pre, names)=> names.every(x=>S.asked[pre + x]);
 const setSq = (k,v)=>{ S.side[k] = v; syncHUD(); };
 const pageCount = ()=> Object.keys(S.pages||{}).length;
 
@@ -3808,6 +3822,111 @@ async function interact(){
     mode = 'field';
     return startDesk();
   }
+  if(k==='printout' && floorKey()==='f6'){
+    mode = 'dialogue';
+    if(tx === 14){                       /* the wall everyone is afraid of */
+      if(sq('sticky') >= 3){
+        await say(null, S.flags.took_note
+          ? 'The wall, with a gap in it. Nobody has mentioned the gap.'
+          : 'The wall. The blank one is still there, holding its position.');
+        mode='field'; return;
+      }
+      if(!sq('sticky')){
+        setSq('sticky', 1);
+        await say(null, [
+          'Two hundred sticky notes. Every one is a noun somebody said in a meeting.',
+          '"Trust." "Rails." "The moat." "Kevin."',
+          'One of them, dead centre, is blank.',
+          'Nobody has moved it. Everybody has arranged around it.'
+        ]);
+        mode='field'; return;
+      }
+      if(sq('sticky') < 2){
+        await say(null,'The blank one is still there. Somebody upstairs knows what it means. Ask them.');
+        mode='field'; return;
+      }
+      const c = await choose('The blank note.', [
+        {label:'Take it down', note:'nothing is written on it'},
+        {label:'Leave it', note:'it has been there a year'}
+      ]);
+      setSq('sticky', 3);
+      if(c === 0){
+        S.flags.took_note = 1;
+        await say(null, [
+          'You take it down. It comes away easily. There was never any adhesive left; it was being held up by the ones around it.',
+          'Nobody notices. Nobody will.'
+        ]);
+        await reward({cr:140, xp:60, item:'blank'});
+      } else {
+        await say(null, [
+          'You leave it. It is doing more work than most of this floor.',
+          'On the way out you catch yourself arranging around it.'
+        ]);
+        await reward({cr:90, xp:60});
+      }
+      mode='field'; syncHUD(); return;
+    }
+    /* the plotter Gantt, and the thing taped to the corner of it */
+    if(sq('pass') === 1){
+      setSq('pass', 2);
+      await say(null, [
+        'Nine feet of Gantt chart, printed on a plotter, showing a plan that ended in March.',
+        'Taped to the bottom corner, in Teddy\u2019s handwriting, is a sticky note.',
+        'It says VELOCITY2024! and underneath, smaller, "(launch)".'
+      ]);
+      mode='field'; syncHUD(); return;
+    }
+    await say(null, [
+      'Nine feet of Gantt chart. Every bar is grey, which means done, or grey, which means not started.',
+      'The legend explaining the difference is on a slide nobody has.'
+    ]);
+    mode='field'; return;
+  }
+
+  if(k==='fridge'){
+    mode = 'dialogue';
+    if(sq('fridge') >= 3){
+      await say(null, S.flags.binned_it
+        ? 'The fridge. There is a new sandwich in it with the same name on it. Nobody saw it arrive.'
+        : 'The fridge. It is still in there. It has outlasted two reorganisations.');
+      mode='field'; return;
+    }
+    if(!sq('fridge')){
+      setSq('fridge', 1);
+      await say(null, [
+        'The Floor 6 fridge. It is empty except for one item, on the middle shelf, alone.',
+        'A sandwich, in a bag, with a name written on it in marker.',
+        'The name is RAND.',
+        'The date on the bag is the day your offer letter was sent.'
+      ]);
+      mode='field'; syncHUD(); return;
+    }
+    if(sq('fridge') < 2){
+      await say(null,'The sandwich. Somebody on this floor must know the policy on it.');
+      mode='field'; return;
+    }
+    const c = await choose('The sandwich.', [
+      {label:'Throw it out', note:'it is a year old'},
+      {label:'Close the fridge', note:'it is not yours'}
+    ]);
+    setSq('fridge', 3);
+    if(c === 0){
+      S.flags.binned_it = 1;
+      await say(null, [
+        'You throw it out. It weighs nothing.',
+        'Nothing happens. No alarm, no email, no meeting.',
+        'That is the whole result, and it takes a second, and it took a year.'
+      ]);
+      await reward({cr:120, xp:55});
+    } else {
+      await say(null, [
+        'You close the fridge. It is not yours, and it is not nothing, and you are not sure which of those is doing the work.'
+      ]);
+      await reward({cr:80, xp:55});
+    }
+    mode='field'; syncHUD(); return;
+  }
+
   if(k==='printout'){
     const key = tx + ',' + ty, pg = PAGES[key];
     mode = 'dialogue';
@@ -4342,6 +4461,16 @@ async function npcTalk(n){
   }
 
   if(n.id==='dee6'){
+    if(sq('fridge')===1 && !S.asked.sw_dee){
+      S.asked.sw_dee = 1;
+      hold(); await say(n.name,[
+        'No.',
+        'I don\u2019t discuss the sandwich.',
+        'I have discussed the sandwich. It went badly for the person who raised it, and that person was me.'
+      ]);
+      if(askedAll('sw_', ['dee','ines'])) setSq('fridge', 2);
+      return done();
+    }
     hold(); await say(n.name,[
       'They moved me up here to be near the decisions. I have not seen one. I have seen forty decks.',
       'Legal is west, Comms is east, Finance is the one with the dashboards.',
@@ -4354,14 +4483,51 @@ async function npcTalk(n){
   }
 
   if(n.id==='marcus6'){
+    if(sq('pass') >= 2 && F.rotated && sq('pass') < 3){
+      setSq('pass', 3);
+      hold(); await say(n.name, F.newpass ? [
+        'He wrote a new one. On a new sticky. On the same wall.',
+        '\u2026That is a rotation. It counts as a rotation.',
+        'I am going to write it up as a rotation, and then I am going to go and sit in a nap pod.'
+      ] : [
+        'Rotated in the vault, by the person who set it. That is the only version of this that is real.',
+        'Give me the old one.'
+      ]);
+      if(!F.newpass){
+        hold(); await say(null,'He shreds it in front of you. It is the closest Marcus comes to joy.');
+      }
+      await reward({gear:'custody', cr:160, xp:70});
+      return done();
+    }
+    if(sq('pass') >= 1){
+      hold(); await say(n.name, sq('pass') >= 2
+        ? 'You found it. Now it has to be rotated by whoever wrote it, or it is not a rotation, it is a favour.'
+        : 'It is in the war room, on the big printout. Look at the corner nobody looks at.');
+      return done();
+    }
+    setSq('pass', 1);
     hold(); await say(n.name,[
       'I\u2019m up here because someone put the launch password on a sticky note in a glass room.',
-      'I am the sticky note now.'
+      'I am the sticky note now.',
+      'I cannot take it down. Chain of custody. If I touch it, it is an incident, and an incident is four weeks.',
+      'You can take it down. You are not security. That is the entire mechanism.'
     ]);
     return done();
   }
 
   if(n.id==='priyanka'){
+    if(sq('sticky')>=1 && sq('sticky')<3 && !S.asked.note_priyanka){
+      S.asked.note_priyanka = 1;
+      hold(); await say(n.name,[
+        'It is mine. I put it there.',
+        'It means nothing. There has never been anything on it.',
+        'I wanted to know how long a thing with no content could survive on that wall if it simply looked like it belonged.',
+        'Fourteen months. Two people have built roadmaps around it.',
+        'You may take it down. I will not, because then it would be a finding.'
+      ]);
+      if(askedAll('note_', ['teddy','ines','priyanka'])) setSq('sticky', 2);
+      return done();
+    }
     if(okc('legal')){
       hold(); await say(n.name,'It is a preference now. I feel nothing about this, which is how I know it is correct.');
       return done();
@@ -4400,6 +4566,43 @@ async function npcTalk(n){
   }
 
   if(n.id==='teddy'){
+    if(sq('pass')>=2 && !F.rotated){
+      hold(); await say(n.name,[
+        'VELOCITY2024, exclamation mark. Did I write that?',
+        'That is my handwriting. That is not my password. Those are different facts.'
+      ]);
+      const c = await choose('He is waiting for you to solve this.', [
+        {label:'Ask him to rotate it properly', note:'in the vault, like a person'},
+        {label:'Let him write a new one', note:'he is already reaching for a pen'}
+      ]);
+      F.rotated = 1;
+      hold();
+      if(c === 0){
+        await say(n.name,[
+          'Fine. Fine! I have the vault thing. I have had the vault thing since onboarding.',
+          '\u2026It wants my phone. My phone is in the booth. The booth is occupied.',
+          'Okay. Done. Look at me, being rotated.'
+        ]);
+      } else {
+        F.newpass = 1;
+        await say(n.name,[
+          'Great, great \u2014 VELOCITY2025, exclamation mark. Fresh.',
+          'I\u2019ll put it up where the old one was so people know where it is.'
+        ]);
+        hold(); await say(null,'He writes it on a new sticky note and presses it onto the glass, in the same spot, at the same height.');
+      }
+      return done();
+    }
+    if(sq('sticky')>=1 && sq('sticky')<3 && !S.asked.note_teddy){
+      S.asked.note_teddy = 1;
+      hold(); await say(n.name,[
+        'The blank one? That is the vision.',
+        'It has been the vision since before I got here. Don\u2019t move it.',
+        'You don\u2019t fill in the vision. You build toward it.'
+      ]);
+      if(askedAll('note_', ['teddy','ines','priyanka'])) setSq('sticky', 2);
+      return done();
+    }
     if(okc('comms')){
       hold(); await say(n.name,[
         'The narrative is locked. Don\u2019t change anything.',
@@ -4437,6 +4640,26 @@ async function npcTalk(n){
   }
 
   if(n.id==='ines'){
+    if(sq('fridge')===1 && !S.asked.sw_ines){
+      S.asked.sw_ines = 1;
+      hold(); await say(n.name,[
+        'It is on the books. As an asset.',
+        'It was catered. Catering is capitalised over the life of the event, and the event has no end date.',
+        'So it depreciates, and it is in the fridge, and both of those are true.'
+      ]);
+      if(askedAll('sw_', ['dee','ines'])) setSq('fridge', 2);
+      return done();
+    }
+    if(sq('sticky')>=1 && sq('sticky')<3 && !S.asked.note_ines){
+      S.asked.note_ines = 1;
+      hold(); await say(n.name,[
+        'That is the budget.',
+        'It has been blank since Q2. I find it restful.',
+        'Everything else on that wall is a number somebody wants. That one is the only honest square metre in the building.'
+      ]);
+      if(askedAll('note_', ['teddy','ines','priyanka'])) setSq('sticky', 2);
+      return done();
+    }
     if(okc('finance')){
       hold(); await say(n.name,'The toggle is on the balance sheet now. Under "other". That is the highest honor Finance has.');
       return done();
@@ -4626,6 +4849,14 @@ async function ch2Ending(){
     await say(null, [
       'The last slide is credits. It says: Lighthouse \u2014 a LODESTAR original.',
       'It is not wrong. That is what makes it the kind of true this floor prefers.'
+    ]);
+  }
+  if(S.flags.took_note || S.flags.binned_it){
+    await say(null, [
+      S.flags.took_note ? 'Nobody mentions the gap in the wall.' : 'Nobody mentions the fridge.',
+      S.flags.binned_it && S.flags.took_note
+        ? 'Nobody mentions the fridge either. Two things happened this week and neither of them was noticed, and one of them was the launch.'
+        : 'It is the second thing this week that happened without being noticed. The first was the launch.'
     ]);
   }
   await say(null, [

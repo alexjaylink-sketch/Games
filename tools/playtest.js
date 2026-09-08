@@ -332,6 +332,41 @@ SUITES.ch2 = async browser => {
   ok('the HUD points at the founder', (await d.hud()).includes('FOUNDER'), await d.hud());
   await d.shot('ch2-founder');
 
+  /* the three side quests upstairs */
+  await d.interact(14, 13, 'up'); const wall = await d.line(); await d.advance(6);
+  ok('the wall of sticky notes has a blank one', /blank/.test(wall) || await d.state(() => sq('sticky')) === 1, JSON.stringify(wall.slice(0, 44)));
+  await d.interact(29, 5, 'up'); await d.advance(6);
+  await d.interact(5, 21, 'up'); await d.advance(6);
+  await d.interact(4, 14, 'up'); await d.advance(8);
+  ok('  all three claim it means something different', await d.state(() => sq('sticky')) === 2,
+     await d.state(() => JSON.stringify(Object.keys(S.asked).filter(k => k.startsWith('note_')))));
+  await d.interact(14, 13, 'up'); await sleep(500);
+  ok('  and then the wall lets you decide', await d.state(() => document.getElementById('choices').classList.contains('on')));
+  const cr0 = await d.state(() => S.credits);
+  await d.pickChoice(0); await d.advance(10);
+  ok('  taking it down is remembered and paid for', await d.state(c => !!S.flags.took_note && sq('sticky') === 3 && S.credits > c, cr0));
+
+  await d.interact(26, 11, 'up'); await d.advance(8);
+  ok('Marcus cannot touch the password himself', await d.state(() => sq('pass')) === 1);
+  await d.interact(19, 13, 'up'); await d.advance(6);
+  ok('  it is taped to the Gantt', await d.state(() => sq('pass')) === 2);
+  await d.interact(29, 5, 'up'); await d.advance(4);
+  ok('  Teddy recognises his own handwriting', await d.state(() => document.getElementById('choices').classList.contains('on')));
+  await d.pickChoice(1); await d.advance(8);
+  ok('  and writes a new one on a new sticky', await d.state(() => !!S.flags.newpass));
+  await d.interact(26, 11, 'up'); await d.advance(10);
+  ok('  Marcus counts it as a rotation anyway', await d.state(() => sq('pass') === 3 && !!S.owned.custody));
+
+  await d.interact(2, 22, 'down'); await d.advance(6);
+  ok('the fridge has one sandwich in it', await d.state(() => sq('fridge')) === 1);
+  await d.interact(5, 4, 'up'); await d.advance(6);
+  await d.interact(5, 21, 'up'); await d.advance(6);
+  ok('  nobody will own it', await d.state(() => sq('fridge')) === 2);
+  await d.interact(2, 22, 'down'); await sleep(500);
+  ok('  and then you can decide', await d.state(() => document.getElementById('choices').classList.contains('on')));
+  await d.pickChoice(0); await d.advance(10);
+  ok('  throwing it out changes nothing, which is the point', await d.state(() => !!S.flags.binned_it && sq('fridge') === 3));
+
   /* the fight, the choice, and the slide that decides what this was */
   await d.set({ focus: 260, maxFocus: 260, caf: 80, lv: 6, atk: 30, def: 12 });
   await d.page.evaluate(() => { S.flags.saw_plate = 1; });

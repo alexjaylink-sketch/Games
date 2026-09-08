@@ -236,9 +236,11 @@ Bad: *"Managers like Brayden are what's wrong with tech."* (moralizes.)
 
 ## Backlog, in the order it is worth doing
 
-1. **Floor 6 side quests.** The four in `docs/floor6-draft.md` are still
-   unbuilt: the blank sticky note, the launch password, the fridge, and the
-   nameplate (that last one is done — reading the desk sets `saw_plate`).
+1. **Make the day loop vary.** After chapter two, every day is the same
+   shape with different Brayden dialogue. One structural twist per day
+   (a tool taken away, a gate that moves, a day with no interruptions at
+   all) would add real replay without new maps. This is the cheapest
+   remaining content per hour of work.
 2. itch.io page copy and store screenshots. `STORE.md` has the plan.
    (`tools/package.js` makes the zip; `tools/make-icons.js` makes the icons.)
 3. Encounter rate on the zigzag route feels slightly high; tune with the
@@ -247,8 +249,16 @@ Bad: *"Managers like Brayden are what's wrong with tech."* (moralizes.)
 
 Done, so do not redo: the visual pass (office, title, offer letter, battle,
 desk, portal, dialogue, list screens all share one look), the app icons, the
-lifecycle work, and chapter two's spine (map, cast, gates, boss, ending).
-Mara's surname is Okafor, fixed in `ch2Ending()`.
+lifecycle work, chapter two's spine (map, cast, gates, boss, ending), and all
+four Floor 6 side quests. Mara's surname is Okafor, fixed in `ch2Ending()`.
+
+### Measured length (v1.5.0)
+Both chapters on the critical path run 40–45 minutes; with every side quest
+and some exploring, 60–75. Derived from: a near-optimal bot builds a 35% desk
+chunk in 18s (a human is 4–5× slower), Brayden is 22s of raw tapping and Rand
+31s, and there are 9,463 words of player-facing text of which one playthrough
+sees roughly half. Keep it in the 60–90 minute band; the wit is the product
+and padding kills it.
 
 ## Things that went wrong before, so you do not repeat them
 
