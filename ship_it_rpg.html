@@ -366,6 +366,7 @@ button{font-family:inherit;color:inherit}
 .card-int .btn:active{background:var(--brand);border-color:var(--brand)}
 .card-int .btn[disabled]{opacity:.35}
 #work.ping::after{content:'';position:absolute;inset:0;background:rgba(245,165,36,.18);animation:pingfade .35s ease-out forwards;pointer-events:none}
+#work.hurt::after{content:'';position:absolute;inset:0;background:rgba(224,87,107,.30);animation:pingfade .5s ease-out forwards;pointer-events:none}
 @keyframes pingfade{to{opacity:0}}
 #away{
   position:absolute;inset:0;z-index:5;display:none;align-items:center;justify-content:center;
@@ -694,7 +695,7 @@ body.sideways #rotate{display:flex}
         <div id="cards"></div>
         <div id="work">
           <canvas id="workcv"></canvas>
-          <div id="away"><div class="b">DEALING WITH IT <span id="awayT"></span><small>Your work keeps going without you.</small></div></div>
+          <div id="away"><div class="b">DEALING WITH IT <span id="awayT"></span><small id="awaySub">Your work keeps going without you.</small></div></div>
           <div id="tut"><div class="b"><div class="k">NEW BUILD TOOL</div><div class="t" id="tutTtl"></div><div class="how" id="tutHow"></div><div class="why" id="tutWhy"></div><button class="btn" id="tutOk">Got it</button></div></div>
           <div id="autoc">
             <div class="meta"><span id="acStreak">STREAK 0</span><span id="acLeft"></span></div>
@@ -1247,7 +1248,15 @@ const INTERRUPTS = [
    esc:'Devon has created a channel to determine ownership. You have been added as an owner.'},
   {who:'build-bot', art:'🤖', act:'Investigate', thr:13, life:8, noSnooze:1,
    msg:'main is red. Your commit is not in the failing range. You are the most recent committer.',
-   esc:'Four people have now asked, separately, whether main is red.'}
+   esc:'Four people have now asked, separately, whether main is red.'},
+  {who:'Priya, Staff Engineer', art:'👩‍💻', act:'Take it', thr:6, life:11, helps:1,
+   msg:'I had ten minutes so I read your branch. Two things. Both small.',
+   won:'Both things were right. The branch is better than it was.',
+   esc:'She got pulled into something else. The two things are still true.'},
+  {who:'Dee, Onboarding', art:'☕', act:'Take it', thr:5, life:12, helps:1,
+   msg:'Brought you a coffee. You have been making a face at that screen for an hour.',
+   won:'The coffee is hot and nobody wants anything.',
+   esc:'The coffee went cold on the corner of your desk. Dee did not mention it.'}
 ];
 
 /* Upstairs the interruptions have better manners and worse consequences. */
@@ -1267,9 +1276,13 @@ const INTERRUPTS6 = [
   {who:'Rand Voss', art:'🕶️', act:'Listen', thr:15, life:7, noSnooze:1,
    msg:'walking past. thought out loud at you. it was about weather',
    esc:'You missed it. He will say it again on stage, and you will not recognise it.'},
-  {who:'#launch-readiness', art:'🚢', act:'React \U0001f44d', thr:8, life:12,
+  {who:'#launch-readiness', art:'🚢', act:'React 👍', thr:8, life:12,
    msg:'nine owners have been tagged. one of them is you. the other eight are a distribution list.',
-   esc:'The channel has decided the toggle is blocked on you. It has always been blocked on you.'}
+   esc:'The channel has decided the toggle is blocked on you. It has always been blocked on you.'},
+  {who:'Mara Okafor', art:'🗝', act:'Take it', thr:6, life:11, helps:1,
+   msg:'The number they keep asking you for is in the old deck. Slide 41.',
+   won:'Slide 41. It was slide 41.',
+   esc:'She had a thing. You will find the slide later, slowly, on your own.'}
 ];
 const intTable = ()=> (typeof ch2 === 'function' && ch2()) ? INTERRUPTS6 : INTERRUPTS;
 
@@ -1417,7 +1430,7 @@ const Sfx = {
 /* ==========================================================================
    STATE
    ========================================================================== */
-const BUILD = '1.7.0';                       /* shown in the UI so bug reports name a build */
+const BUILD = '1.8.0';                       /* shown in the UI so bug reports name a build */
 const SAVE_VERSION = 2;
 const SAVEKEY = 'shipit_lodestar_v2';
 const LEGACY_KEYS = ['shipit_vanta_v1'];     /* saves written before the rename */
@@ -2645,7 +2658,7 @@ async function startDesk(){
       tool, g: WORK[tool],
       progress: S.build, target: Math.min(buildCap(), S.build + SESSION_CHUNK),
       flow: 1, clock: 0, cards: [], meeting: null, pressure: 0,
-      heads: 0, cool: 0, over: false, handled: 0, ignored: 0, met: 0, snoozed: 0, lastMtg: -99,
+      heads: 0, cool: 0, over: false, handled: 0, ignored: 0, met: 0, snoozed: 0, lastMtg: -99, cash: 0,
       away: 0, awayMax: 0, later: [],
       nextSpawn: firstPing(), res
     };
@@ -2694,7 +2707,9 @@ function workFlow(delta){
   const d = D; if(!d) return;
   const was = d.flow;
   d.flow = Math.max(1, Math.min(FLOW_MAX, d.flow + delta));
-  if(was < FLOW_MAX-0.01 && d.flow >= FLOW_MAX-0.01){ Sfx.flow(); workState('You are inside the problem. You can see the whole shape of it.'); }
+  /* Hitting the ceiling cashes out a frame later, so the tool is never re-entered
+     in the middle of its own lock step. */
+  if(was < FLOW_MAX-0.01 && d.flow >= FLOW_MAX-0.01){ Sfx.flow(); d.cash = 1; }
 }
 
 function renderDeskHud(){
@@ -2761,10 +2776,17 @@ function handleCard(c){
   const i = d.cards.indexOf(c); if(i < 0) return;
   d.cards.splice(i,1); renderCards();
   if(c.mtg){ enterMeeting(c.mtg); return; }
-  d.flow = 1; d.handled++;
+  d.handled++;
   heldDir = null;
+  /* Talking to the person is how the work actually moves: the multiplier goes
+     up with how much of a deal they were. What it costs you is the board — your
+     hands are off the keyboard and the tool runs itself while you are gone. */
+  workFlow(0.14 + c.thr*0.014);
+  if(c.helps && d.g.reward) d.g.reward(1);
   d.awayMax = d.away = (1.0 + c.thr*0.06) * (S.opts.extraTime ? 0.7 : 1);
   $('away').classList.add('on');
+  $('awaySub').textContent = 'Flow \u00d7' + d.flow.toFixed(1) + '. ' +
+    (c.won || 'The work keeps going without you.');
   workState('You deal with it. Your hands are off the keyboard and the work does not wait.');
   renderDeskHud();
 }
@@ -2786,6 +2808,14 @@ function escalate(c, i){
   S.focus -= c.thr; syncHUD(); Sfx.hurt(); buzz([40,50,40]);
   workState(c.esc, true);
   if(d.g.punish) d.g.punish();
+  const w = $('work'); w.classList.remove('ping','hurt'); void w.offsetWidth; w.classList.add('hurt');
+  /* Ignore enough people and one of them finds time on your calendar. */
+  if(d.ignored % 3 === 0 && !d.meeting && (d.clock - d.lastMtg) > 10){
+    const mt = mtgTable();
+    d.lastMtg = d.clock + 3;
+    d.later.push({at: d.clock + 3, c:{mtg: mt[ri(mt.length)], who:'Calendar', art:'\U0001f4c5', act:'Attend', thr:0,
+      msg:'Someone has found time on your calendar.', life:5, maxLife:5, esc:''}});
+  }
   if(S.focus <= 0){ endDesk('burnout'); return; }
   renderDeskHud();
 }
@@ -2858,6 +2888,15 @@ function deskUpdate(ms){
 
   /* flow is earned inside the tool; the shell only lets it bleed */
   d.flow = Math.max(1, d.flow - dt*(d.pressure ? 0.35 : 0.05));
+
+  /* Deep focus is the only thing in this game that undoes a meeting. */
+  if(d.cash){
+    d.cash = 0;
+    if(d.g.reward) d.g.reward(2);
+    d.flow = 2.0;
+    Sfx.confirm();
+    workState('You are inside the problem. You use it to clean up what the morning did to it.');
+  }
 
   d.g.update(dt, false);
   if(!D || D.over) return;
@@ -2982,6 +3021,9 @@ WORK.stack = (()=>{
     meeting(big){ /* rows you can never clear */
       for(let n = big ? 2 : 1; n > 0; n--){ grid.shift(); grid.push(Array(W).fill('L')); }
       if(piece && collides(piece.c, piece.x, piece.y)) piece.y = Math.max(0, piece.y-2);
+    },
+    reward(n){ /* the floor drops away, meeting rows and all */
+      for(let k = 0; k < n; k++){ grid.pop(); grid.unshift(Array(W).fill(0)); }
     },
     render(){
       const {w,h} = workSize();
@@ -3120,6 +3162,11 @@ WORK.breaker = (()=>{
     peek(){ return {w, h, ball: {x:ball.x, y:ball.y}, pad: {x:pad.x, w:pad.w}, left: bricks.filter(b=>b.hp>0).length, wave}; },
     punish(){ for(const b of bricks) b.r++; for(let c=0;c<COLS;c++) bricks.push({c, r:0, hp:1, k:ri(KINDS.length)}); },
     meeting(big){ shrink = Math.min(0.1, shrink + (big ? 0.06 : 0.03)); for(let n=big?2:1;n>0;n--) g.punish(); },
+    reward(n){ /* the rows closest to you clear, and the paddle comes back */
+      const rows = [...new Set(bricks.filter(b=>b.hp>0).map(b=>b.r))].sort((a,b)=>b-a).slice(0, n);
+      for(const b of bricks) if(rows.indexOf(b.r) > -1) b.hp = 0;
+      shrink = Math.max(0, shrink - 0.03*n);
+    },
     render(){
       ({w,h} = workSize());
       wx.fillStyle = '#0a0d13'; wx.fillRect(0,0,w,h);
@@ -3183,6 +3230,10 @@ WORK.snake = (()=>{
     peek(){ return {W, H, body: body.map(p=>p.slice()), food: food.slice(), walls: [...walls]}; },
     punish(){ addWall(1); },
     meeting(big){ addWall(big ? 3 : 2); },
+    reward(n){ /* somebody deleted a service nobody was using */
+      const w = [...walls];
+      for(let k = 0; k < n*2 && w.length; k++) walls.delete(w.splice(ri(w.length), 1)[0]);
+    },
     render(){
       const {w,h} = workSize();
       const cell = Math.floor(Math.min((w-8)/W, (h-8)/H));
@@ -3259,11 +3310,18 @@ WORK.cross = (()=>{
       lanes: lanes.map(l=>({y:l.y, dir:l.dir, spd:l.spd, objs:l.objs.map(o=>({x:o.x, w:o.w}))}))}; },
     punish(){ /* another person on the floor */
       const L = lanes[ri(lanes.length)]; L.objs.push(mkObj(L, W + 1 + Math.random()*3));
-      D.flow = 1;
     },
     meeting(big){ /* the floor fills in; the standups get wider */
       for(let n = big ? 3 : 1; n > 0; n--) g.punish();
       for(const l of lanes) for(const o of l.objs) if(o.k === 3) o.w = Math.min(4, o.w + 0.5);
+    },
+    reward(n){ /* a few of them remember they had somewhere to be */
+      for(let k = 0; k < n*2; k++){
+        const withPeople = lanes.filter(l=>l.objs.length);
+        if(!withPeople.length) return;
+        const L = withPeople[ri(withPeople.length)];
+        L.objs.splice(ri(L.objs.length), 1);
+      }
     },
     render(){
       const {w,h} = workSize();
@@ -3360,9 +3418,16 @@ WORK.pipes = (()=>{
     punish(){ /* someone touched prod */
       let n = 2; for(let i=0;i<60 && n>0;i++){ const c = grid[ri(H)][ri(W)]; if(!c.filled){ c.m = rot(c.m); n--; } }
       arrive = Math.max(0, arrive - 3);
-      D.flow = 1;
     },
     meeting(big){ let n = big ? 5 : 3; for(let i=0;i<80 && n>0;i++){ const c = grid[ri(H)][ri(W)]; if(!c.filled){ c.m = rot(c.m); n--; } } arrive = Math.max(0, arrive - (big ? 6 : 3)); },
+    reward(n){ /* the clock loosens and a few joints come out right */
+      arrive += 3*n;
+      let k = n*2;
+      for(let i = 0; i < 90 && k > 0; i++){
+        const y = ri(H), x = ri(W), c = grid[y][x];
+        if(!c.filled && c.path && c.m !== sol[y][x]){ c.m = sol[y][x]; k--; }
+      }
+    },
     render(){
       const {w,h} = workSize();
       const cell = Math.floor(Math.min((w-8)/W, (h-30)/H));

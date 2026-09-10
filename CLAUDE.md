@@ -163,6 +163,46 @@ calls `tool.punish()`. Meetings do not pause: the tool runs at 0.7× behind a
 translucent overlay; only the all-hands (`secs >= 14`) calls
 `tool.meeting(true)`. Inputs are gated while away or in a meeting.
 
+### Why anyone taps Deal (read this before retuning the desk)
+The first playtester asked what the incentive was, and the honest answer was
+that there wasn't one: `handleCard()` used to set `d.flow = 1`, so dealing with
+somebody wiped your multiplier while ignoring them kept it. The incentive was
+not weak, it was **inverted**.
+
+The rule now is that **Deal costs board quality and pays speed** — different
+currencies, so the trade stays a decision instead of collapsing into "always
+tap it":
+
+| choice | costs | pays |
+|---|---|---|
+| Deal | ~2 s away, autopilot wrecks your board | `workFlow(0.14 + 0.014·thr)` |
+| Snooze | 3 caffeine, it comes back angrier | you pick the moment |
+| Ignore | Focus, `tool.punish()`, every third one books a meeting | you never take your hands off |
+
+Each is correct somewhere: Deal on a clean board, Snooze mid-placement, Ignore
+when you are out of caffeine and cannot afford to look away. **Do not give Deal
+a board-clearing reward** — that was considered and rejected, because it makes
+Deal strictly correct and kills the decision.
+
+Ignoring deliberately does **not** cost flow; keeping the multiplier is what
+makes it tempting in the moment. `cross.punish()` and `pipes.punish()` used to
+zero the flow and no longer do.
+
+**The cashout.** Hitting `FLOW_MAX` sets `d.cash`, and `deskUpdate` spends it
+one frame later (never re-enter a tool mid-lock) by calling `tool.reward(2)` and
+dropping flow to ×2.0, so the cycle can run two or three times a session. Every
+tool implements `reward(n)`: Merge Queue drops its bottom rows **including the
+locked `L` meeting rows**, which is the only thing in the game that undoes a
+meeting. Bug Bash clears the nearest bug rows and unshrinks the paddle, the
+chain loses walls, the floor loses people, Pipeline gets clock and true joints.
+
+**`helps:1` cards.** A few people who interrupt you are actually helping — Priya
+has read your branch, Dee brought coffee, Mara knows the slide number. Dealing
+with one calls `reward(1)` outright and the away overlay prints its `won` line.
+Keep them rare (about one card in seven). Common enough to sort for and the
+player learns to ignore everyone else, which is exactly the hole we climbed out
+of.
+
 **The first two sittings are gentler**, because the first playtester found day
 one unlearnable. `S.sessions` counts finished desk sessions (quits included).
 `firstPing()` sets the opening quiet stretch — 26–32 s on session 0, 12–16 s on
@@ -281,6 +321,9 @@ Bad: *"Managers like Brayden are what's wrong with tech."* (moralizes.)
    `chain` suite watching. Wait for playtest feel before touching it.
    Ask the playtester whether the new day-one desk ramp (v1.7.0) is now too
    slow before touching the numbers again — it moved a long way in one step.
+   Same for the v1.8.0 desk economy: watch somebody play it before deciding
+   whether Heads Down still needs re-costing (buying silence now also buys no
+   flow, so it may have self-corrected).
 3. A LICENSE file — the owner's call, not ours.
 4. A third chapter, if the game ever needs to be longer. Do not start it
    before watching somebody finish chapter two.
@@ -322,5 +365,11 @@ replay twenty minutes to reach the part being tested. Regenerate them with
   This has cost time three times now.
 - Suites that inject state to skip ahead cannot find a progression dead-end.
   That is what `journey` is for; run it after any change to a gate.
+- The `desk` suite runs one long session across all five tools, so a check that
+  leaves state behind breaks the *next* tool, not itself. A block that queues
+  cards, escalates, or fills `D.later` belongs in a session of its own at the
+  end of the suite. An Open Floor run that happens to score a fourth crossing
+  reaches build 100 with every approval set, which is `readyToShip()`, and the
+  Pipeline block after it then opens onto a game in a different state.
 - Artifact comment notifications never reach these sessions (the wake
   subscription is refused). Feedback comes in chat.

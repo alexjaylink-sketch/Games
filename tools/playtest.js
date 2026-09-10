@@ -610,6 +610,7 @@ SUITES.desk = async browser => {
   for (let t = 0; t < 40 && await d.state(() => D.away > 0); t++) await sleep(100);
   ok('  then you come back', await d.state(() => D.away === 0 && !document.getElementById('away').classList.contains('on')));
 
+
   /* snooze: costs caffeine, comes back angrier, cannot be snoozed twice */
   await d.page.evaluate(() => { D.cards.push(Object.assign({}, INTERRUPTS[1], { life: 10, maxLife: 10 })); renderCards(); });
   await d.page.click('#cards .snz'); await sleep(80);
@@ -649,6 +650,8 @@ SUITES.desk = async browser => {
   await d.page.evaluate(() => { heldDir = null; });
   const bb = await d.state(() => ({ left: D ? D.g.peek().left : -1, build: S.build, wave: D ? D.g.peek().wave : -1, mode }));
   ok('the paddle breaks bricks and builds', bb.build > b0, 'build ' + b0 + '% → ' + bb.build + '%, ' + (broke0 - bb.left) + ' bricks, wave ' + (bb.wave + 1));
+  ok('  and focus pays it back', await d.state(() => { for (let i = 0; i < 4; i++) D.g.punish();
+    const before = D.g.peek().left; D.g.reward(2); const after = D.g.peek().left; return after < before; }), 'clears the nearest bugs');
   if (await d.mode() === 'desk') await d.page.evaluate(() => { endDesk('quit'); });
   await d.advance();
 
@@ -676,6 +679,8 @@ SUITES.desk = async browser => {
   }
   const sn = await d.state(() => ({ build: S.build, mode }));
   ok('the chain eats and builds', sn.build > 70 && ate > 0, 'ate ' + ate + ', build ' + sn.build + '%');
+  ok('  and focus pays it back', await d.state(() => { for (let i = 0; i < 4; i++) D.g.punish();
+    const before = D.g.peek().walls.length; D.g.reward(2); const after = D.g.peek().walls.length; return after < before; }), 'takes walls back down');
   if (await d.mode() === 'desk') await d.page.evaluate(() => { endDesk('quit'); });
   await d.advance();
 
@@ -687,7 +692,7 @@ SUITES.desk = async browser => {
   await d.page.click('#scMenu .x'); await sleep(200);
 
   /* ---- Open Floor unlocks with design review ---- */
-  await d.set({ approvals: { code: 1, sec: 1, design: 1 }, build: 70, focus: 200, maxFocus: 200 });
+  await d.set({ approvals: { code: 1, sec: 1, design: 1 }, build: 60, focus: 200, maxFocus: 200 });
   ok('design review unlocks a fourth tool', await d.state(() => unlockedTools().join(',')) === 'stack,breaker,snake,cross');
   await sit(); await d.pickChoice(3); await sleep(400); await d.page.evaluate(() => { hideTut(); });
   ok('Open Floor opens', await d.state(() => D && D.tool) === 'cross');
@@ -712,7 +717,9 @@ SUITES.desk = async browser => {
     await sleep(100);
   }
   const of = await d.state(() => ({ build: S.build, mode }));
-  ok('crossing the floor builds', trips >= 1 && of.build > 70, trips + ' trips, build ' + of.build + '%, caught ' + caughtN + ' ticks');
+  ok('crossing the floor builds', trips >= 1 && of.build > 60, trips + ' trips, build ' + of.build + '%, caught ' + caughtN + ' ticks');
+  ok('  and focus pays it back', await d.state(() => { for (let i = 0; i < 4; i++) D.g.punish();
+    const before = D.g.peek().lanes.reduce((a, l) => a + l.objs.length, 0); D.g.reward(2); const after = D.g.peek().lanes.reduce((a, l) => a + l.objs.length, 0); return after < before; }), 'sends people away');
   if (await d.mode() === 'desk') await d.page.evaluate(() => { endDesk('quit'); });
   await d.advance();
 
@@ -743,8 +750,64 @@ SUITES.desk = async browser => {
     if (t === 30) await d.shot('tool-pipeline');
     await sleep(60);
   }
-  const pl = await d.state(() => ({ build: S.build, mode }));
-  ok('plumbing a board before the data arrives builds', boards >= 1 && pl.build > 70, boards + ' boards, ' + leaks + ' leaks, build ' + pl.build + '%');
+  const pl = await d.state(() => ({ build: S.build, mode, live: !!D, tool: D && D.tool, clock: D && +D.clock.toFixed(1),
+    away: D && +D.away.toFixed(2), mtg: !!(D && D.meeting), flow: D && +D.flow.toFixed(2), arrive: D && D.g ? +D.g.peek().arrive.toFixed(1) : null }));
+  ok('plumbing a board before the data arrives builds', boards >= 1 && pl.build > 70,
+     boards + ' boards, ' + leaks + ' leaks, build ' + pl.build + '% ' + JSON.stringify(pl));
+  ok('  and focus pays it back', await d.state(() => { for (let i = 0; i < 4; i++) D.g.punish();
+    const before = D.g.peek().arrive; D.g.reward(2); const after = D.g.peek().arrive; return after > before; }), 'buys clock back');
+  if (await d.mode() === 'desk') await d.page.evaluate(() => { endDesk('quit'); });
+  await d.advance();
+
+  /* ---- the incentives, in a session of their own so nothing leaks sideways ---- */
+  await d.set({ approvals: { code: 0, sec: 0, design: 0 }, side: {}, build: 0, focus: 260, maxFocus: 260, caf: 60, sessions: 3 });
+  await sit();
+  /* ---- dealing has to PAY, or there is no reason to tap it ---- */
+  const paid = await d.state(() => {
+    D.flow = 1.5; D.away = 0; D.cards = [];
+    document.getElementById('away').classList.remove('on');
+    const c = Object.assign({}, INTERRUPTS.find(x => x.thr === 15) || INTERRUPTS[0], { life: 9, maxLife: 9 });
+    D.cards.push(c); renderCards();
+    const before = D.flow; handleCard(c);
+    return { before, after: D.flow, sub: document.getElementById('awaySub').textContent };
+  });
+  ok('dealing raises flow instead of resetting it', paid.after > paid.before,
+     '\u00d7' + paid.before.toFixed(2) + ' \u2192 \u00d7' + paid.after.toFixed(2));
+  ok('  and the overlay names what you got', /Flow \u00d7/.test(paid.sub), paid.sub);
+
+  /* ---- max flow is the only thing that undoes a meeting ---- */
+  await d.page.evaluate(() => { D.away = 0; document.getElementById('away').classList.remove('on'); D.g.meeting(true); D.g.meeting(true); });
+  const lockedWas = await d.state(() => D.g.peek().grid.filter(r => r.some(v => v === 'L')).length);
+  await d.page.evaluate(() => { workFlow(5); });
+  ok('hitting max flow arms a cashout for the next frame', await d.state(() => D.cash === 1));
+  await sleep(500);
+  const cashed = await d.state(() => ({ locked: D.g.peek().grid.filter(r => r.some(v => v === 'L')).length, flow: D.flow }));
+  ok('  which clears meeting rows nothing else can clear', cashed.locked < lockedWas, lockedWas + ' \u2192 ' + cashed.locked);
+  ok('  and drops you back out of the zone', cashed.flow > 1.5 && cashed.flow < 2.5, '\u00d7' + cashed.flow.toFixed(2));
+
+  /* ---- rarely, the person interrupting you is actually helping ---- */
+  const helped = await d.state(() => {
+    for (let i = 0; i < 3; i++) D.g.punish();
+    const rows = () => D.g.peek().grid.filter(r => r.some(v => v)).length;
+    const before = rows();
+    const c = Object.assign({}, INTERRUPTS.find(x => x.helps), { life: 9, maxLife: 9 });
+    D.cards.push(c); renderCards(); D.away = 0; handleCard(c);
+    return { before, after: rows(), sub: document.getElementById('awaySub').textContent, won: c.won };
+  });
+  ok('a colleague who actually helps clears a row', helped.after < helped.before, helped.before + ' \u2192 ' + helped.after);
+  ok('  and the overlay says what they did', helped.sub.indexOf(helped.won) > -1, helped.sub);
+
+  /* ---- ignore enough people and one of them books time ---- */
+  const summoned = await d.state(() => {
+    D.ignored = 0; D.later = []; D.lastMtg = -99; D.cards = []; D.away = 0;
+    document.getElementById('away').classList.remove('on');
+    for (let i = 0; i < 3; i++) { const c = Object.assign({}, INTERRUPTS[i], { life: 0.01, maxLife: 9 }); D.cards.push(c); escalate(c, D.cards.length - 1); }
+    return { ignored: D.ignored, queued: D.later.length, mtg: D.later.length ? !!D.later[0].c.mtg : false };
+  });
+  ok('three ignored people put a meeting on your calendar',
+     summoned.ignored === 3 && summoned.queued === 1 && summoned.mtg, JSON.stringify(summoned));
+  ok('every build tool can be rewarded',
+     await d.state(() => ['stack', 'breaker', 'snake', 'cross', 'pipes'].every(k => typeof WORK[k].reward === 'function')));
   if (await d.mode() === 'desk') await d.page.evaluate(() => { endDesk('quit'); });
   await d.advance();
   return d;
