@@ -639,6 +639,13 @@ SUITES.desk = async browser => {
   ok('chooser appears with two tools', prompted2 && await d.state(() => document.querySelectorAll('#chList button').length) === 2);
   await d.pickChoice(1); await sleep(400); await d.page.evaluate(() => { hideTut(); });
   ok('Bug Bash opens', await d.state(() => D && D.tool) === 'breaker');
+  ok('  and focus pays it back', await d.state(() => {
+    if (!D || D.over || !D.g) return false;
+    for (let i = 0; i < 4; i++) D.g.punish();
+    const before = D.g.peek().left; D.g.reward(2); const after = D.g.peek().left;
+    D.g.start();                       /* clean board for the run that follows */
+    return after < before;
+  }), 'clears the nearest bugs');
   await d.page.evaluate(() => { if (D && D.g) D.g.input('a'); });
   let broke0 = await d.state(() => D && D.g ? D.g.peek().left : 0), b0 = await d.state(() => S.build);
   for (let t = 0; t < 90 && await d.mode() === 'desk'; t++) {
@@ -650,8 +657,6 @@ SUITES.desk = async browser => {
   await d.page.evaluate(() => { heldDir = null; });
   const bb = await d.state(() => ({ left: D ? D.g.peek().left : -1, build: S.build, wave: D ? D.g.peek().wave : -1, mode }));
   ok('the paddle breaks bricks and builds', bb.build > b0, 'build ' + b0 + '% → ' + bb.build + '%, ' + (broke0 - bb.left) + ' bricks, wave ' + (bb.wave + 1));
-  ok('  and focus pays it back', await d.state(() => { for (let i = 0; i < 4; i++) D.g.punish();
-    const before = D.g.peek().left; D.g.reward(2); const after = D.g.peek().left; return after < before; }), 'clears the nearest bugs');
   if (await d.mode() === 'desk') await d.page.evaluate(() => { endDesk('quit'); });
   await d.advance();
 
@@ -660,6 +665,13 @@ SUITES.desk = async browser => {
   ok('security review unlocks a third tool', await d.state(() => unlockedTools().length) === 3);
   await sit(); await d.pickChoice(2); await sleep(400); await d.page.evaluate(() => { hideTut(); });
   ok('Dependency Chain opens', await d.state(() => D && D.tool) === 'snake');
+  ok('  and focus pays it back', await d.state(() => {
+    if (!D || D.over || !D.g) return false;
+    for (let i = 0; i < 4; i++) D.g.punish();
+    const before = D.g.peek().walls.length; D.g.reward(2); const after = D.g.peek().walls.length;
+    D.g.start();                       /* clean board for the run that follows */
+    return after < before;
+  }), 'takes walls back down');
   let ate = 0, len0 = 3;
   for (let t = 0; t < 120 && await d.mode() === 'desk'; t++) {
     for (const b of await d.page.$$('#cards .deal')) { try { await b.click({ timeout: 300 }); } catch (e) {} }
@@ -679,8 +691,6 @@ SUITES.desk = async browser => {
   }
   const sn = await d.state(() => ({ build: S.build, mode }));
   ok('the chain eats and builds', sn.build > 70 && ate > 0, 'ate ' + ate + ', build ' + sn.build + '%');
-  ok('  and focus pays it back', await d.state(() => { for (let i = 0; i < 4; i++) D.g.punish();
-    const before = D.g.peek().walls.length; D.g.reward(2); const after = D.g.peek().walls.length; return after < before; }), 'takes walls back down');
   if (await d.mode() === 'desk') await d.page.evaluate(() => { endDesk('quit'); });
   await d.advance();
 
@@ -696,6 +706,13 @@ SUITES.desk = async browser => {
   ok('design review unlocks a fourth tool', await d.state(() => unlockedTools().join(',')) === 'stack,breaker,snake,cross');
   await sit(); await d.pickChoice(3); await sleep(400); await d.page.evaluate(() => { hideTut(); });
   ok('Open Floor opens', await d.state(() => D && D.tool) === 'cross');
+  ok('  and focus pays it back', await d.state(() => {
+    if (!D || D.over || !D.g) return false;
+    for (let i = 0; i < 4; i++) D.g.punish();
+    const before = D.g.peek().lanes.reduce((a, l) => a + l.objs.length, 0); D.g.reward(2); const after = D.g.peek().lanes.reduce((a, l) => a + l.objs.length, 0);
+    D.g.start();                       /* clean board for the run that follows */
+    return after < before;
+  }), 'sends people away');
   let trips = 0, caughtN = 0;
   for (let t = 0; t < 400 && await d.mode() === 'desk'; t++) {
     /* a sensible player deals with people from the desk row, not mid-crossing */
@@ -718,8 +735,6 @@ SUITES.desk = async browser => {
   }
   const of = await d.state(() => ({ build: S.build, mode }));
   ok('crossing the floor builds', trips >= 1 && of.build > 60, trips + ' trips, build ' + of.build + '%, caught ' + caughtN + ' ticks');
-  ok('  and focus pays it back', await d.state(() => { for (let i = 0; i < 4; i++) D.g.punish();
-    const before = D.g.peek().lanes.reduce((a, l) => a + l.objs.length, 0); D.g.reward(2); const after = D.g.peek().lanes.reduce((a, l) => a + l.objs.length, 0); return after < before; }), 'sends people away');
   if (await d.mode() === 'desk') await d.page.evaluate(() => { endDesk('quit'); });
   await d.advance();
 
@@ -729,6 +744,13 @@ SUITES.desk = async browser => {
   ok('the Thing quest unlocks a fifth tool', await d.state(() => unlockedTools().length) === 5);
   await sit(); await d.pickChoice(4); await sleep(400); await d.page.evaluate(() => { hideTut(); });
   ok('Pipeline opens', await d.state(() => D && D.tool) === 'pipes');
+  ok('  and focus pays it back', await d.state(() => {
+    if (!D || D.over || !D.g) return false;
+    for (let i = 0; i < 4; i++) D.g.punish();
+    const before = D.g.peek().arrive; D.g.reward(2); const after = D.g.peek().arrive;
+    D.g.start();                       /* clean board for the run that follows */
+    return after > before;
+  }), 'buys clock back');
   const start = await d.state(() => { const p = D.g.peek(); return { cursor: p.cx + ',' + p.cy, arrive: p.arrive, path: p.grid.flat().filter(c => c.path).length }; });
   ok('  with a countdown and a scrambled path', start.arrive > 5 && start.path >= 15, JSON.stringify(start));
   let boards = 0, leaks = 0;
@@ -754,8 +776,6 @@ SUITES.desk = async browser => {
     away: D && +D.away.toFixed(2), mtg: !!(D && D.meeting), flow: D && +D.flow.toFixed(2), arrive: D && D.g ? +D.g.peek().arrive.toFixed(1) : null }));
   ok('plumbing a board before the data arrives builds', boards >= 1 && pl.build > 70,
      boards + ' boards, ' + leaks + ' leaks, build ' + pl.build + '% ' + JSON.stringify(pl));
-  ok('  and focus pays it back', await d.state(() => { for (let i = 0; i < 4; i++) D.g.punish();
-    const before = D.g.peek().arrive; D.g.reward(2); const after = D.g.peek().arrive; return after > before; }), 'buys clock back');
   if (await d.mode() === 'desk') await d.page.evaluate(() => { endDesk('quit'); });
   await d.advance();
 
@@ -808,6 +828,51 @@ SUITES.desk = async browser => {
      summoned.ignored === 3 && summoned.queued === 1 && summoned.mtg, JSON.stringify(summoned));
   ok('every build tool can be rewarded',
      await d.state(() => ['stack', 'breaker', 'snake', 'cross', 'pipes'].every(k => typeof WORK[k].reward === 'function')));
+
+  /* ---- the two ratings ---- */
+  const moves = await d.state(() => {
+    const out = {};
+    const snap = () => ({ s: S.social, p: S.perf });
+    const run = (name, fn) => { const b = snap(); fn(); const a = snap(); out[name] = [a.s - b.s, a.p - b.p]; };
+    S.social = 50; S.perf = 50; D.away = 0; D.heads = 0; D.cards = [];
+    document.getElementById('away').classList.remove('on');
+    run('deal',   () => { const c = Object.assign({}, INTERRUPTS[0], { life: 9, maxLife: 9 }); D.cards.push(c); renderCards(); D.away = 0; handleCard(c); });
+    run('ignore', () => { D.away = 0; const c = Object.assign({}, INTERRUPTS[1], { life: 0.01, maxLife: 9 }); D.cards.push(c); escalate(c, D.cards.length - 1); });
+    run('heads',  () => { D.away = 0; D.heads = 0; D.cool = 0; S.caf = 60; document.getElementById('btnHeads').click(); });
+    run('quest',  () => { S.side.own = 0; setSq('own', 2); });
+    out.chips = document.querySelectorAll('.ratechip').length;
+    return out;
+  });
+  ok('dealing buys social and costs a little performance', moves.deal[0] > 0 && moves.deal[1] < 0, JSON.stringify(moves.deal));
+  ok('ignoring does the exact opposite', moves.ignore[0] < 0 && moves.ignore[1] > 0, JSON.stringify(moves.ignore));
+  ok('heads down is the strongest version of that trade', moves.heads[0] <= -3 && moves.heads[1] >= 3, JSON.stringify(moves.heads));
+  ok('doing somebody a favor is worth real social', moves.quest[0] >= 5, JSON.stringify(moves.quest));
+  ok('  and every move floats a chip saying why', moves.chips > 0, moves.chips + ' chips on screen');
+
+  const card = await d.state(() => {
+    D.away = 0; D.heads = 0; D.meeting = null;
+    document.getElementById('away').classList.remove('on');
+    document.getElementById('meeting').classList.remove('on');
+    D.cards = [Object.assign({}, INTERRUPTS[0], { life: 9, maxLife: 9 })]; renderCards();
+    const el = document.querySelector('#cards .card-int');
+    return { deal: el.querySelector('.deal').textContent, cost: el.querySelector('.cost').textContent,
+             wide: el.querySelector('.cost').getBoundingClientRect().width > el.getBoundingClientRect().width * 0.8 };
+  });
+  ok('the deal button carries its own price', /SOC/.test(card.deal) && /PERF/.test(card.deal), card.deal.replace(/\s+/g, ' '));
+  ok('  and doing nothing carries its price too', /SOC/.test(card.cost) && /PERF/.test(card.cost), card.cost.replace(/\s+/g, ' '));
+  ok('  on its own row, not squeezing the message', card.wide);
+
+  /* ---- the queue is finite and the goal is the session ---- */
+  const q = await d.state(() => D.g.peek());
+  ok('the merge queue has a length', q.queue === 24 && q.need === 5, q.queue + ' commits, need ' + q.need + ' merges');
+  const shown = await d.state(() => document.getElementById('goalbar').textContent.replace(/\s+/g, ' ').trim());
+  ok('  and says so on screen', /\/ 5/.test(shown) && /queue/.test(shown), shown);
+  const drained = await d.state(() => {
+    D.cards = []; renderCards();
+    let n = 0; while (D && !D.over && n++ < 400) { D.g.input('b'); }
+    return { live: !!D && !D.over, n };
+  });
+  ok('  and running it dry ends the session instead of going forever', !drained.live, 'ended after ' + drained.n + ' drops');
   if (await d.mode() === 'desk') await d.page.evaluate(() => { endDesk('quit'); });
   await d.advance();
   return d;
@@ -934,6 +999,10 @@ SUITES.mobile = async browser => {
 SUITES.journey = async browser => {
   const d = await boot(browser);
   section('journey — a new save to the end of chapter two, no shortcuts');
+  /* Played at rock-bottom ratings on purpose. If this finishes, no rating can
+     close a gate, and that is the only way to prove it. */
+  await d.set({ social: 0, perf: 0 });
+  ok('starts the run with both ratings on the floor', await d.state(() => S.social === 0 && S.perf === 0));
 
   /* the game must always be able to tell you what to do next */
   const notStuck = async where => {
@@ -1047,6 +1116,16 @@ SUITES.journey = async browser => {
   if (await d.state(() => document.getElementById('choices').classList.contains('on'))) { await d.pickChoice(1); await d.advance(8); }
   ok('Rand aligns with you', await d.mode() === 'battle');
   const r2 = await d.fight(400); await d.advance(60);
+  ok('no rating touched the critical path on the way',
+     await d.state(() => {
+       const so = S.social, pe = S.perf;
+       S.social = 0; S.perf = 0;
+       const poor = { cap: buildCap(), ready: readyToShip(), step: nextStep() };
+       S.social = 100; S.perf = 100;
+       const rich = { cap: buildCap(), ready: readyToShip(), step: nextStep() };
+       S.social = so; S.perf = pe;
+       return poor.cap === rich.cap && poor.ready === rich.ready && poor.step === rich.step;
+     }), 'cap, readiness and the arrow read the same at 0/0 and 100/100');
   ok('chapter two can actually be finished', await d.state(() => !!S.flags.ch2done), r2 + ' turns');
   return d;
 };

@@ -219,6 +219,69 @@ open. Leaving the desk puts the arrow back. Do not remove the glyph: the
 playtester read "you need to be able to rotate the pieces" off a screen where
 rotation worked fine on a button they were not looking at.
 
+### The two ratings (`S.social`, `S.perf`)
+Both 0-100, both start at 50, both shown as meters in the walking HUD and again
+in the desk head (the desk hides the walking one). Every change goes through
+`rate(kind)` reading the `RATES` table, so nothing moves without a chip floating
+off the meter saying which choice moved it and why.
+
+| choice | social | perf |
+|---|---|---|
+| deal with a card | +2 | −1 |
+| a `helps:1` card | +3 | 0 |
+| snooze | −1 | 0 |
+| ignore | −3 | +2 |
+| Heads Down | −4 | +3 |
+| sit through a meeting | +3 | −2 |
+| join one late | −2 | 0 |
+| hit the session goal | 0 | +4 |
+| come up short | 0 | −3 |
+| burn out | −2 | −5 |
+| finish a side quest | +8 | 0 |
+
+The premise: every hour heads-down is an hour you were not reachable. Heads Down
+is the purest form of it and is priced hardest — it was the move with no cost at
+all before this, which is why it was suspected of being strictly best.
+
+**Nothing a rating does can strand you.** They bend boss stats (`scaleBoss()`
+off the pristine `BASEBOSS` copy, so it never compounds across days), shop
+prices (`shopScale()`, shown with a ▴/▾ on the tag), XP (`xpScale()`), whether
+`helps` cards appear at all, and the review lines in `ending()`. They never
+touch `buildCap()`, `capBlocker()`, `readyToShip()`, `nextStep()` or any gate.
+`journey` runs the **entire playthrough at 0/0** for exactly this reason: if it
+finishes, no rating can close a gate. Do not "improve" this by having low
+performance shrink the build cap — that was proposed and rejected, because it
+soft-locks the run.
+
+**A difficulty scale must never inflate boss HP.** The first version of
+`bossScale()` multiplied hp, atk and def together by 1.16 at low performance,
+and `journey` at perf 0 then hit the round cap on Brayden and could not finish
+the chapter — a rating that soft-locked the run through combat rather than
+through a gate. It now returns separate `{hp, atk, def}` factors and leaves hp
+alone going up: a low rating makes the room hit harder, never last longer. Run
+`tools/sim.js` after touching any of it.
+
+The card carries its own price before you press it: the Deal and Snooze buttons
+print their deltas, and a `.cost` row underneath prints what doing nothing
+costs. `tag()` renders a `RATES` entry, so the table is the single source of
+truth for both the effect and the label.
+
+### Session goals — the tools are finite now
+The playtester said the Merge Queue felt endless, and it was: its only objective
+was an abstract percentage that lived outside the minigame. A merge queue has a
+length, so now it has one — **24 commits, merge 5 rows before they run out**.
+`spawn()` ends the session when the queue is dry (`'short'`) and `lock()` ends
+it the moment the fifth row merges (`'done'`).
+
+Hitting the goal tops `d.progress` up to `d.target` in `endDesk`, so the
+percentage is the *result* of the objective rather than a second competing one.
+Falling short keeps whatever you built and costs performance.
+
+Every tool implements `goal()` returning `{have, need, unit, left, leftUnit}`,
+which `renderDeskHud` draws in `#goalbar` above the build bar. Only Merge Queue
+has a hard budget; the other four are already bounded by their own fail states
+(leaks, being caught, walls), so they state a target without a countdown.
+
 ### Build tools (`WORK.*`, registry `TOOLS`)
 Each tool implements `start / update(dt, auto) / input(k) / render / punish /
 meeting(big) / peek / stop` plus `intro`, and `how`/`why` text for the
@@ -328,7 +391,8 @@ Bad: *"Managers like Brayden are what's wrong with tech."* (moralizes.)
 4. A third chapter, if the game ever needs to be longer. Do not start it
    before watching somebody finish chapter two.
 
-Done, so do not redo: the visual pass (office, title, offer letter, battle,
+Done, so do not redo: the two ratings and their meters, the finite merge queue,
+the visual pass (office, title, offer letter, battle,
 desk, portal, dialogue, list screens all share one look), the app icons, the
 lifecycle work, chapter two's spine (map, cast, gates, boss, ending), all four
 Floor 6 side quests, and the per-day variation in the loop. Mara's surname is
@@ -365,6 +429,10 @@ replay twenty minutes to reach the part being tested. Regenerate them with
   This has cost time three times now.
 - Suites that inject state to skip ahead cannot find a progression dead-end.
   That is what `journey` is for; run it after any change to a gate.
+- A check that reads `D.g` after a play loop can find `D` null, because the
+  session may have ended on its own — and it ends far more often now that a tool
+  can complete its goal. Assert against a tool's internals right after it opens,
+  then `D.g.start()` to reset the board, rather than after the bot has played.
 - The `desk` suite runs one long session across all five tools, so a check that
   leaves state behind breaks the *next* tool, not itself. A block that queues
   cards, escalates, or fills `D.later` belongs in a session of its own at the

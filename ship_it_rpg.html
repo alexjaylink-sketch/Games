@@ -80,6 +80,32 @@ button{font-family:inherit;color:inherit}
 .meter .fil{height:100%;width:100%;border-radius:3px;transition:width .3s ease}
 .meter.f .fil{background:linear-gradient(90deg,#2fae76,var(--focus))}
 .meter.c .fil{background:linear-gradient(90deg,#b47a2c,var(--caf))}
+.meter.s .fil{background:linear-gradient(90deg,#7a5bbf,#a582ea)}
+.meter.p .fil{background:linear-gradient(90deg,#2b7fa8,#4fb8e0)}
+.meter[data-band="low"] .lab span:last-child{color:var(--danger)}
+.meter[data-band="high"] .lab span:last-child{color:var(--ok)}
+
+/* the two ratings, and the chips that fly off them when a choice moves one */
+.rates{position:relative;display:flex;gap:10px;flex:0 0 auto}
+#hRates{flex:0 1 150px}
+#dRates{margin-top:7px}
+#dRates .meter{flex:1 1 0}
+.ratechip{
+  position:absolute;right:0;top:100%;z-index:9;pointer-events:none;
+  font-family:var(--mono);font-size:10px;letter-spacing:.4px;white-space:nowrap;
+  background:var(--panel2);border:1px solid var(--edge2);border-radius:7px;
+  padding:4px 8px;box-shadow:var(--sh);animation:chipfly 1.9s ease-out forwards;
+}
+.ratechip b{font-size:11px}
+.ratechip small{display:block;font-size:8.5px;color:var(--dim);letter-spacing:.2px;text-transform:none}
+.ratechip.up{border-color:rgba(62,207,142,.5)} .ratechip.up b{color:var(--ok)}
+.ratechip.down{border-color:rgba(224,87,107,.5)} .ratechip.down b{color:var(--danger)}
+@keyframes chipfly{
+  0%{opacity:0;transform:translateY(6px)}
+  14%{opacity:1;transform:translateY(-2px)}
+  74%{opacity:1;transform:translateY(-12px)}
+  100%{opacity:0;transform:translateY(-22px)}
+}
 #hud .loc{flex:1;text-align:right;color:var(--dim);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* ============ STAGE ============ */
@@ -344,7 +370,7 @@ button{font-family:inherit;color:inherit}
 #cards{position:absolute;left:8px;right:8px;top:6px;z-index:4;display:flex;flex-direction:column;gap:5px;pointer-events:none}
 #cards .card-int{pointer-events:auto}
 .card-int{
-  display:flex;align-items:center;gap:8px;
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
   background:var(--panel);border:1px solid var(--edge2);border-left:3px solid var(--brand);
   border-radius:8px;padding:6px 8px 7px;box-shadow:0 6px 16px rgba(0,0,0,.5);
   animation:slidein .22s ease-out;position:relative;overflow:hidden;
@@ -366,6 +392,23 @@ button{font-family:inherit;color:inherit}
 .card-int .btn:active{background:var(--brand);border-color:var(--brand)}
 .card-int .btn[disabled]{opacity:.35}
 #work.ping::after{content:'';position:absolute;inset:0;background:rgba(245,165,36,.18);animation:pingfade .35s ease-out forwards;pointer-events:none}
+#goalbar{
+  display:flex;align-items:center;gap:8px;margin:2px 0 7px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.7px;color:var(--dim);
+}
+#goalbar b{font-size:13px;color:var(--ink);letter-spacing:.5px}
+#goalbar i{margin-left:auto;font-style:normal;font-size:9px;opacity:.8}
+#goalbar.near b{color:var(--ok)}
+#goalbar.thin i{color:var(--danger);opacity:1}
+.card-int .btns .btn{display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.2}
+.card-int .tags{display:flex;gap:5px;font-style:normal}
+.card-int .tags i{font-family:var(--mono);font-size:8px;letter-spacing:.3px;font-style:normal;opacity:.95}
+.card-int .tags i.up{color:var(--ok)} .card-int .tags i.down{color:var(--danger)}
+.card-int .cost{
+  flex:0 0 100%;display:flex;align-items:center;gap:6px;margin-top:5px;
+  padding-top:5px;border-top:1px solid var(--edge);
+  font-family:var(--mono);font-size:8.5px;letter-spacing:.4px;color:var(--dim);
+}
 #work.hurt::after{content:'';position:absolute;inset:0;background:rgba(224,87,107,.30);animation:pingfade .5s ease-out forwards;pointer-events:none}
 @keyframes pingfade{to{opacity:0}}
 #away{
@@ -616,6 +659,10 @@ body.sideways #rotate{display:flex}
     <div class="meter f"><div class="lab"><span>FOCUS</span><span id="hFocusN">100</span></div><div class="trk"><i class="fil" id="hFocus"></i></div></div>
     <div class="meter c"><div class="lab"><span>CAFFEINE</span><span id="hCafN">20</span></div><div class="trk"><i class="fil" id="hCaf"></i></div></div>
     <div class="loc" id="hLoc">Floor 3 — Open Plan</div>
+    <div class="rates" id="hRates">
+      <div class="meter s"><div class="lab"><span>SOCIAL</span><span id="hSocN">50</span></div><div class="trk"><i class="fil" id="hSoc"></i></div></div>
+      <div class="meter p"><div class="lab"><span>PERF</span><span id="hPerfN">50</span></div><div class="trk"><i class="fil" id="hPerf"></i></div></div>
+    </div>
   </div>
 
   <div id="stage">
@@ -684,10 +731,15 @@ body.sideways #rotate{display:flex}
           <span class="sum">Add settings toggle</span>
           <span id="flowpill">&times;1.0</span>
         </div>
+        <div id="goalbar"><b id="goalNow">0</b><span id="goalUnit"></span><i id="goalLeft"></i></div>
         <div id="buildwrap">
           <div class="lab"><span id="toolname">BUILD</span><b id="buildn">0%</b></div>
           <div id="buildtrk"><div id="buildfil"></div><div id="buildgoal"></div></div>
           <div id="buildnote"></div>
+        </div>
+        <div class="rates" id="dRates">
+          <div class="meter s"><div class="lab"><span>SOCIAL</span><span id="dSocN">50</span></div><div class="trk"><i class="fil" id="dSoc"></i></div></div>
+          <div class="meter p"><div class="lab"><span>PERF</span><span id="dPerfN">50</span></div><div class="trk"><i class="fil" id="dPerf"></i></div></div>
         </div>
       </div>
 
@@ -1430,7 +1482,7 @@ const Sfx = {
 /* ==========================================================================
    STATE
    ========================================================================== */
-const BUILD = '1.8.0';                       /* shown in the UI so bug reports name a build */
+const BUILD = '1.9.0';                       /* shown in the UI so bug reports name a build */
 const SAVE_VERSION = 2;
 const SAVEKEY = 'shipit_lodestar_v2';
 const LEGACY_KEYS = ['shipit_vanta_v1'];     /* saves written before the rename */
@@ -1462,6 +1514,7 @@ function newGame(){
     approvals:{code:0, sec:0, design:0},
     minutes:0,
     day:1, ticket:0, floor:'f3', sessions:0,
+    social:50, perf:50,
     ch:1, sign:{legal:0, comms:0, finance:0}
   };
 }
@@ -2286,6 +2339,137 @@ function syncHUD(){
   $('bFocusN').textContent = Math.max(0,S.focus)+'/'+S.maxFocus;
   $('hCafN').textContent   = Math.max(0,S.caf)+'/'+S.maxCaf;
   $('bCafN').textContent   = Math.max(0,S.caf)+'/'+S.maxCaf;
+  syncRates();
+}
+
+/* the two ratings live in both HUDs, because the desk hides the walking one */
+function syncRates(){
+  if(!S) return;
+  for(const pre of ['h','d']){
+    const so = $(pre+'Soc'), pe = $(pre+'Perf');
+    if(!so || !pe) continue;
+    so.style.width = S.social + '%'; pe.style.width = S.perf + '%';
+    const son = $(pre+'SocN'), pen = $(pre+'PerfN');
+    if(son) son.textContent = S.social;
+    if(pen) pen.textContent = S.perf;
+    so.parentElement.parentElement.dataset.band = RATEBAND(S.social);
+    pe.parentElement.parentElement.dataset.band = RATEBAND(S.perf);
+  }
+}
+
+/* ==========================================================================
+   THE TWO RATINGS
+   Every hour you spend heads-down is an hour you did not spend being reachable.
+   Performance is what the org measures. Social is what it remembers. Nothing
+   here can strand you: the ratings bend fights, prices, favors and the ending,
+   never the build cap and never a gate.
+   ========================================================================== */
+const RATES = {
+  deal:     {social:+2, perf:-1, why:'you were reachable'},
+  helps:    {social:+3, perf: 0, why:'you let someone help'},
+  snooze:   {social:-1, perf: 0, why:'later, then'},
+  ignore:   {social:-3, perf:+2, why:'you kept working'},
+  heads:    {social:-4, perf:+3, why:'nobody could reach you'},
+  meeting:  {social:+3, perf:-2, why:'you sat through it'},
+  mtgLate:  {social:-2, perf: 0, why:'you joined late'},
+  goalHit:  {social: 0, perf:+4, why:'you hit the number'},
+  goalShort:{social: 0, perf:-3, why:'you came up short'},
+  burnout:  {social:-2, perf:-5, why:'you ran yourself out'},
+  quest:    {social:+8, perf: 0, why:'you did somebody a favor'},
+  refuse:   {social:-5, perf:+1, why:'you said no'}
+};
+const RATEBAND = v => v >= 70 ? 'high' : v <= 30 ? 'low' : 'mid';
+
+/* The ratings bend the world, never the critical path. Nothing below can lower
+   a build cap, close a gate or make a sign-off unreachable, because a rating
+   that can strand you is a rating that turns a comedy into a soft-lock. */
+/* The org is harder on a low performer, but a rating must never make a boss
+   unbeatable: journey at perf 0 hit the round cap on Brayden when this also
+   inflated HP. Low performance makes the room hit harder, not last longer. */
+const bossScale = ()=>{
+  const b = RATEBAND(perf());
+  return b === 'low' ? {hp:1.0, atk:1.10, def:1.05}
+       : b === 'high' ? {hp:0.95, atk:0.96, def:1.0}
+       : {hp:1, atk:1, def:1};
+};
+const shopScale = ()=>{                     /* Sandeep does favors for people who do favors */
+  const b = RATEBAND(social());
+  return b === 'low' ? 1.3 : b === 'high' ? 0.8 : 1;
+};
+const xpScale = ()=> RATEBAND(perf()) === 'high' ? 1.15 : RATEBAND(perf()) === 'low' ? 0.88 : 1;
+const price = it => Math.max(1, Math.round(it.price * shopScale()));
+const social = ()=> S ? S.social : 50;
+const perf   = ()=> S ? S.perf   : 50;
+
+/* One entry point, so no rating ever moves without the player being told why. */
+function rate(kind, mult){
+  if(!S) return;
+  const r = RATES[kind]; if(!r) return;
+  const m = mult === undefined ? 1 : mult;
+  for(const k of ['social','perf']){
+    const d = Math.round(r[k]*m);
+    if(!d) continue;
+    const was = S[k];
+    S[k] = Math.max(0, Math.min(100, was + d));
+    if(S[k] !== was) rateChip(k, S[k] - was, r.why);
+  }
+  syncHUD();
+}
+
+/* the number moving is the point; a chip floats off the meter that changed */
+function rateChip(k, d, why){
+  const host = document.body.classList.contains('desking') ? $('dRates') : $('hRates');
+  if(!host) return;
+  const live = host.querySelectorAll('.ratechip');
+  if(live.length >= 3) live[0].remove();
+  const el = document.createElement('div');
+  el.className = 'ratechip ' + (d > 0 ? 'up' : 'down') + ' ' + k;
+  el.style.marginTop = (host.querySelectorAll('.ratechip').length * 30 + 4) + 'px';
+  el.innerHTML = '<b>' + (d > 0 ? '+' : '') + d + '</b> ' + (k === 'social' ? 'SOCIAL' : 'PERF') +
+                 '<small>' + why + '</small>';
+  host.appendChild(el);
+  setTimeout(()=>{ el.remove(); }, 1900);
+}
+
+/* A room reads the room. Applied to the table just before the fight starts, off
+   the pristine values in BASEBOSS, so it never compounds across days. */
+const BASEBOSS = {};
+function scaleBoss(){
+  const m = bossScale();
+  for(const k of ['brayden','rand']){
+    const e = ENEMIES[k]; if(!e) continue;
+    if(!BASEBOSS[k]) BASEBOSS[k] = {hp:e.hp, atk:e.atk, def:e.def};
+    const b = BASEBOSS[k];
+    e.hp  = Math.round(b.hp  * m.hp);
+    e.atk = Math.round(b.atk * m.atk);
+    e.def = Math.round(b.def * m.def);
+  }
+}
+
+/* What the year-end packet says about how you spent the week. */
+function reviewLines(){
+  const sb = RATEBAND(social()), pb = RATEBAND(perf());
+  const out = [];
+  if(pb === 'high' && sb === 'high')
+    out.push('Your calibration packet says "high output, high trust". It is the only one on the floor that says both.',
+             'Nobody believes it. It goes through anyway.');
+  else if(pb === 'high' && sb === 'low')
+    out.push('Your calibration packet says "exceptional output" and, under Areas For Growth, "visibility".',
+             'Four people are asked to write about working with you. Three of them ask who you are.');
+  else if(pb === 'low' && sb === 'high')
+    out.push('Your calibration packet says "a genuine culture carrier".',
+             'It says it in the section that does not affect compensation.');
+  else if(pb === 'low' && sb === 'low')
+    out.push('Your calibration packet is one line long. It is the line everybody gets.',
+             'You are rated Meets. So is everyone. The distribution was decided in March.');
+  else
+    out.push('Your calibration packet says "solid". It says solid four times.',
+             'You are rated Meets Expectations, which is the rating for meeting them.');
+  if(sb === 'low' && pb !== 'low')
+    out.push('Dee stops checking in around Thursday. Not coldly. She just runs out of reasons.');
+  if(sb === 'high')
+    out.push('Two people you barely worked with put you in their own packets, unprompted.');
+  return out;
 }
 
 function calcDmg(atk, def, mult){
@@ -2721,6 +2905,17 @@ function renderDeskHud(){
   const cap = buildCap();
   $('buildnote').textContent = cap < 100 ? 'CEILING ' + cap + '% — needs ' + capBlocker().what
                              : (S.build >= 100 ? 'COMPLETE' : 'NO CEILING — FINISH IT');
+  /* the session's actual objective, in the tool's own units */
+  const gl = d.g.goal ? d.g.goal() : null;
+  const gb = $('goalbar');
+  if(gl){
+    gb.style.display = '';
+    $('goalNow').textContent = Math.min(gl.have, gl.need) + ' / ' + gl.need;
+    $('goalUnit').textContent = gl.unit;
+    $('goalLeft').textContent = gl.left + ' ' + gl.leftUnit;
+    gb.classList.toggle('near', gl.have >= gl.need - 1);
+    gb.classList.toggle('thin', gl.left <= 5 && gl.have < gl.need);
+  } else gb.style.display = 'none';
   const f = $('flowpill');
   f.innerHTML = '&times;' + d.flow.toFixed(1);
   f.className = d.flow >= FLOW_MAX-0.01 ? 'hot' : d.flow >= 1.8 ? 'warm' : '';
@@ -2729,6 +2924,18 @@ function renderDeskHud(){
   hb.classList.toggle('armed', d.heads > 0);
   hb.querySelector('small').textContent =
     d.heads > 0 ? Math.ceil(d.heads) + 's left' : d.cool > 0 ? 'ready in ' + Math.ceil(d.cool) + 's' : '10 caffeine · 7s';
+}
+
+/* a RATES entry, rendered small enough to sit inside a button */
+function tag(kind){
+  const r = RATES[kind]; if(!r) return '';
+  let out = '';
+  for(const k of ['social','perf']){
+    if(!r[k]) continue;
+    out += '<i class="' + (r[k] > 0 ? 'up' : 'down') + '">' + (r[k] > 0 ? '+' : '') + r[k] +
+           ' ' + (k === 'social' ? 'SOC' : 'PERF') + '</i>';
+  }
+  return out ? '<em class="tags">' + out + '</em>' : '';
 }
 
 /* ---------- interruptions ---------- */
@@ -2743,7 +2950,9 @@ function spawnInterrupt(){
     d.cards.push({mtg:m, who:'Calendar', art:'📅', act:'Attend', thr:0,
       msg:'"' + m.ttl + '" is starting now.', life:6*stretch, maxLife:6*stretch, esc:''});
   } else {
-    const it = intTable();
+    let it = intTable();
+    /* people stop offering when you have stopped taking */
+    if(RATEBAND(social()) === 'low') it = it.filter(x=>!x.helps);
     const t = it[ri(it.length)];
     if(d.cards.some(c=>c.who===t.who)) return;
     d.cards.push(Object.assign({}, t, {life:t.life*stretch, maxLife:t.life*stretch}));
@@ -2757,15 +2966,23 @@ function renderCards(){
   D.cards.forEach(c=>{
     const el = document.createElement('div');
     el.className = 'card-int' + (c.mtg ? ' mtg' : c.thr >= 12 ? ' hi' : '');
-    el.innerHTML = '<span class="ar"></span><div class="txt"><div class="who"></div><div class="msg"></div></div><span class="thr"></span><div class="btns"><button class="btn deal"></button><button class="btn snz"></button></div><div class="fuse"></div>';
+    el.innerHTML = '<span class="ar"></span><div class="txt"><div class="who"></div><div class="msg"></div></div><span class="thr"></span><div class="btns"><button class="btn deal"></button><button class="btn snz"></button></div><div class="cost"></div><div class="fuse"></div>';
     el.querySelector('.ar').textContent = c.art;
     el.querySelector('.who').textContent = (c.back ? 'Following up — ' : '') + c.who;
     el.querySelector('.msg').textContent = c.msg;
     el.querySelector('.thr').textContent = c.mtg ? 'MTG' : '-' + c.thr;
-    const b = el.querySelector('.deal'); b.textContent = c.act; b.onclick = ()=>handleCard(c);
+    const b = el.querySelector('.deal');
+    b.innerHTML = '<span></span>' + tag(c.mtg ? 'meeting' : c.helps ? 'helps' : 'deal');
+    b.querySelector('span').textContent = c.act;
+    b.onclick = ()=>handleCard(c);
     const z = el.querySelector('.snz');
     if(c.mtg || c.noSnooze || c.back){ z.remove(); }
-    else { z.textContent = 'Snooze −3☕'; z.disabled = S.caf < 3; z.onclick = ()=>snoozeCard(c); }
+    else {
+      z.innerHTML = '<span>Snooze \u22123\u2615</span>' + tag('snooze');
+      z.disabled = S.caf < 3; z.onclick = ()=>snoozeCard(c);
+    }
+    /* what it costs you to do nothing, said before you do nothing */
+    el.querySelector('.cost').innerHTML = 'let it go: ' + tag(c.mtg ? 'mtgLate' : 'ignore');
     c.el = el; wrap.appendChild(el);
   });
   D.pressure = D.cards.length > 0 && D.heads <= 0 ? 1 : 0;
@@ -2782,6 +2999,7 @@ function handleCard(c){
      up with how much of a deal they were. What it costs you is the board — your
      hands are off the keyboard and the tool runs itself while you are gone. */
   workFlow(0.14 + c.thr*0.014);
+  rate(c.helps ? 'helps' : 'deal');
   if(c.helps && d.g.reward) d.g.reward(1);
   d.awayMax = d.away = (1.0 + c.thr*0.06) * (S.opts.extraTime ? 0.7 : 1);
   $('away').classList.add('on');
@@ -2795,7 +3013,7 @@ function snoozeCard(c){
   const d = D; if(!d || d.over || c.mtg || c.noSnooze || c.back || S.caf < 3) return;
   const i = d.cards.indexOf(c); if(i < 0) return;
   d.cards.splice(i,1); renderCards();
-  S.caf -= 3; syncHUD(); d.snoozed++; Sfx.blip();
+  S.caf -= 3; d.snoozed++; Sfx.blip(); rate('snooze');
   d.later.push({at: d.clock + 8, c: Object.assign({}, c, {back:1, thr:c.thr + 4, life:c.maxLife*0.6, maxLife:c.maxLife*0.6, el:null})});
   workState('"Not now." It will be now in about eight seconds.');
   renderDeskHud();
@@ -2805,7 +3023,8 @@ function escalate(c, i){
   d.cards.splice(i,1); renderCards();
   if(c.mtg){ enterMeeting(c.mtg, true); return; }
   d.ignored++;
-  S.focus -= c.thr; syncHUD(); Sfx.hurt(); buzz([40,50,40]);
+  S.focus -= c.thr; Sfx.hurt(); buzz([40,50,40]);
+  rate('ignore');
   workState(c.esc, true);
   if(d.g.punish) d.g.punish();
   const w = $('work'); w.classList.remove('ping','hurt'); void w.offsetWidth; w.classList.add('hurt');
@@ -2823,6 +3042,7 @@ function enterMeeting(m, late){
   const d = D;
   d.meeting = {m, t:0, idx:-1, late:!!late};
   d.met++; d.flow = 1;
+  rate(late ? 'mtgLate' : 'meeting');
   $('mtgttl').textContent = m.ttl;
   $('mtgkind').textContent = late ? 'YOU JOINED LATE' : 'MEETING IN PROGRESS';
   $('mtgfil').style.width = '0%'; $('mtgline').textContent = '';
@@ -2920,8 +3140,12 @@ async function endDesk(reason){
   d.over = true;
   autosave(true);
   const res = d.res;
+  const gl = d.g.goal ? d.g.goal() : null;
+  const hit = reason === 'done' && gl && gl.have >= gl.need;
+  if(hit) d.progress = Math.max(d.progress, d.target);
   S.build = Math.min(100, Math.floor(d.progress));
   S.sessions = (S.sessions|0) + 1;
+  if(gl && (reason === 'done' || reason === 'short')) rate(hit ? 'goalHit' : 'goalShort');
   if(d.g.stop) d.g.stop();
   $('meeting').classList.remove('on');
   $('away').classList.remove('on');
@@ -2938,12 +3162,18 @@ async function endDesk(reason){
     S.xp += 22 + ri(8); await gainLevels(toast);
     toast('BLOCKED — go and find ' + b.who + '.');
   } else if(reason === 'burnout'){
+    rate('burnout');
     await say(null, ['You are out of Focus. You stop pretending.', tally]);
     await burnout();
   } else if(reason === 'topped'){
     await say(null, [d.g.topped || 'You have run out of screen.', 'Build is at ' + S.build + '%.', tally]);
+  } else if(reason === 'short'){
+    S.xp += 10 + ri(6); await gainLevels(toast);
+    await say(null, [d.g.short || 'The queue is empty and you did not get through what you meant to.',
+      'You got ' + (gl ? gl.have : 0) + ' of ' + (gl ? gl.need : 0) + '. Build is at ' + S.build + '%.', tally]);
+    toast('SHORT OF THE NUMBER — performance took it.');
   } else if(reason === 'done'){
-    S.xp += 26 + ri(10); S.caf = Math.max(0, S.caf - 4);
+    S.xp += Math.round((26 + ri(10)) * xpScale()); S.caf = Math.max(0, S.caf - 4);
     await gainLevels(toast);
     if(S.build >= 100){
       await say(null, ['The toggle is built. Forty lines. It took a day and a half.', tally, 'Now it needs three sign-offs: Priya, Marcus, Kai.']);
@@ -2978,12 +3208,19 @@ WORK.stack = (()=>{
     {c:[[0,0]],                   col:'#dbe4f0', tag:'typo'},
     {c:[[0,0],[0,1],[1,1]],       col:'#9fb3d1', tag:'small PR'}
   ];
+  /* A merge queue has a length. Today's is QUEUE commits long and you need
+     GOAL rows merged out of it. That is the session: not an abstract bar that
+     keeps going, a finite queue with a number on it. */
+  const QUEUE = 24, GOAL = 5;
   let grid, piece, next, fallT, held, dasT, over, unattended = false;
+  let spawned = 0, merged = 0;
   const g = {
     intro:'Commits come down the queue. Steer them, drop them, clear a full row to merge it. Yes, it was a hackathon project. The hackathon was to replace the previous one.',
     topped:'The queue has backed up to the top of the screen. Nothing else is getting merged today.',
+    short:'The queue is empty. What is in it is in it, and what is not is tomorrow.',
     start(){
       grid = Array.from({length:H}, ()=>Array(W).fill(0));
+      spawned = 0; merged = 0;
       next = mk(); spawn(); fallT = 0; held = null; dasT = 0; over = false;
       setPad('ROTATE', 'DROP', '\u21bb');
     },
@@ -3013,7 +3250,9 @@ WORK.stack = (()=>{
       else if(k==='up' || k==='a') rotate();
       else if(k==='b'){ while(step()){} lock(); Sfx.blip(); }
     },
-    peek(){ return {W, H, grid: grid.map(r=>r.slice()), piece: piece ? {c:piece.c.map(p=>p.slice()), x:piece.x, y:piece.y} : null}; },
+    peek(){ return {W, H, grid: grid.map(r=>r.slice()), spawned, merged, queue: QUEUE, need: GOAL,
+      piece: piece ? {c:piece.c.map(p=>p.slice()), x:piece.x, y:piece.y} : null}; },
+    goal(){ return {have: merged, need: GOAL, unit: 'MERGED', left: QUEUE - spawned, leftUnit: 'in the queue'}; },
     punish(){ /* an ignored interruption is a row of technical debt with one hole */
       grid.shift(); const row = Array(W).fill('#3a4658'); row[ri(W)] = 0; grid.push(row);
       if(piece && collides(piece.c, piece.x, piece.y)) piece.y--;
@@ -3068,6 +3307,8 @@ WORK.stack = (()=>{
   }
   function mk(){ const s = SHAPES[ri(SHAPES.length)]; return {c:s.c.map(p=>p.slice()), col:s.col, tag:s.tag}; }
   function spawn(){
+    if(spawned >= QUEUE){ over = true; endDesk(merged >= GOAL ? 'done' : 'short'); return; }
+    spawned++;
     piece = next; next = mk();
     const pw = Math.max(...piece.c.map(p=>p[0]))+1;
     piece.x = unattended ? ri(W - pw + 1) : Math.floor((W - pw)/2); piece.y = 0;
@@ -3094,8 +3335,11 @@ WORK.stack = (()=>{
     if(cleared){
       const pct = [0, 1.6, 4.0, 6.6, 9.6][Math.min(4,cleared)];
       workProgress(pct); workFlow(0.35*cleared);
+      merged += cleared;
       Sfx.confirm();
       workState(cleared >= 3 ? 'Merged. Three at once. Someone will ask how.' : cleared === 2 ? 'Two merged. Clean.' : 'Merged.');
+      renderDeskHud();
+      if(merged >= GOAL){ over = true; endDesk('done'); return; }
     } else workFlow(-0.02);
     spawn();
   }
@@ -3160,6 +3404,7 @@ WORK.breaker = (()=>{
     },
     input(k){ if(k==='a' || k==='b'){ if(stuck) serve(); } },
     peek(){ return {w, h, ball: {x:ball.x, y:ball.y}, pad: {x:pad.x, w:pad.w}, left: bricks.filter(b=>b.hp>0).length, wave}; },
+    goal(){ return {have: wave, need: 2, unit: 'WAVES CLEARED', left: bricks.filter(b=>b.hp>0).length, leftUnit: 'bugs open'}; },
     punish(){ for(const b of bricks) b.r++; for(let c=0;c<COLS;c++) bricks.push({c, r:0, hp:1, k:ri(KINDS.length)}); },
     meeting(big){ shrink = Math.min(0.1, shrink + (big ? 0.06 : 0.03)); for(let n=big?2:1;n>0;n--) g.punish(); },
     reward(n){ /* the rows closest to you clear, and the paddle comes back */
@@ -3228,6 +3473,7 @@ WORK.snake = (()=>{
       nextDir = m;
     },
     peek(){ return {W, H, body: body.map(p=>p.slice()), food: food.slice(), walls: [...walls]}; },
+    goal(){ return {have: Math.max(0, body.length - 3), need: 10, unit: 'SERVICES', left: walls.size, leftUnit: 'walls in the way'}; },
     punish(){ addWall(1); },
     meeting(big){ addWall(big ? 3 : 2); },
     reward(n){ /* somebody deleted a service nobody was using */
@@ -3308,6 +3554,7 @@ WORK.cross = (()=>{
     },
     peek(){ return {W, H, px, py, crossings, hit: hitT > 0, coffee: coffee ? coffee.slice() : null,
       lanes: lanes.map(l=>({y:l.y, dir:l.dir, spd:l.spd, objs:l.objs.map(o=>({x:o.x, w:o.w}))}))}; },
+    goal(){ return {have: crossings, need: 4, unit: 'TRIPS', left: lanes.reduce((a,l)=>a+l.objs.length,0), leftUnit: 'people out there'}; },
     punish(){ /* another person on the floor */
       const L = lanes[ri(lanes.length)]; L.objs.push(mkObj(L, W + 1 + Math.random()*3));
     },
@@ -3415,6 +3662,7 @@ WORK.pipes = (()=>{
     },
     peek(){ return {W, H, cx, cy, arrive, flowing, boards, leaks, pathLen,
       grid: grid.map(r=>r.map(c=>({m:c.m, filled:!!c.filled, path:!!c.path}))), sol: sol.map(r=>r.slice())}; },
+    goal(){ return {have: boards, need: 3, unit: 'BOARDS PLUMBED', left: Math.ceil(arrive), leftUnit: 'seconds of clock'}; },
     punish(){ /* someone touched prod */
       let n = 2; for(let i=0;i<60 && n>0;i++){ const c = grid[ri(H)][ri(W)]; if(!c.filled){ c.m = rot(c.m); n--; } }
       arrive = Math.max(0, arrive - 3);
@@ -3526,7 +3774,7 @@ WORK.pipes = (()=>{
 /* ---------- desk buttons ---------- */
 $('btnHeads').addEventListener('click', ()=>{
   const d = D; if(!d || d.over || d.heads>0 || d.cool>0 || S.caf < 10) return;
-  S.caf -= 10; d.heads = 7; syncHUD();
+  S.caf -= 10; d.heads = 7; rate('heads');
   workState('Headphones on. Status set to Do Not Disturb. Seven minutes of it.');
   renderCards(); renderDeskHud();
 });
@@ -3711,10 +3959,10 @@ function openShop(){
     const own = it.type!=='use' && S.owned[k];
     rows.push({
       label:it.name, sub:it.desc,
-      tag: own ? 'OWNED' : it.price + ' cr',
-      disabled: !!own || S.credits < it.price,
+      tag: own ? 'OWNED' : price(it) + ' cr' + (shopScale() < 1 ? ' \u25be' : shopScale() > 1 ? ' \u25b4' : ''),
+      disabled: !!own || S.credits < price(it),
       on:()=>{
-        S.credits -= it.price;
+        S.credits -= price(it);
         if(it.type==='use'){ S.bag[k] = (S.bag[k]||0)+1; }
         else { S.owned[k] = 1; }
         toast('Requisitioned: ' + it.name);
@@ -3807,6 +4055,12 @@ function migrate(o){
   if(o.build > 0 && o.flags && !o.flags.satDown) o.flags.satDown = 1;
   /* a save written before the desk counted sittings has plainly had a few */
   if(!o.sessions) o.sessions = o.day > 1 || o.approvals.code ? 3 : 0;
+  /* the two ratings arrived late. An older save has no history to reconstruct
+     them from, so it starts even and earns them from here. */
+  if(typeof o.social !== 'number') o.social = 50;
+  if(typeof o.perf   !== 'number') o.perf   = 50;
+  o.social = Math.max(0, Math.min(100, o.social));
+  o.perf   = Math.max(0, Math.min(100, o.perf));
   o.version = SAVE_VERSION;
   return o;
 }
@@ -3840,7 +4094,15 @@ function importSave(code){
    ========================================================================== */
 const sq  = (k)=> (S.side && S.side[k]) || 0;
 const askedAll = (pre, names)=> names.every(x=>S.asked[pre + x]);
-const setSq = (k,v)=>{ S.side[k] = v; syncHUD(); };
+/* the value at which each piece of side work counts as a favor done */
+const SQDONE = {own:2, mani:2, laptop:1, mon:2, thing:2, sticky:3, pass:3, fridge:3};
+const setSq = (k,v)=>{
+  const was = S.side[k] || 0;
+  S.side[k] = v;
+  const d = SQDONE[k];
+  if(d !== undefined && was < d && v >= d) rate('quest');
+  syncHUD();
+};
 const pageCount = ()=> Object.keys(S.pages||{}).length;
 
 async function reward(r){
@@ -4849,6 +5111,7 @@ async function npcTalk(n){
       }
     }
     hold(); await say(n.name,'Now. Let\u2019s align.');
+    scaleBoss();
     const r = await startBattle(['rand'], {boss:1, noFlee:1, title:'1:1 (no agenda) \u2014 THE FOUNDER',
       intro:'Rand shares his screen. It is a photograph of a lighthouse. He has not noticed it is not ours.'});
     if(r === 'win') return ch2Ending();
@@ -4859,6 +5122,7 @@ async function npcTalk(n){
     if(!readyToShip()){ hold(); await say(n.name,'Brayden is on a call. He gestures at you in a way that means later.'); return done(); }
     if((S.day||1) > 1){
       hold(); await say(n.name, ticket().pitch);
+      scaleBoss();
       const r = await startBattle(['brayden'], {boss:1, noFlee:1, title:'Roadmap Review — VELOCITY (recurring)',
         intro:'Brayden shares his screen. It is the same document. The title now says "Vision (v' + S.day + ')".'});
       if(r==='win') return ending();
@@ -4873,6 +5137,7 @@ async function npcTalk(n){
       'Lighthouse isn’t a program. Lighthouse is a narrative. Programs get canceled. Narratives get renewed.',
       'That’s not cynical. Now. Let’s align.'
     ]);
+    scaleBoss();
     const r = await startBattle(['brayden'], {boss:1, noFlee:1, title:'Q3 Roadmap Review — VELOCITY',
       intro:'Brayden shares his screen. It is a document titled "Vision (WIP)". It is eleven pages.'});
     if(r==='win') return ending();
@@ -5065,6 +5330,7 @@ async function ending(){
     'You are promoted, eventually, for something else.',
     'In your next interview you will describe the toggle as "a cross-functional platform initiative", and you will be hired.'
   ]);
+  await say(null, reviewLines());
   await say(null,[
     'The letter is still in your inbox.',
     'You have never replied to it. It is not monitored. That is the arrangement.',
@@ -5073,6 +5339,7 @@ async function ending(){
   await say(null,[
     'END OF CHAPTER ONE.',
     'You finished on day one at ' + clockStr() + ', as ' + title() + ', with ' + S.credits + ' perk credits and one toggle in production.',
+    'Performance ' + S.perf + '. Social ' + S.social + '. Both of them are you.',
     'Thank you for shipping.'
   ]);
   S.flags.finished = 1; saveGame();
