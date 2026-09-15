@@ -353,6 +353,35 @@ Rand wants somebody to say "weather" back to him. Rand's third round offers the
 Mara line only when `flags.said_mara` is set, which is still the flag the whole
 chapter turns on.
 
+### A tablet held sideways
+The phone layout is a column — chrome on top, controls on the bottom, board in
+whatever is left. In landscape that is exactly backwards: height is the scarce
+thing and width is free. A playtester found the Merge Queue board rendering
+**210×294 on an iPad Mini in landscape, smaller than on a phone**, with 594px of
+screen thrown away either side.
+
+`@media (orientation:landscape) and (min-height:561px)` turns the column into
+three: d-pad on one edge, actions on the other, board in the middle with the
+full height. `#main` wraps the HUD and the stage and is `display:contents` in
+portrait, so the phone layout is untouched; `#pad` becomes `display:contents` in
+landscape so its two children can be ordered to opposite edges. The 820px
+`max-width` on `#app` lifts to 1500px in landscape and stays in portrait, where
+a very wide column reads badly. The desk's own chrome collapses from four
+stacked rows to one wrapped strip, and a conversation puts the caller beside the
+transcript rather than above it.
+
+Result on an iPad Mini: **400×560**, and the controls land where your thumbs
+already are when you hold a tablet by its sides.
+
+**The block lives at the very end of the stylesheet, and has to.** It was first
+written above the `#pad{display:flex}` rule it overrides, same specificity, so
+the later rule won and both control clusters ended up stacked on the right.
+
+The 560px threshold is deliberately *not* changed: a phone sideways is under it
+and still gets `#rotate`, every tablet in landscape is over it. The `mobile`
+suite now checks both — that a tablet gets a bigger board than a phone and no
+nag, and that a phone sideways is still asked to turn back.
+
 ### Lifecycle (phones are not browser tabs)
 `watchOrientation()` pauses the game and shows `#rotate` when the viewport is
 landscape **and** under 560px tall — a phone held sideways, never a laptop. The

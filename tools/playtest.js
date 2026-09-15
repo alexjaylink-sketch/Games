@@ -803,7 +803,9 @@ SUITES.desk = async browser => {
   const lockedWas = await d.state(() => D.g.peek().grid.filter(r => r.some(v => v === 'L')).length);
   await d.page.evaluate(() => { workFlow(5); });
   ok('hitting max flow arms a cashout for the next frame', await d.state(() => D.cash === 1));
-  await sleep(500);
+  /* it is spent by deskUpdate, so wait for a frame rather than for a stopwatch:
+     under a full run the animation frames do not always land inside 500ms */
+  for (let t = 0; t < 40 && await d.state(() => !D || D.cash === 1); t++) await sleep(100);
   const cashed = await d.state(() => ({ locked: D.g.peek().grid.filter(r => r.some(v => v === 'L')).length, flow: D.flow }));
   ok('  which clears meeting rows nothing else can clear', cashed.locked < lockedWas, lockedWas + ' \u2192 ' + cashed.locked);
   ok('  and drops you back out of the zone', cashed.flow > 1.5 && cashed.flow < 2.5, '\u00d7' + cashed.flow.toFixed(2));
@@ -901,6 +903,39 @@ SUITES.mobile = async browser => {
     .filter(x => x.r.width && (x.r.width < 40 || x.r.height < 40))
     .map(x => x.id + ' ' + Math.round(x.r.width) + 'x' + Math.round(x.r.height)));
   ok('controls stay thumb-sized on a small phone', small.length === 0, small.join(', '));
+
+  /* ---- a tablet held sideways gets its own layout ---- */
+  const boardAt = async (w, h) => {
+    await d.page.setViewportSize({ width: w, height: h }); await sleep(450);
+    return d.state(() => {
+      const r = document.getElementById('work').getBoundingClientRect();
+      const W = 10, H = 14, top = 14;
+      const cell = Math.floor(Math.min((r.width - 8) / W, (r.height - 8 - top) / H));
+      const dp = document.getElementById('dpad').getBoundingClientRect();
+      const ac = document.getElementById('acts').getBoundingClientRect();
+      return { cell, board: cell * W + 'x' + cell * H,
+               dpadMid: dp.left + dp.width / 2, actsMid: ac.left + ac.width / 2, vw: window.innerWidth,
+               guard: getComputedStyle(document.getElementById('rotate')).display !== 'none',
+               scroll: document.documentElement.scrollWidth <= window.innerWidth + 1 };
+    });
+  };
+  await d.page.evaluate(() => { S.flags.satDown = 1; S.sessions = 3; if (!D) startDesk(); }); await sleep(700);
+  await d.page.evaluate(() => { if (D && D.tut) hideTut(); }); await sleep(200);
+
+  const phone = await boardAt(390, 844);
+  const mini  = await boardAt(1133, 744);
+  ok('a tablet in landscape gets a bigger board than a phone, not a smaller one',
+     mini.cell > phone.cell, 'phone ' + phone.board + ' \u2192 tablet ' + mini.board);
+  ok('  and the controls sit on opposite edges, under both thumbs',
+     mini.dpadMid < mini.vw * 0.35 && mini.actsMid > mini.vw * 0.65,
+     'dpad @' + Math.round(mini.dpadMid) + ', acts @' + Math.round(mini.actsMid) + ' of ' + mini.vw);
+  ok('  with no sideways scroll', mini.scroll);
+  ok('  and no rotate nag on a tablet', !mini.guard);
+
+  /* a phone sideways is still asked to turn back */
+  const sideways = await boardAt(844, 390);
+  ok('a phone held sideways still gets the rotate guard', sideways.guard);
+  await d.page.setViewportSize({ width: 390, height: 844 }); await sleep(400);
 
   /* the tool card has to fit, not spill off the top */
   await d.page.evaluate(() => { S.flags.satDown = 1; startDesk(); }); await sleep(700);
