@@ -1674,7 +1674,7 @@ const Sfx = {
 /* ==========================================================================
    STATE
    ========================================================================== */
-const BUILD = '2.1.0';                       /* shown in the UI so bug reports name a build */
+const BUILD = '2.1.1';                       /* shown in the UI so bug reports name a build */
 const SAVE_VERSION = 2;
 const SAVEKEY = 'shipit_lodestar_v2';
 const LEGACY_KEYS = ['shipit_vanta_v1'];     /* saves written before the rename */
@@ -3191,7 +3191,7 @@ async function endDesk(reason){
   const tally = 'You handled ' + d.handled + ', ignored ' + d.ignored + ', snoozed ' + d.snoozed + ', and sat through ' + d.met + '.';
   if(reason === 'capped'){
     const b = capBlocker();
-    await say(null, ['Build is at ' + S.build + '%. That is as far as this goes today.', b.line, tally]);
+    await say(null, ['Build is at ' + S.build + '%. That is the ceiling until somebody signs off.', b.line, tally]);
     S.credits += 14 + ri(8); await checkTier(toast);
     toast('BLOCKED — go and find ' + b.who + '.');
   } else if(reason === 'burnout'){
@@ -3217,7 +3217,27 @@ async function endDesk(reason){
   } else {
     await say(null, ['You close the laptop. Build is at ' + S.build + '%.', tally]);
   }
+
+  /* A batch ending is not the day ending. The only things that actually stop
+     you are the ceiling, a finished feature, and running out of Focus - so
+     anything short of those offers the desk straight back, without making you
+     walk over and re-open the same two dialogues. */
+  if(canSitAgain(reason)){
+    const again = await choose('The queue refills. It always refills.', [
+      {label:'Pick it back up', note:'build ' + S.build + '% \u00b7 focus ' + Math.max(0, S.focus)},
+      {label:'Get up and walk around', note:'the floor is right there'}
+    ]);
+    if(again === 0){ res(reason); mode = 'field'; startDesk(); return; }
+  }
   res(reason);
+}
+
+/* Only the endings that feel like the day ended get the offer. Log Off does not:
+   you just chose to get up, and being asked to sit back down is nagging. The
+   ceiling, a finished feature and an empty tank are the only real stops. */
+function canSitAgain(reason){
+  if(['topped','short','done'].indexOf(reason) < 0) return false;
+  return S.build < 100 && S.build < buildCap() && S.focus > 0;
 }
 
 /* ==========================================================================
@@ -3249,8 +3269,8 @@ WORK.stack = (()=>{
   let spawned = 0, merged = 0;
   const g = {
     intro:'Commits come down the queue. Steer them, drop them, clear a full row to merge it. Yes, it was a hackathon project. The hackathon was to replace the previous one.',
-    topped:'The queue has backed up to the top of the screen. Nothing else is getting merged today.',
-    short:'The queue is empty. What is in it is in it, and what is not is tomorrow.',
+    topped:'The queue has backed up to the top of the screen. Nothing in this batch is going anywhere.',
+    short:'The queue is empty. What got merged got merged. The rest goes back in and comes round again.',
     start(){
       grid = Array.from({length:H}, ()=>Array(W).fill(0));
       spawned = 0; merged = 0;

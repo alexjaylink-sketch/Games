@@ -293,6 +293,22 @@ Hitting the goal tops `d.progress` up to `d.target` in `endDesk`, so the
 percentage is the *result* of the objective rather than a second competing one.
 Falling short keeps whatever you built and costs performance.
 
+**A batch ending is not the day ending.** `canSitAgain(reason)` offers the desk
+straight back after `topped`, `short` or `done`, so one tap starts a fresh queue
+without walking back and re-opening the same two dialogues. The only real stops
+are the build ceiling, a finished feature and an empty tank of Focus — and Focus
+is what keeps the retry loop honest, because every sitting costs some.
+
+Deliberately **not** offered after `quit`: you just pressed Log Off, and asking
+you to sit back down is nagging. It also means the harness's many
+`endDesk('quit')` calls do not each raise a prompt, which broke `sit()` — that
+helper reads "a choice panel is open" as "the tool chooser appeared".
+
+The copy mattered more than the mechanics here. Nothing ever stopped a player
+re-sitting, but Merge Queue's own lines said *"nothing else is getting merged
+today"* and *"what is not is tomorrow"*, so the playtester believed the day was
+over. If a tool's failure line implies the clock ran out, it is lying.
+
 Every tool implements `goal()` returning `{have, need, unit, left, leftUnit}`,
 which `renderDeskHud` draws in `#goalbar` above the build bar. Only Merge Queue
 has a hard budget; the other four are already bounded by their own fail states

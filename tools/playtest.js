@@ -880,6 +880,44 @@ SUITES.desk = async browser => {
   ok('  and running it dry ends the session instead of going forever', !drained.live, 'ended after ' + drained.n + ' drops');
   if (await d.mode() === 'desk') await d.page.evaluate(() => { endDesk('quit'); });
   await d.advance();
+  /* ---- a batch ending is not the day ending ---- */
+  if (await d.mode() === 'desk') await d.page.evaluate(() => { endDesk('quit'); });
+  await d.advance(30);
+  for (const how of ['topped', 'short']) {
+    await d.set({ build: 8, focus: 300, maxFocus: 300, caf: 60, sessions: 3 });
+    await d.page.evaluate(() => { startDesk(); }); await sleep(600);
+    await d.page.evaluate(() => { if (D && D.tut) hideTut(); });
+    await d.page.evaluate(k => {
+      let n = 0;
+      if (k === 'topped') while (D && !D.over && n++ < 300) D.g.input('b');
+      else while (D && !D.over && n++ < 300) { D.g.input('left'); D.g.input('b'); }
+    }, how);
+    await sleep(400); await d.advance(30);
+    const asked = await d.state(() => document.getElementById('choices').classList.contains('on')
+      && document.getElementById('chQ').textContent);
+    ok('ending a batch by ' + how + ' offers the desk straight back', !!asked, asked || 'no offer');
+    if (asked) {
+      const btns = await d.page.$$('#chList button');
+      await btns[0].click(); await sleep(700);
+      await d.page.evaluate(() => { if (D && D.tut) hideTut(); });
+      ok('  and one tap is back in a fresh queue',
+         await d.mode() === 'desk' && await d.state(() => D && D.g.peek().spawned === 1));
+      if (await d.mode() === 'desk') await d.page.evaluate(() => { endDesk('quit'); });
+      await d.advance(30);
+      /* the buttons stay in the DOM after the panel closes, so check the panel */
+      if (await d.state(() => document.getElementById('choices').classList.contains('on'))) {
+        const re = await d.page.$$('#chList button');
+        if (re[1]) { await re[1].click(); await sleep(400); }
+      }
+    }
+  }
+  /* the ceiling is a real stop and still says so */
+  await d.set({ build: 34, focus: 300 });
+  await d.page.evaluate(() => { startDesk(); }); await sleep(600);
+  await d.page.evaluate(() => { if (D && D.tut) hideTut(); if (D) endDesk('capped'); });
+  await sleep(400); await d.advance(30);
+  ok('but the ceiling still stops you, because that one is real',
+     !await d.state(() => document.getElementById('choices').classList.contains('on')));
   return d;
 };
 
