@@ -28,7 +28,7 @@ NODE_PATH=/opt/node22/lib/node_modules node tools/playtest.js desk loop   # some
 NODE_PATH=/opt/node22/lib/node_modules node tools/playtest.js desk --shots /tmp/shots   # with screenshots
 ```
 
-Suites: `smoke` (intro, field, a fight, save), `chain` (desk/office must
+Suites: `smoke` (intro, field, a conversation, save), `chain` (desk/office must
 alternate through the gates), `loop` (chapter-one ending → day two → day
 three), `side` (five side quests), `desk` (all five build tools with in-page
 bots, interruption coupling, tutorial card), `store` (no network, fonts,
@@ -44,9 +44,6 @@ shortcut, and the one that proves the game is finishable). `desk` and
 `journey` is the suite to trust when you change progression. Every other suite
 jumps ahead with `d.set()`, so a dead-end can hide behind the jump — that is
 how the Priya→Jordan prerequisite went unnoticed until it was written.
-
-`tools/sim.js` plays thousands of fights with the real enemy tables and skill
-functions eval'd out of the source. Run it after any combat number changes.
 
 A change that makes a suite red is not done. Do not loosen a check to make
 it pass unless the game behavior deliberately changed; then say so in the
@@ -219,6 +216,22 @@ open. Leaving the desk puts the arrow back. Do not remove the glyph: the
 playtester read "you need to be able to rotate the pieces" off a screen where
 rotation worked fine on a button they were not looking at.
 
+### Standing replaced levels
+Social is the office-side progression. `SOCIALTIERS` names five bands from
+Unknown to Load-Bearing; `socialTier()` reads the current one and `checkTier()`
+toasts on the way up, which is the only level-up left. `S.tier` remembers where
+you were so it fires once.
+
+Your **title** reads off Performance instead (`band()` against `BANDAT`),
+because promotion tracks output. The portal's Abilities screen became
+**Standing**, listing the tiers and where you are in them.
+
+The two combat item stats became two desk stats, since the desk is where the
+game now lives: `type:'desk'` items carry `stam` (how long a day you can take,
+via `stamina()`), and `type:'cover'` items carry `cover`, which is subtracted
+from the Focus an ignored ping costs. Noise-cancelling headphones now do
+literally what they claim to.
+
 ### The two ratings (`S.social`, `S.perf`)
 Both 0-100, both start at 50, both shown as meters in the walking HUD and again
 in the desk head (the desk hides the walking one). Every change goes through
@@ -238,6 +251,9 @@ off the meter saying which choice moved it and why.
 | come up short | 0 | −3 |
 | burn out | −2 | −5 |
 | finish a side quest | +8 | 0 |
+| read the room in a scene | +6 | 0 |
+| misread it | −2 | 0 |
+| get stopped in the hallway | +1 | −1 |
 
 The premise: every hour heads-down is an hour you were not reachable. Heads Down
 is the purest form of it and is priced hardest — it was the move with no cost at
@@ -305,12 +321,37 @@ Original names, original piece set (nine shapes, tagged like commits),
 original skins. Never use the trademarked names, the classic seven-piece
 naming, or Pac-Man-shaped anything.
 
-### Combat
-Focus = HP, Caffeine = MP. `calcDmg(atk, def, mult) = max(1, round(atk·(1 +
-rand·0.25)·mult − def·0.5))`, weakness ×1.6. `XPCURVE = [0,35,85,155,255,390]`.
-Brayden should take 10–16 rounds at level 4–5 and a button-masher should
-lose. The battle screen is styled as a video call (`.tile`, `#selfview`,
-`#blog`).
+### The call — conversations, where combat used to be
+There is no combat. It was removed wholesale: the battle loop, `ENEMIES`,
+`SKILLS`, `XPCURVE`, levels, story points, attack and defense, and `tools/sim.js`
+which existed only to balance fights. What is left in its place is one idea:
+
+> **Everybody here wants something that is not the thing they said.**
+
+`scene(id)` runs a `SCENES` entry on the old video-call screen (`#scene`,
+`#grid`, `#blog`, `#smenu` — the frame was too good to throw away, and a meeting
+*is* a call). Each round shows a line and two to four replies. A reply flagged
+`good` is the one that meets what the person actually wants. `pass` is how many
+good reads the scene needs; hitting it returns `'win'`, missing it `'lose'`, and
+a reply marked `leaves` returns `'left'`.
+
+**There is no losing.** A misread is a worse outcome and a better joke, never a
+wall — every call site treats `'lose'` as progress. `'win'` pays `rate('read')`
+(+6 social), `'lose'` pays `rate('misread')` (−2).
+
+**The tell is why you explore.** A scene names a `tell` — a flag you set
+somewhere else in the building. Holding it prints `tellLine` at the top of the
+transcript and marks the good reply with its `hint`. That is the whole reason to
+walk around: you are collecting what people actually want.
+
+`moment({who, lines, rate})` is the small version — no choices, used for the
+hallway. `beat()` prints lines and waits for one tap; `replies()` renders the
+options into `#smenu`.
+
+The two set pieces are scenes like any other: Brayden wants to have had the idea,
+Rand wants somebody to say "weather" back to him. Rand's third round offers the
+Mara line only when `flags.said_mara` is set, which is still the flag the whole
+chapter turns on.
 
 ### Lifecycle (phones are not browser tabs)
 `watchOrientation()` pauses the game and shows `#rotate` when the viewport is
@@ -390,6 +431,9 @@ Bad: *"Managers like Brayden are what's wrong with tech."* (moralizes.)
 3. A LICENSE file — the owner's call, not ours.
 4. A third chapter, if the game ever needs to be longer. Do not start it
    before watching somebody finish chapter two.
+5. More `tell` flags. Every scene supports one and only four are wired
+   (`saw_gantt`, `saw_bucket`, `saw_runbook`, `read_doc`, `said_mara`). Each one
+   you add is another reason to walk into a room you did not have to.
 
 Done, so do not redo: the two ratings and their meters, the finite merge queue,
 the visual pass (office, title, offer letter, battle,
@@ -441,3 +485,11 @@ replay twenty minutes to reach the part being tested. Regenerate them with
   Pipeline block after it then opens onto a game in a different state.
 - Artifact comment notifications never reach these sessions (the wake
   subscription is refused). Feedback comes in chat.
+- Replacing a block of the file by line range deletes whatever else happens to
+  live in that range. Removing the combat tables by lines 1086–1267 took `ITEMS`
+  with them, because the asserts only checked the two endpoints. Assert on what
+  is *inside* a range too, or match on text instead of numbers.
+- When you delete a section, list every symbol it defined and grep each one for
+  surviving callers. `clockStr`, `hueOf` and `burnout` all lived inside the
+  battle block and are all still wanted; three of them were only found by
+  booting the game.

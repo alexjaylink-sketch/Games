@@ -16,27 +16,6 @@ NODE_PATH=/opt/node22/lib/node_modules node tools/playtest.js
 Elsewhere: `npm i -D playwright && npx playwright install chromium`.
 Set `CHROME=/path/to/chrome` if the browser isn't found automatically.
 
-## `sim.js` — balance simulator
-
-Plays thousands of fights using the game's own damage formula, enemy stats,
-item bonuses, level curve and **actual skill functions** (they're eval'd out
-of the source, not reimplemented).
-
-```sh
-node tools/sim.js
-node tools/sim.js --runs 2000
-```
-
-Every line is run twice: a **skilled** player who heals, exploits weaknesses
-and manages caffeine, and a **masher** who only ever presses Commit. The gap
-between those two columns is the skill gradient — if a fight shows 100% for
-both, it has no decisions in it; if the skilled player is also losing, it's
-unfair. Watch the round counts too: fights shorter than ~4 rounds don't give
-the writing time to land.
-
-It also prints the XP available on the critical path, which is what tells
-you what level a player will actually *be* at each gate.
-
 ## `playtest.js` — headless playtests
 
 Drives the real game in a browser and asserts on outcomes. Exits non-zero on

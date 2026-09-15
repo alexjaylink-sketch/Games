@@ -91,25 +91,25 @@ async function boot(browser, { stage = 'field' } = {}) {
       if (!btns[i]) return false;
       await btns[i].click(); await sleep(420); return true;
     },
-    async fight(cap = 120) {
-      let rounds = 0;
-      while (await d.mode() === 'battle' && rounds++ < cap) {
-        if (!await page.$('#bmenu button:has-text("Commit")')) { await sleep(300); continue; }
-        const p = await page.evaluate(() => ({ f: S.focus / S.maxFocus, c: S.caf }));
-        let acted = false;
-        if (p.f < 0.45 && p.c >= 6) {
-          if (await page.$('#bmenu button:has-text("Abilities")')) {
-            await page.click('#bmenu button:has-text("Abilities")'); await sleep(220);
-            const heal = await page.$('#bmenu button:has-text("Refactor")');
-            if (heal) { await heal.click(); acted = true; }
-            else await page.click('#bmenu button:has-text("Back")');
-          }
+    /* Walk a conversation. `pickGood` chooses the reply the scene marks as the
+       right read when the tell is held, otherwise the first one. */
+    async talk(pickGood = true, cap = 40) {
+      let turns = 0;
+      while (await d.mode() === 'scene' && turns++ < cap) {
+        const btns = await page.$$('#smenu button');
+        if (!btns.length) { await sleep(120); continue; }
+        let idx = 0;
+        if (pickGood && btns.length > 1) {
+          const subs = await page.$$eval('#smenu button small', els => els.map(e => e.textContent));
+          const marked = subs.findIndex(t => t && t.length);
+          if (marked > -1) idx = marked;
         }
-        if (!acted) await page.click('#bmenu button:has-text("Commit")');
-        await sleep(540);
+        await btns[Math.min(idx, btns.length - 1)].click();
+        await sleep(200);
       }
-      return rounds;
-    }
+      return turns;
+    },
+    async sceneOut() { return page.evaluate(() => document.getElementById('scene').classList.contains('on')); }
   };
 
   await page.click('#btnNew'); await sleep(400);
@@ -125,7 +125,7 @@ const SUITES = {};
 
 SUITES.smoke = async browser => {
   const d = await boot(browser, { stage: 'letter' });
-  section('smoke — the intro, the field, a fight, and a save');
+  section('smoke \u2014 the intro, the field, a conversation, and a save');
   ok('offer letter shows', await d.state(() => !document.getElementById('intro').classList.contains('off')));
   ok('serif loaded for the letter', await d.state(() => document.fonts.check('400 16px "IBM Plex Serif"')));
   await d.shot('letter');
@@ -143,11 +143,14 @@ SUITES.smoke = async browser => {
   await d.page.keyboard.down('ArrowUp'); await sleep(300); await d.page.keyboard.up('ArrowUp'); await sleep(300);
   ok('walls block movement', await d.state(() => S.y) === 6, 'elevator at (15,5)');
 
-  await d.page.evaluate(() => { startBattle(['replyall']); }); await sleep(800);
-  const rounds = await d.fight();
+  const soc0 = await d.state(() => S.social);
+  await d.page.evaluate(() => { scene('jordan'); }); await sleep(700);
+  ok('a conversation opens as a call', await d.mode() === 'scene' && await d.sceneOut());
+  const turns = await d.talk();
   await d.advance();
-  ok('battle resolves', await d.mode() === 'field', rounds + ' rounds');
-  ok('battle grants xp', await d.state(() => S.xp) > 0);
+  ok('the conversation resolves', await d.mode() === 'field', turns + ' turns');
+  ok('  and reading the room pays standing', await d.state(() => S.social) > soc0,
+     soc0 + ' \u2192 ' + await d.state(() => S.social));
 
   await d.interact(2, 23, 'up'); await d.advance(3);
   const prompted = await d.state(() => document.getElementById('choices').classList.contains('on'));
@@ -214,9 +217,9 @@ SUITES.loop = async browser => {
   await d.set({ build: 100, approvals: { code: 1, sec: 1, design: 1 }, lv: 5, xp: 400, atk: 24, def: 9, focus: 200, maxFocus: 200, caf: 60, maxCaf: 60, bag: { snack: 4, brew: 3 } });
   await d.page.evaluate(() => { S.flags.satDown = 1; });
   await d.interact(30, 4, 'up'); await d.advance();
-  ok('Brayden opens the roadmap review', await d.mode() === 'battle');
-  const r1 = await d.fight(400);
-  ok('  and loses it', await d.mode() !== 'battle', r1 + ' turns');
+  ok('Brayden opens the roadmap review', await d.mode() === 'scene');
+  const r1 = await d.talk();
+  ok('  and the toggle survives it', await d.mode() !== 'scene', r1 + ' turns');
   await d.advance(40);
   ok('chapter one ends at the title', await d.mode() === 'title' && await d.state(() => S.flags.finished === 1));
 
@@ -246,8 +249,8 @@ SUITES.loop = async browser => {
   /* ship it again, and choose to come back */
   await d.set({ build: 100, focus: 200, caf: 60 });
   await d.interact(30, 4, 'up'); const pitch = await d.line(); await d.advance();
-  ok('Brayden pitches the new ticket', /Legal/.test(pitch) && await d.mode() === 'battle', JSON.stringify(pitch.slice(0, 40)));
-  await d.fight(400); await d.advance(30);
+  ok('Brayden pitches the new ticket', /Legal/.test(pitch) && await d.mode() === 'scene', JSON.stringify(pitch.slice(0, 40)));
+  await d.talk(); await d.advance(30);
   ok('the day ends with a choice', await d.mode() === 'choice' || await d.state(() => document.getElementById('choices').classList.contains('on')));
   await d.pickChoice(0); await d.advance();
   const day3 = await d.state(() => ({ day: S.day, ticket: ticket().key, mode }));
@@ -298,7 +301,7 @@ SUITES.ch2 = async browser => {
                 focus: 220, maxFocus: 220, caf: 60, maxCaf: 60, bag: { snack: 4, brew: 3 } });
   await d.page.evaluate(() => { S.flags.satDown = 1; });
   await d.interact(30, 4, 'up'); await d.advance();
-  await d.fight(400); await d.advance(60);
+  await d.talk(); await d.advance(60);
   ok('chapter one ends at the title', await d.mode() === 'title' && await d.state(() => !!S.flags.finished));
   await d.page.click('#btnCont'); await sleep(900); await d.advance(40);
 
@@ -396,15 +399,15 @@ SUITES.ch2 = async browser => {
   await d.pickChoice(0); await d.advance(10);
   ok('  throwing it out changes nothing, which is the point', await d.state(() => !!S.flags.binned_it && sq('fridge') === 3));
 
-  /* the fight, the choice, and the slide that decides what this was */
+  /* the conversation, the choice, and the slide that decides what this was */
   await d.set({ focus: 260, maxFocus: 260, caf: 80, lv: 6, atk: 30, def: 12 });
   await d.page.evaluate(() => { S.flags.saw_plate = 1; });
   await d.interact(26, 21, 'up'); await d.advance(8);
   ok('Rand asks you to agree', await d.state(() => document.getElementById('choices').classList.contains('on')));
   await d.pickChoice(1); await d.advance(6);
   ok('  saying her name is remembered', await d.state(() => !!S.flags.said_mara));
-  ok('  and then he aligns with you', await d.mode() === 'battle');
-  const rounds = await d.fight(400);
+  ok('  and then he aligns with you', await d.mode() === 'scene');
+  const rounds = await d.talk();
   await d.advance(60);
   ok('the launch happens', await d.state(() => !!S.flags.ch2done), rounds + ' turns');
   ok('  and it credits her', await d.state(() => !!S.flags.said_mara));
@@ -454,7 +457,7 @@ SUITES.side = async browser => {
   await d.set({ lv: 4, maxFocus: 190, focus: 190, maxCaf: 40, caf: 40, atk: 19, def: 11, weapon: 'keeb', armor: 'cans' });
   await d.page.evaluate(() => { S.owned.keeb = 1; S.owned.cans = 1; });
   await d.interact(31, 15, 'down'); await d.advance(6);
-  if (await d.mode() === 'battle') { const r = await d.fight(); await d.advance(20); ok('  the 3am thing is beatable', await d.state(() => S.side.thing) === 2, r + ' rounds'); }
+  if (await d.mode() === 'scene') { const r = await d.talk(); await d.advance(20); ok('  the 3am thing can be dealt with', await d.state(() => S.side.thing) === 2, r + ' turns'); }
   ok('  and drops the Runbook', await d.state(() => !!S.owned.runbook));
 
   await d.page.click('#btnB'); await sleep(400);
@@ -972,7 +975,7 @@ SUITES.mobile = async browser => {
   await d.page.reload(); await sleep(1200);
   ok('a backgrounded session offers Resume after a restart', await d.state(() => getComputedStyle(document.getElementById('btnCont')).display !== 'none'));
   await d.page.click('#btnCont'); await sleep(800);
-  const resumed = await d.state(() => ({ mode, build: S && S.build, credits: S && S.credits, lv: S && S.lv }));
+  const resumed = await d.state(() => ({ mode, build: S && S.build, credits: S && S.credits, social: S && S.social }));
   ok('  and picks up where it left off', resumed.mode === 'field' && resumed.build === 61 && resumed.credits === 777, JSON.stringify(resumed));
   const moved = await d.state(async () => {
     const y0 = S.y; press('down'); await new Promise(r => setTimeout(r, 400)); release('down');
@@ -980,20 +983,20 @@ SUITES.mobile = async browser => {
   });
   ok('  and is playable, not just loaded', moved);
 
-  /* and a fight is a checkpoint on its own */
+  /* and the end of a conversation is a checkpoint on its own */
   await d.page.evaluate(() => {
     Object.defineProperty(document, 'hidden', { configurable: true, get: () => false });
     localStorage.clear(); S.credits = 1234;
   });
-  await d.page.evaluate(() => { startBattle(['replyall']); }); await sleep(700);
-  await d.fight(); await d.advance(30);
-  ok('a finished fight is a checkpoint', await d.state(() => { const r = localStorage.getItem('shipit_lodestar_v2'); return !!r && JSON.parse(r).credits >= 1234; }));
+  await d.page.evaluate(() => { scene('jordan'); }); await sleep(700);
+  await d.talk(); await d.advance(30);
+  ok('a finished conversation is a checkpoint', await d.state(() => { const r = localStorage.getItem('shipit_lodestar_v2'); return !!r && JSON.parse(r).credits >= 1234; }));
   return d;
 };
 
 /* The one suite that cheats at nothing structural: it starts a new game and
    reaches the end of chapter two through the real gates, the real doors and
-   the real fights. Everything else jumps ahead with d.set(), which means a
+   the real rooms. Everything else jumps ahead with d.set(), which means a
    progression dead-end could hide behind the jump. Build progress comes from
    workProgress(), the same call the build tools make. */
 SUITES.journey = async browser => {
@@ -1042,19 +1045,20 @@ SUITES.journey = async browser => {
   ok('the first session stops at the ceiling', await d.state(() => S.build) >= 35 && await d.state(() => S.build) < 40, 'build ' + await d.state(() => S.build));
   await notStuck('35%');
 
-  /* a few fights on the way, the way walking the floor gives them to you */
+  /* the floor stops you on the way, the way it does when you walk it */
+  const socBefore = await d.state(() => S.social);
   for (let i = 0; i < 6; i++) {
-    await d.page.evaluate(n => { S.focus = S.maxFocus; const t = encTable(); startBattle([t[n % t.length]]); }, i); await sleep(500);
-    await d.fight(80); await d.advance(30);
+    await d.page.evaluate(n => { S.focus = stamina(); const t = hallTable(); moment(Object.assign({rate:'hallway'}, t[n % t.length])); }, i); await sleep(400);
+    await d.advance(30);
   }
-  const lv = await d.state(() => S.lv);
-  ok('six fights on the floor get you levels', lv >= 3, 'level ' + lv);
+  const lv = await d.state(() => S.social) - socBefore;
+  ok('being stopped on the floor builds standing', lv > 0, '+' + lv + ' social from the walk');
 
   await d.interact(9, 12, 'down'); await d.advance(30);
   ok('Priya sends you at Jordan first', await d.state(() => !!S.flags.priya_task && !S.approvals.code));
   ok('  and the arrow follows her, not the checklist', (await d.hud()).includes('Jordan'), await d.hud());
   await d.interact(17, 14, 'down'); await d.advance(30);
-  if (await d.mode() === 'battle') { await d.fight(200); await d.advance(40); }
+  if (await d.mode() === 'scene') { await d.talk(); await d.advance(40); }
   ok('  Jordan comes off her calendar', await d.state(() => !!S.flags.jordan_done));
   await d.interact(9, 12, 'down'); await d.advance(30);
   ok('Priya reviews it once it exists', await d.state(() => !!S.approvals.code));
@@ -1063,16 +1067,16 @@ SUITES.journey = async browser => {
   ok('the second session stops at 70%', await d.state(() => S.build) >= 70 && await d.state(() => S.build) < 75, 'build ' + await d.state(() => S.build));
 
   await d.interact(25, 26, 'right'); await d.advance(20);
-  ok('Marcus finds something that is not yours', await d.mode() === 'battle');
-  await d.fight(200); await d.advance(40);
+  ok('Marcus finds something that is not yours', await d.mode() === 'scene');
+  await d.talk(); await d.advance(40);
   ok('  and approves the security review', await d.state(() => !!S.approvals.sec));
   await notStuck('security review');
   await buildTo();
   ok('the third session reaches 100%', await d.state(() => S.build) === 100, 'build ' + await d.state(() => S.build));
 
   await d.interact(15, 22, 'down'); await d.advance(20);
-  ok('the team-building is mandatory/optional', await d.mode() === 'battle');
-  await d.fight(200); await d.advance(40);
+  ok('the team-building is mandatory/optional', await d.mode() === 'scene');
+  await d.talk(); await d.advance(40);
   ok('  and gets Kai notified', await d.state(() => !!S.flags.ctf_done));
   await d.interact(4, 4, 'up'); await d.advance(30);
   ok('Kai signs off on where the toggle goes', await d.state(() => !!S.approvals.design));
@@ -1085,8 +1089,8 @@ SUITES.journey = async browser => {
   ok('VELOCITY opens', await d.state(() => S.y) < 8, 'y=' + await d.state(() => S.y));
   await d.page.evaluate(() => { S.focus = S.maxFocus; S.caf = S.maxCaf; });
   await d.interact(30, 4, 'up'); await d.advance(20);
-  ok('Brayden takes the meeting', await d.mode() === 'battle');
-  const r1 = await d.fight(400); await d.advance(60);
+  ok('Brayden takes the meeting', await d.mode() === 'scene');
+  const r1 = await d.talk(); await d.advance(60);
   ok('chapter one can actually be finished', await d.mode() === 'title' && await d.state(() => !!S.flags.finished), r1 + ' turns');
 
   /* chapter two, same rules */
@@ -1114,8 +1118,8 @@ SUITES.journey = async browser => {
   await d.page.evaluate(() => { S.focus = S.maxFocus; S.caf = S.maxCaf; });
   await d.interact(26, 21, 'up'); await d.advance(10);
   if (await d.state(() => document.getElementById('choices').classList.contains('on'))) { await d.pickChoice(1); await d.advance(8); }
-  ok('Rand aligns with you', await d.mode() === 'battle');
-  const r2 = await d.fight(400); await d.advance(60);
+  ok('Rand aligns with you', await d.mode() === 'scene');
+  const r2 = await d.talk(); await d.advance(60);
   ok('no rating touched the critical path on the way',
      await d.state(() => {
        const so = S.social, pe = S.perf;

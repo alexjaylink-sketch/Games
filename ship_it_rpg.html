@@ -259,12 +259,12 @@ button{font-family:inherit;color:inherit}
 }
 .screen textarea:focus{outline:2px solid var(--brand);outline-offset:1px}
 
-/* ============ BATTLE ============ */
-#battle{
+/* ============ THE CALL ============ */
+#scene{
   position:absolute;inset:0;z-index:40;display:none;flex-direction:column;
   background:linear-gradient(180deg,#111823 0%,#0b0f16 100%);
 }
-#battle.on{display:flex}
+#scene.on{display:flex}
 #callbar{
   flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:8px 12px;
   background:#0a0e15;border-bottom:1px solid var(--edge);font-size:10px;color:var(--dim);
@@ -274,7 +274,7 @@ button{font-family:inherit;color:inherit}
 #callbar .title{flex:1;color:var(--ink);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #callbar .tm{font-family:var(--mono)}
 #grid{
-  flex:1 1 auto;display:flex;align-items:center;justify-content:center;align-content:center;
+  flex:0 0 auto;display:flex;align-items:center;justify-content:center;align-content:center;
   gap:10px;padding:12px 12px 8px;flex-wrap:wrap;min-height:0;position:relative;
 }
 #grid.solo .tile{width:min(300px,86%)}
@@ -315,27 +315,30 @@ button{font-family:inherit;color:inherit}
 #grid.solo #selfview{right:calc(7% + 4px)}
 @keyframes sh{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
 #blog{
-  flex:0 1 auto;margin:0 10px 8px;padding:8px 12px;min-height:64px;max-height:168px;overflow:hidden;
+  flex:0 1 auto;margin:0 10px 8px;padding:10px 13px;min-height:64px;max-height:44vh;overflow-y:auto;
   background:#0a0e15;border:1px solid var(--edge);border-radius:8px;
-  font-size:12px;line-height:1.45;display:flex;flex-direction:column;justify-content:flex-end;
+  font-size:12.5px;line-height:1.5;display:flex;flex-direction:column;justify-content:flex-end;
 }
+.tile .nm b{display:block;font-weight:600}
+.tile .nm i{display:block;font-style:normal;font-size:9.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .nm i:empty{display:none}
 #blog div{opacity:.45;margin-top:5px;padding-left:10px;border-left:2px solid var(--edge2)}
 #blog div:first-child{margin-top:0}
 #blog div:last-child{opacity:1;border-left-color:var(--brand)}
 #mestrip{
-  flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:8px 12px;
+  flex:0 0 auto;margin-top:auto;display:flex;align-items:center;gap:10px;padding:8px 12px;
   background:var(--panel);border-top:1px solid var(--edge);border-bottom:1px solid var(--edge);font-size:10px;
 }
-#bmenu{flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px 14px}
-#bmenu button{
+#smenu{flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px 14px}
+#smenu button{
   padding:13px 10px;font-size:13px;background:var(--panel2);border:1px solid var(--edge2);
   border-radius:9px;box-shadow:var(--sh);text-align:center;
 }
-#bmenu button small{display:block;color:var(--dim);font-size:10px;margin-top:2px}
-#bmenu button:active{background:var(--brand);border-color:var(--brand);transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.4)}
-#bmenu button:active small{color:rgba(255,255,255,.85)}
-#bmenu button[disabled]{opacity:.38;box-shadow:none}
-#bmenu.one{grid-template-columns:1fr}
+#smenu button small{display:block;color:var(--dim);font-size:10px;margin-top:2px}
+#smenu button:active{background:var(--brand);border-color:var(--brand);transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.4)}
+#smenu button:active small{color:rgba(255,255,255,.85)}
+#smenu button[disabled]{opacity:.38;box-shadow:none}
+#smenu.one{grid-template-columns:1fr}
 .dmg{
   position:absolute;font-family:var(--mono);font-size:17px;font-weight:600;
   pointer-events:none;animation:fly 1s ease-out forwards;text-shadow:0 2px 4px #000;z-index:5;
@@ -616,7 +619,7 @@ body.desking #btnA b,body.desking #btnB b{color:var(--ok)}
 #title .fine{color:#5b687e;font-size:9px;line-height:1.6;max-width:36ch;font-family:var(--mono)}
 #title .ver{position:absolute;bottom:14px;left:0;right:0;color:#3c4759;font-size:9px;font-family:var(--mono);letter-spacing:1px}
 body.titling #hud, body.titling #pad{visibility:hidden}
-body.fighting #hud, body.fighting #pad{display:none}
+body.calling #hud, body.calling #pad{display:none}
 #toast{
   position:absolute;left:50%;top:58px;transform:translateX(-50%);z-index:70;
   background:var(--panel);border:1px solid var(--brand);border-radius:8px;
@@ -707,7 +710,7 @@ body.sideways #rotate{display:flex}
     </div>
 
     <!-- BATTLE -->
-    <div id="battle">
+    <div id="scene">
       <div id="callbar">
         <span class="rec"></span>
         <span class="title" id="callTitle">Sync</span>
@@ -720,7 +723,7 @@ body.sideways #rotate{display:flex}
         <div class="meter f" style="flex:1"><div class="lab"><span>FOCUS</span><span id="bFocusN">100</span></div><div class="trk"><i class="fil" id="bFocus"></i></div></div>
         <div class="meter c" style="flex:1"><div class="lab"><span>CAFFEINE</span><span id="bCafN">20</span></div><div class="trk"><i class="fil" id="bCaf"></i></div></div>
       </div>
-      <div id="bmenu"></div>
+      <div id="smenu"></div>
     </div>
 
     <!-- THE DESK -->
@@ -1083,188 +1086,322 @@ const dayMod = ()=>{
 /* ---------- progression ---------- */
 const TITLES = ['SDE I','SDE II','SDE II (Senior-Track)','Senior Engineer','Senior Engineer II','Staff Engineer'];
 const BADGES = ['SDE I','SDE II','SDE II·ST','SR ENG','SR ENG II','STAFF'];
-const XPCURVE = [0,35,85,155,255,390];
+/* Social is the office-side progression now. It is not a level you grind; it is
+   how much of the building will pick up when you call. */
+const SOCIALTIERS = [
+  {at:0,  name:'Unknown',        note:'Nobody is sure which team you are on.'},
+  {at:25, name:'Seen Around',    note:'People nod. Nobody has your name yet.'},
+  {at:45, name:'Known Quantity', note:'You get added to threads on purpose.'},
+  {at:65, name:'Owed Favors',    note:'Two people would drop something for you.'},
+  {at:85, name:'Load-Bearing',   note:'The floor routes around your absence badly.'}
+];
+const socialTier = ()=> SOCIALTIERS.filter(t=>social() >= t.at).pop();
 
-/* ---------- skills ---------- */
-const SKILLS = {
-  cite:{
-    name:'Cite The Docs', cost:5, lv:2,
-    desc:'Produce the written requirement. Deals damage and lowers their conviction.',
-    hit:(a,e)=>({ dmg: Math.round(a.atk*1.15), debuff:'atk', note:'You read the acceptance criteria aloud.' })
-  },
-  scope:{
-    name:'Scope Cut', cost:11, lv:3,
-    desc:'Remove the part nobody asked for. Damage scales with how big the thing is.',
-    hit:(a,e)=>({ dmg: Math.round(a.atk*0.7 + e.maxHp*0.05), note:'You propose cutting it in half.' })
-  },
-  refactor:{
-    name:'Refactor', cost:6, lv:1,
-    desc:'Restore Focus. Clears Context Switch. Changes no behavior whatsoever.',
-    self:(a)=>({ heal: Math.round(a.maxFocus*0.32), cleanse:1, note:'No functional change. Ready for review.' })
-  },
-  duck:{
-    name:'Rubber Duck', cost:0, lv:1,
-    desc:'Explain the problem out loud to an inanimate object. Recovers Caffeine.',
-    self:(a)=>({ caf:9, note:'Halfway through explaining it, you see the bug.' })
-  },
-  escalate:{
-    name:'Escalate', cost:20, lv:5,
-    desc:'Go above their head. Enormous damage. You can never take this back.',
-    hit:(a,e)=>({ dmg: Math.round(a.atk*2.2), note:'You add their manager to the thread.' })
-  }
-};
-
-/* ---------- items ---------- */
+/* ---------- what you can requisition ----------
+   The two combat stats became two desk stats. `stam` is how long a day you can
+   take before you are out of Focus; `cover` is how much less an ignored ping
+   costs you, which is what noise-cancelling headphones are actually for. */
 const ITEMS = {
   snack:   {name:'Free Snack',        type:'use',  price:15,  focus:32,  desc:'From the wall of snacks. Compensation is total rewards.'},
   lunch:   {name:'Catered Lunch',     type:'use',  price:48,  focus:85,  desc:'Thursday only. There is a line and it is not moving.'},
   brew:    {name:'Cold Brew',         type:'use',  price:22,  caf:14,    desc:'On tap. Cold. Free. Three of the words that got you to sign.'},
   aspirin: {name:'Aspirin',           type:'use',  price:12,  cure:1,    desc:'Clears Context Switch. Not covered until day 90.'},
-  hoodie:  {name:'Swag Hoodie',       type:'armor',price:0,   def:3,     desc:'Given to you at orientation. Size: Large.'},
-  cans:    {name:'Noise-Cancelling Headphones', type:'armor', price:95, def:6, desc:'The universal signal. Ignored universally.'},
-  block:   {name:'"Focus Time" Block',type:'armor',price:260, def:10,    desc:'A recurring calendar hold. People book over it.'},
-  laptop:  {name:'Company Laptop (2019)', type:'weapon', price:0, atk:0, desc:'Issued. Fans audible. Refresh cycle is under review.'},
-  keeb:    {name:'Mechanical Keyboard',type:'weapon',price:110,atk:6,    desc:'Blues. Four percent faster, forty percent louder. Your podmates have filed no formal complaint.'},
-  monitor: {name:'Second Monitor',     type:'weapon',price:225,atk:12,   desc:'Approved after four weeks. Productivity, allegedly, doubles.'},
-  runbook: {name:'The Runbook',        type:'armor',price:0,   def:9,     desc:'Forty pages, handwritten, found taped under a desk. Everything anyone knew.'},
-  lanyard: {name:'Lanyard',            type:'armor', price:0, def:0,     desc:'Badge. Photo taken before you understood the job.'},
-  custody: {name:'Chain of Custody',   type:'armor',price:0,   def:11,    desc:'A signed form saying the thing was handled. It is the form that protects you, not the handling.'},
-  blank:   {name:'The Blank Note',     type:'use',  price:0,   focus:0,   desc:'A yellow square with nothing on it. Held one floor hostage for a year. Does nothing.'}
+  hoodie:  {name:'Swag Hoodie',       type:'cover',price:0,   cover:2,   desc:'Given to you at orientation. Size: Large.'},
+  cans:    {name:'Noise-Cancelling Headphones', type:'cover', price:95, cover:5, desc:'The universal signal. Ignored universally \u2014 but an ignored ping costs you less.'},
+  block:   {name:'"Focus Time" Block',type:'cover',price:260, cover:8,   desc:'A recurring calendar hold. People book over it. Fewer of them.'},
+  laptop:  {name:'Company Laptop (2019)', type:'desk', price:0, stam:0,  desc:'Issued. Fans audible. Refresh cycle is under review.'},
+  keeb:    {name:'Mechanical Keyboard',type:'desk', price:110, stam:12,  desc:'Blues. Four percent faster, forty percent louder. Your podmates have filed no formal complaint.'},
+  monitor: {name:'Second Monitor',     type:'desk', price:225, stam:26,  desc:'Approved after four weeks. Productivity, allegedly, doubles.'},
+  runbook: {name:'The Runbook',        type:'cover',price:0,   cover:7,  desc:'Forty pages, handwritten, found taped under a desk. Everything anyone knew.'},
+  lanyard: {name:'Lanyard',            type:'cover',price:0,   cover:0,  desc:'Badge. Photo taken before you understood the job.'},
+  custody: {name:'Chain of Custody',   type:'cover',price:0,   cover:9,  desc:'A signed form saying the thing was handled. It is the form that protects you, not the handling.'},
+  blank:   {name:'The Blank Note',     type:'use',  price:0,   focus:0,  desc:'A yellow square with nothing on it. Held one floor hostage for a year. Does nothing.'}
 };
 
-/* ---------- enemies ---------- */
-const E = (o)=>o;
-const ENEMIES = {
-  replyall: E({name:'Reply-All Storm', art:'📧', hp:42, atk:9, def:2, sp:12, cr:10,
-    moves:[
-      {t:'atk',p:1.0,txt:'{E} adds four more people to the thread.'},
-      {t:'atk',p:0.9,txt:'Someone replies "+1". Then someone replies "removing myself from this thread." They do not.'},
-      {t:'atk',p:1.1,txt:'{E} forwards it to a distribution list of nine hundred.'}
-    ]}),
-  flaky: E({name:'Flaky Test', art:'🎲', hp:38, atk:10, def:5, sp:12, cr:8,
-    moves:[
-      {t:'atk',p:1.0,txt:'{E} fails. You change nothing. {E} passes.'},
-      {t:'atk',p:1.2,txt:'{E} says it passes locally.'},
-      {t:'skip',p:0,txt:'{E} passes this run. Nobody asks why. Asking is how it becomes yours.'}
-    ]}),
-  merge: E({name:'Merge Conflict', art:'🔀', hp:56, atk:10, def:7, sp:16, cr:14,
-    moves:[
-      {t:'atk',p:1.0,txt:'{E} presents two versions of the truth and refuses to pick.'},
-      {t:'atk',p:1.15,txt:'{E} touches the lockfile. Four thousand lines change.'}
-    ]}),
-  creep: E({name:'Scope Creep', art:'📈', hp:50, atk:10, def:3, sp:17, cr:15,
-    grow:2,
-    moves:[
-      {t:'atk',p:1.0,txt:'{E} says "while we\'re in there."'},
-      {t:'atk',p:1.0,txt:'{E} says it should be trivial since the code is already open.'}
-    ]}),
-  quickq: E({name:'"Quick Question" Guy', art:'🙋', hp:34, atk:12, def:1, sp:13, cr:12,
-    moves:[
-      {t:'atk',p:1.0,txt:'{E} taps you on the shoulder. You lose the thing you were holding in your head.'},
-      {t:'status',p:0.7,st:'switch',txt:'{E} asks if you have two seconds. It is not two seconds.'}
-    ]}),
-  recruiter: E({name:'Recruiter InMail', art:'💼', hp:26, atk:7, def:0, sp:9, cr:26,
-    moves:[
-      {t:'atk',p:1.0,txt:'{E} says your background is truly impressive and gets your name wrong.'},
-      {t:'atk',p:0.8,txt:'{E} describes a rocketship. It is a Series A with eleven months of runway.'}
-    ]}),
-  legacy: E({name:'Legacy Service', art:'🗿', hp:66, atk:10, def:11, sp:24, cr:22,
-    moves:[
-      {t:'atk',p:1.0,txt:'{E} has no owner, no tests, and nine downstream consumers.'},
-      {t:'atk',p:1.1,txt:'The last commit is from someone who left in 2019. It says "temp fix". You check the blame further back. It gets worse.'},
-      {t:'heal',p:0.12,txt:'{E} has been running untouched for six years. It is not going anywhere.'}
-    ]}),
-  standup: E({name:'Standup That Ran Long', art:'⏱️', hp:46, atk:8, def:5, sp:15, cr:12,
-    moves:[
-      {t:'atk',p:1.0,txt:'{E} enters minute nineteen of a fifteen-minute standup.'},
-      {t:'status',p:0.6,st:'switch',txt:'{E} says "let\'s take this offline," then does not take it offline.'}
-    ]}),
+/* ---------- conversations with something at stake ----------
+   Each scene: who is in the tile, what they SAY they want, what they actually
+   want, and the flag somewhere else in the building that tells you. `pass` is
+   how many good reads it takes. Nothing here can be failed, only misread. */
+const SCENES = {
 
-  /* set pieces */
-  jordan: E({name:'Jordan, Project Manager', art:'📊', hp:150, atk:14, def:7, sp:60, cr:70, boss:1,
-    weak:'cite',
-    moves:[
-      {t:'atk',p:1.0,txt:'{E} asks if this is a blocker. It is now.'},
-      {t:'atk',p:1.15,txt:'{E} presents a Gantt chart. The bar for your work is already grey.'},
-      {t:'atk',p:1.0,txt:'{E} asks whether the two-week estimate could be a one-week estimate.'},
-      {t:'atk',p:1.2,txt:'{E} asks if it can be parallelized. There is one of you.'},
-      {t:'status',p:0.5,st:'switch',txt:'{E} moves the deadline up and calls it a stretch goal.'},
-      {t:'heal',p:0.1,txt:'{E} marks the item green in the tracker and is visibly restored.'}
-    ]}),
-  breach: E({name:'The Data Breach', art:'🔓', hp:210, atk:18, def:6, sp:85, cr:95, boss:1,
-    moves:[
-      {t:'atk',p:1.0,txt:'{E} was in the logs the whole time.'},
-      {t:'atk',p:1.25,txt:'A storage bucket was set to public in 2021 "temporarily."'},
-      {t:'atk',p:1.1,txt:'{E} exfiltrates a table nobody remembered writing to.'},
-      {t:'status',p:0.45,st:'switch',txt:'Legal is on the phone. Everything else stops.'}
-    ]}),
-  spirit: E({name:'Mandatory Team Spirit', art:'🚩', hp:88, atk:11, def:9, sp:22, cr:24,
-    moves:[
-      {t:'atk',p:1.0,txt:'{E} says there are no wrong answers, then corrects your answer.'},
-      {t:'atk',p:1.0,txt:'{E} asks everyone to share a fun fact about themselves.'},
-      {t:'status',p:0.35,st:'switch',txt:'{E} splits you into breakout rooms.'}
-    ]}),
-  flag: E({name:'The Flag (Foam)', art:'🏳️', hp:62, atk:6, def:4, sp:16, cr:20,
-    moves:[
-      {t:'atk',p:1.0,txt:'{E} is captured. Points are awarded to a team you were not told you were on.'},
-      {t:'skip',p:0,txt:'{E} sits there. It is a flag.'}
-    ]}),
-  thing3am: E({name:'The Thing That Pages At 3AM', art:'📟', hp:200, atk:16, def:12, sp:75, cr:85, boss:1, healPct:0.05,
-    moves:[
-      {t:'atk',p:1.0,txt:'{E} fires. It is 3:07am. It is always 3:07am.'},
-      {t:'atk',p:1.15,txt:'{E} has no runbook, no dashboard, and no owner, and it has never once been wrong.'},
-      {t:'atk',p:1.1,txt:'The alert text is a single word. The word is "again".'},
-      {t:'status',p:0.4,st:'switch',txt:'{E} pages four people at once. Three of them no longer work here.'},
-      {t:'heal',p:0.1,txt:'{E} restarts itself. It has been restarting itself since 2019.'}
-    ]}),
-  brayden: E({name:'Brayden, Product Manager', art:'🧢', hp:350, atk:22, def:10, sp:220, cr:180, boss:1, healPct:0.06,
-    weak:'scope',
-    moves:[
-      {t:'atk',p:1.0,txt:'{E} says it should just be a simple toggle.'},
-      {t:'atk',p:1.2,txt:'{E} says the customer wants this. {E} has spoken to one customer.'},
-      {t:'atk',p:1.15,txt:'{E} asks why it cannot use AI. {E} does not specify for what.'},
-      {t:'atk',p:1.1,txt:'{E} says this is what we aligned on. You were not in that meeting.'},
-      {t:'status',p:0.4,st:'switch',txt:'{E} says "actually, let\'s circle back" and schedules a pre-meeting for the meeting.'},
-      {t:'heal',p:0.16,txt:'{E} opens a Google Doc titled "Vision (WIP)" and is restored by it.'}
-    ]}),
-  offsite: E({name:'The Offsite', art:'🏕️', hp:210, atk:24, def:10, sp:62, cr:44,
-    weak:'scope',
-    moves:[
-      {t:'atk',p:1.0,txt:'{E} proposes a trust fall. There is nobody behind you.'},
-      {t:'status',p:0.45,st:'switch',txt:'{E} breaks you into groups. You are the group.'},
-      {t:'atk',p:1.15,txt:'{E} asks everyone to share one thing nobody knows about them.'}
-    ]}),
-  slide14: E({name:'Slide 14', art:'📑', hp:265, atk:16, def:17, sp:70, cr:48,
-    weak:'scope',
-    moves:[
-      {t:'atk',p:0.8,txt:'{E} has been in every deck for three years. Nobody has read it.'},
-      {t:'atk',p:0.9,txt:'{E} contains a diagram. The diagram contains {E}.'},
-      {t:'skip',p:0,txt:'{E} is skipped for time, as it always is, and survives.'}
-    ]}),
-  mentor: E({name:'Someone\u2019s Mentor', art:'🧓', hp:230, atk:26, def:12, sp:66, cr:46,
-    weak:'cite',
-    moves:[
-      {t:'atk',p:1.1,txt:'{E} asks what you really want. You want to leave the quiet room.'},
-      {t:'atk',p:1.0,txt:'{E} tells you a story about 2011. It does not end.'},
-      {t:'status',p:0.35,st:'switch',txt:'{E} suggests you grab coffee sometime and means it, which is worse.'}
-    ]}),
-  execreply: E({name:'Reply-All Storm (Executive)', art:'📨', hp:240, atk:27, def:9, sp:72, cr:52,
-    moves:[
-      {t:'atk',p:1.0,txt:'{E} adds four more people. Each of them has an assistant, who also replies.'},
-      {t:'atk',p:1.2,txt:'Someone replies "adding {E} for visibility." {E} was already on it.'},
-      {t:'atk',p:1.1,txt:'A calendar invite arrives from the thread. It is recurring.'}
-    ]}),
-  rand: E({name:'Rand Voss', art:'🕶️', hp:395, atk:23, def:11, sp:340, cr:260, boss:1, healPct:0.05,
-    weak:'cite',
-    moves:[
-      {t:'atk',p:1.0,txt:'{E} explains that autonomy is solved. The explanation takes six years.'},
-      {t:'atk',p:1.15,txt:'{E} says he sleeps four hours and wakes up correct. You feel tired on his behalf.'},
-      {t:'atk',p:1.1,txt:'{E} quotes the Doctrine. The Doctrine quotes {E}.'},
-      {t:'atk',p:1.2,txt:'{E} says it was not inevitable, it was him. The room gets warmer.'},
-      {t:'status',p:0.35,st:'switch',txt:'{E} asks what you would do with a billion dollars, and waits.'},
-      {t:'heal',p:0.14,txt:'{E} is handed a photograph of a lighthouse. He has still not noticed it is not ours.'}
-    ]})
+  jordan: {
+    who:'Jordan, Project Manager', art:'\u{1f4ca}', sub:'and two people who do not speak',
+    title:'Sync: Delivery Risk (recurring)',
+    tell:'saw_gantt',
+    tellLine:'You have seen the Gantt. The migration is on it twice, both times under Priya.',
+    open:['Jordan has started the call four minutes early and waited.',
+          '“So — not a blocker. Just want to get ahead of the narrative.”'],
+    pass:2,
+    rounds:[
+      {line:'“The migration is amber. It has been amber for three weeks. Amber is fine. Amber is a color.”',
+       opts:[
+         {say:'“What would make it green?”', good:1,
+          hint:'he wants a story, not a fix',
+          back:['“Green? Green would be — green is a conversation about scope.”',
+                '“Green is achievable. I want to be clear that green is achievable.”']},
+         {say:'“It is amber because it is not staffed.”',
+          back:['“Right. Right. That is a resourcing conversation and I love that you said it.”',
+                'He does not write it down.']},
+         {say:'“Why is it on Priya’s calendar?”',
+          back:['“It is on her calendar because she is the owner.”',
+                '“She is the owner because it is on her calendar.”']}
+       ]},
+      {line:'“Help me tell a story about this that does not make anybody look slow.”',
+       opts:[
+         {say:'“Move it to Q3 and mark it green with a note.”', good:1,
+          hint:'the note is the whole point',
+          back:['Jordan stops. You can hear him deciding that he thought of this.',
+                '“Green with a note. That’s — yes. That is exactly the shape of it.”']},
+         {say:'“Tell them it slipped.”',
+          back:['“Slipped is a word that follows you around.”']},
+         {say:'“I am not going to help you do that.”',
+          back:['“That’s fair. That’s totally fair.”',
+                'He schedules a follow-up while saying it.'],
+          leaves:1}
+       ]}
+    ],
+    win:['“I’m moving it to Q3. Tentative. Green with a note.”',
+         '“And I’ll take the migration off Priya’s calendar. It was never her project. I know. I know.”'],
+    lose:['“Okay. Let me sit with it.”',
+          'He sits with it for eleven seconds and books another one.'],
+    gone:['You leave. The follow-up invite arrives before you reach the corridor.']
+  },
+
+  breach: {
+    who:'Marcus, Security', art:'\u{1f6e1}\u{fe0f}', sub:'sharing his screen, which is all logs',
+    title:'INCIDENT — SEV1 (auto-created)',
+    tell:'saw_bucket',
+    tellLine:'You have seen the bucket. It is labelled temporary and it is four years old.',
+    open:['Marcus does not say hello.',
+          '“Something has been in these logs the entire time. It is not yours.”'],
+    pass:1,
+    rounds:[
+      {line:'“Tell me what you think you are looking at.”',
+       opts:[
+         {say:'“A storage bucket somebody set to public and forgot.”', good:1,
+          hint:'he wants you to say it first',
+          back:['He is quiet for long enough that you check the connection.',
+                '“Say that again slowly while I start a doc.”']},
+         {say:'“My feature did something.”',
+          back:['“Your feature is forty lines and none of them are this.”',
+                '“Stop apologising for code you did not write. It is a habit and it is expensive.”']},
+         {say:'“I genuinely do not know.”',
+          back:['“Good. That is the correct answer and almost nobody gives it.”',
+                '“It is a bucket. Somebody set it public in 2021 and labelled it temporary.”'],
+          good:1}
+       ]},
+      {line:'“Last thing. Who do we tell.”',
+       opts:[
+         {say:'“Everybody, today.”', good:1,
+          back:['“We will tell everybody. Today. In writing.”',
+                '“It will be in the news in nine months, described as sophisticated.”']},
+         {say:'“Nobody, until we know more.”',
+          back:['“That is how it becomes the other kind of story.”']}
+       ]}
+    ],
+    win:['“Your review is approved. Signed, dated, done.”',
+         '“I have also unlocked the dependency mapper on your desk. It is a snake.”',
+         '“Everything here is a snake if you look at it long enough.”'],
+    lose:['“Review is approved. You did not cause this and you did not hide it.”',
+          '“That is the bar. It is a low bar and it is load-bearing.”']
+  },
+
+  thing3am: {
+    who:'The Page', art:'\u{1f4df}', sub:'firing since 2019',
+    title:'PAGE — 03:07 (recurring since 2019)',
+    tell:'saw_runbook',
+    tellLine:'The runbook is taped under the desk. Page thirty-one is a diagram.',
+    open:['It has been paging at 03:07 for six years.',
+          'Tonight, for the first time, somebody is looking at it.'],
+    pass:1,
+    rounds:[
+      {line:'The alert links to a dashboard. The dashboard links to the alert.',
+       opts:[
+         {say:'Read the runbook taped under the desk.', good:1,
+          hint:'forty pages, handwritten',
+          back:['Page thirty-one. A diagram of where the data was supposed to go.',
+                'You find the loop. You fix the loop. It takes nine minutes.']},
+         {say:'Page the on-call rotation.',
+          back:['The rotation has one name on it. The name left in 2023.',
+                'The page escalates to you, because you are the fallback for the name.']},
+         {say:'Delete the alert.',
+          back:['You cannot delete it. You can only silence it for thirty days.',
+                'Somebody has silenced it for thirty days, seventy-two times.']}
+       ]}
+    ],
+    win:['Six years, and it takes nine minutes, because nobody was ever assigned nine minutes.',
+         'You keep the runbook. Whoever wrote it is not here to want it back.'],
+    lose:['You silence it for thirty days.',
+          'It will page at 03:07 in thirty days, and the person looking at it will not be you.']
+  },
+
+  ctf: {
+    who:'Brooke, Culture', art:'\u{1f389}', sub:'holding a foam flag',
+    title:'Q3 Team Building — Capture The Flag (Mandatory/Optional)',
+    open:['You are handed a foam flag and a lanyard in a color you did not choose.',
+          '“So you’re on Blue. Blue is the fun one. They’re all the fun one.”'],
+    pass:1,
+    rounds:[
+      {line:'“Quick one before we start — what do you want out of today?”',
+       opts:[
+         {say:'“I want Kai to know I was here.”', good:1,
+          hint:'she would rather you say it than pretend',
+          back:['“Oh thank god. Somebody who says it.”',
+                '“Everybody wants that. You are the first one who said it out loud.”']},
+         {say:'“Team building. Genuinely.”',
+          back:['She looks at you for slightly too long.',
+                '“Great. Great energy.”']},
+         {say:'“I want to leave.”',
+          back:['“You can leave. I will mark you present. I am not a monster.”'],
+          leaves:1}
+       ]},
+      {line:'Forty minutes later, Blue has won slightly more than everybody else, who also won.',
+       opts:[
+         {say:'Help carry the cones back in.', good:1,
+          back:['Nobody asked. Four people notice.']},
+         {say:'Leave while they are doing the photo.',
+          back:['You are in the photo anyway, at the edge, mid-blink.']}
+       ]}
+    ],
+    win:['“I’ll let Kai know you were here. That’s what you came for.”',
+         '“…Right. Yeah. I know.”'],
+    lose:['“I’ll let Kai know you were here.”',
+          'She says it to the cones.'],
+    gone:['Brooke marks you present anyway. She is not a monster.']
+  },
+
+  brayden: {
+    who:'Brayden, Product Manager', art:'\u{1f9e2}', sub:'screen shared on slide 1 of 14',
+    title:'Q3 Roadmap Review — VELOCITY',
+    tell:'read_doc',
+    tellLine:'You read the doc. Every section he added starts with the words "what if".',
+    open:['Brayden has been in this room since eight.',
+          '“Okay! So. Before we ship — and we are shipping — I want to pressure-test the shape.”'],
+    pass:2,
+    rounds:[
+      {line:'“What if it isn’t a toggle. Not a blocker. I’m thinking out loud.”',
+       opts:[
+         {say:'“Say more about the shape.”', good:1,
+          hint:'he wants to have had the idea',
+          back:['“Right, so — okay, so what if it’s a preference. A surface.”',
+                'He talks for ninety seconds and arrives at a toggle.']},
+         {say:'“It is a toggle. It has been a toggle for eleven months.”',
+          back:['“Totally. Totally. I just don’t want us to under-think it.”',
+                'Slide 2 of 14.']},
+         {say:'“The ticket says toggle.”',
+          back:['“Tickets are a snapshot. I think of them as a vibe with an ID.”']}
+       ]},
+      {line:'“Could it be AI-powered? I’m not saying it should. I’m saying could.”',
+       opts:[
+         {say:'“It could be, next quarter, in the doc.”', good:1,
+          hint:'the doc is where ideas go to be safe',
+          back:['“In the doc. Yes. Put it in the doc.”',
+                'The doc is now fifteen pages. Nobody will open page fifteen.']},
+         {say:'“No.”',
+          back:['“Okay. Okay! Strong. I like the conviction.”',
+                'He adds a section anyway.']},
+         {say:'“What would AI-powered mean here?”',
+          back:['“That’s the exciting part. That’s what I want us to find out.”',
+                'Forty seconds of silence that he does not experience as silence.']}
+       ]},
+      {line:'“Last thing and then I’ll let you go. Whose call is this?”',
+       opts:[
+         {say:'“Yours.”', good:1,
+          hint:'he needs it to be his',
+          back:['“Mine. Right. Then — ship the toggle.”',
+                'He says it like he is granting something, which he is.']},
+         {say:'“Mine. It is my ticket.”',
+          back:['“Let’s say ours.”',
+                '“Ours is good. I’ll take ours to leadership.”']},
+         {say:'“Nobody knows. That is the actual problem.”',
+          back:['“Whoa. Okay. That’s a big swing.”',
+                'He writes it down. It is the only thing he writes down all meeting.']}
+       ]}
+    ],
+    win:['“Ship the toggle. We’ll revisit the surface next quarter.”',
+         '“Put it in the doc.”'],
+    lose:['“Let’s ship it. I have notes, but let’s ship it.”',
+          'The notes arrive at 11:40pm and are all questions.']
+  },
+
+  rand: {
+    who:'Rand Voss', art:'\u{1f576}\u{fe0f}', sub:'1:1, no agenda, camera on',
+    title:'1:1 (no agenda) — THE FOUNDER',
+    tell:'said_mara',
+    tellLine:'You know whose name is on the bottom of Lighthouse. It is not his.',
+    open:['The door was open the whole time.',
+          'He does not ask you to sit, and he does not stop you sitting.',
+          '“You shipped the toggle. I read about it. Somebody put it in a deck.”'],
+    pass:2,
+    rounds:[
+      {line:'“Do you know what this company actually is? Most people here would say software.”',
+       opts:[
+         {say:'“Weather.”', good:1,
+          hint:'he has been waiting years for somebody to say it back',
+          back:['He points at you with the whole hand.',
+                '“Weather. Counsel has asked me to stop saying it. You are inside now, so I will say it.”']},
+         {say:'“Software.”',
+          back:['“That is what most people here would say.”',
+                'He lets that sit exactly long enough.']},
+         {say:'“A company that makes a thing and sells it.”',
+          back:['“That is a company. We are past company.”']}
+       ]},
+      {line:'“Autonomy is solved. Six years. What is left is regulatory, cultural, and edge cases.”',
+       opts:[
+         {say:'“Which edge cases.”',
+          back:['“The shrinking kind.”',
+                'He does not blink, which you notice, which means he wanted you to.']},
+         {say:'Say nothing and let him keep going.', good:1,
+          hint:'he is not looking for a conversation',
+          back:['He keeps going for four minutes.',
+                'Somewhere in it is the only true thing he says all day, and you catch it.']},
+         {say:'“It has never run off the test track.”',
+          back:['“The track is a controlled environment. That is the point of a track.”',
+                'The temperature of the room does not change and you feel it change.']}
+       ]},
+      {line:'“Lighthouse is the part they will get wrong. They will make it sound inevitable.”',
+       when:()=>true,
+       opts:[
+         {say:'“Mara Okafor built the bottom of it.”', good:1, when:()=>!!S.flags.said_mara,
+          hint:'he has to hear the name out loud',
+          back:['He stops.',
+                '“Okafor. Yes. She was — yes.”',
+                'It is the only time all day he is not performing, and it lasts about a second.']},
+         {say:'“It was not inevitable.”', good:1,
+          back:['“It was not inevitable. It was me.”',
+                'He says it gently, which is worse.']},
+         {say:'“Who built it?”',
+          back:['“A team. A small team. I was very close to it.”']}
+       ]}
+    ],
+    win:['He stands up, which is how you learn it is over.',
+         '“Come and find me when you have something bigger than a toggle.”',
+         'You will not find him. He is in Lisbon on Thursday and after that he is a calendar.'],
+    lose:['He is already looking at the door behind you.',
+          '“Good. Good. Keep shipping.”',
+          'He has already forgotten which toggle.']
+  }
 };
+
+/* ---------- the open floor: people, not fights ----------
+   Crossing the middle of the floor still costs you. It costs you being seen. */
+const HALLWAY = [
+  {who:'Someone from Design', lines:['“Oh — you’re the toggle person.”','“No, that’s good. That’s a good thing to be.”']},
+  {who:'A Director', lines:['A director you have never met says your name correctly.','You have no idea how he knows it. You will think about this tonight.']},
+  {who:'Someone at the printer', lines:['“Do you know how to make it do double-sided.”','Nobody knows how to make it do double-sided.']},
+  {who:'Devon', lines:['“Still nobody owns checkout-svc.”','“I have a spreadsheet now. The spreadsheet does not own it either.”']},
+  {who:'A recruiter, externally', lines:['Your personal phone buzzes in your pocket.','Rocketship opportunity. Ground floor. They have found this number too.']},
+  {who:'The all-hands rehearsal', lines:['Through the glass, Brayden is practising saying a number.','He says it four times. The number changes twice.']},
+  {who:'Somebody’s standup', lines:['You walk through the back of a standup and six people stop talking.','They start again after you pass, about something else.']},
+  {who:'Facilities', lines:['“Are you sitting at 3F-12? That desk is being hotelled from Monday.”','It is your desk. You sat down at it this morning.']}
+];
+const HALLWAY6 = [
+  {who:'Someone from Comms', lines:['“Is the toggle a moment? We’re looking for moments.”']},
+  {who:'An EA', lines:['“If he walks past, do not say the word roadmap.”','She is gone before you can ask which he.']},
+  {who:'Legal, in passing', lines:['“Don’t reply to Teddy.”','That is the entire interaction.']},
+  {who:'The sixth floor kitchen', lines:['The snacks up here are different snacks.','Nobody mentions it. Everybody knows.']}
+];
+const hallTable = ()=> (typeof ch2 === 'function' && ch2()) ? HALLWAY6 : HALLWAY;
 
 /* ---------- interruptions: the actual job ---------- */
 const INTERRUPTS = [
@@ -1433,13 +1570,18 @@ const SIDEQUESTS = [
   {k:'pass',   ttl:'Chain of Custody',           giver:'Marcus',
    steps:['Find the password','Get it rotated']},
   {k:'fridge', ttl:'The Sandwich',               giver:'a fridge',
-   steps:['Ask whose it is','Decide']}
+   steps:['Ask whose it is','Decide']},
+  {k:'crush',  ttl:'Collecting Data',             giver:'Devon',
+   steps:['Find out whether Priya has ever mentioned him','Report back']},
+  {k:'chair',  ttl:'The Good Chair',              giver:'Sandeep',
+   steps:['Find out where it went','Get it back or do not']},
+  {k:'ref',    ttl:'A Strong Recommendation',     giver:'Brooke',
+   steps:['Decide what you can honestly say']}
 ];
 
-const ENCOUNTERS = ['replyall','flaky','merge','creep','quickq','recruiter','legacy','standup'];
+
 /* Nobody expects to be ambushed in the room with the nap pods. */
-const ENCOUNTERS6 = ['offsite','slide14','mentor','execreply'];
-const encTable = ()=> (typeof ch2 === 'function' && ch2()) ? ENCOUNTERS6 : ENCOUNTERS;
+
 
 /* ==========================================================================
    SOUND — synthesised, so there are no assets to ship or license
@@ -1482,7 +1624,7 @@ const Sfx = {
 /* ==========================================================================
    STATE
    ========================================================================== */
-const BUILD = '1.9.0';                       /* shown in the UI so bug reports name a build */
+const BUILD = '2.0.0';                       /* shown in the UI so bug reports name a build */
 const SAVE_VERSION = 2;
 const SAVEKEY = 'shipit_lodestar_v2';
 const LEGACY_KEYS = ['shipit_vanta_v1'];     /* saves written before the rename */
@@ -1500,12 +1642,12 @@ let lastT = 0, steps = 0, encCooldown = 6;
 function newGame(){
   return {
     x:MAP.start.x, y:MAP.start.y, dir:MAP.start.dir,
-    lv:1, xp:0,
-    focus:110, maxFocus:110, caf:24, maxCaf:24,
-    atk:13, def:5, credits:40,
+    lv:1, focus:110, maxFocus:110, caf:24, maxCaf:24,
+    credits:40,
     weapon:'laptop', armor:'lanyard',
     bag:{snack:2, brew:1},
     owned:{laptop:1, lanyard:1},
+    tier:'Unknown',
     version: SAVE_VERSION,
     opts:{sound:1, extraTime:0, haptics:1},
     flags:{},
@@ -2174,12 +2316,13 @@ function tryMove(dir){
 function arrive(){
   S.x = anim.fx; S.y = anim.fy; anim.on = false;
   S.minutes += 1;
-  if(tinfo(S.x,S.y).enc && S.flags.satDown){   /* the floor leaves you alone until you have sat down once */
+  if(tinfo(S.x,S.y).enc && S.flags.satDown && mode === 'field'){   /* the floor leaves you alone until you have sat down once */
     steps++;
     if(steps > encCooldown && Math.random() < 0.11){
       steps = 0; encCooldown = 5 + ri(6);
-      const tbl = encTable();
-      startBattle([tbl[ri(tbl.length)]]);
+      const tbl = hallTable();
+      const h = tbl[ri(tbl.length)];
+      moment({who:h.who, lines:h.lines, rate:'hallway'});
     }
   }
 }
@@ -2193,7 +2336,7 @@ function loop(t){
   } else if(mode==='field' && heldDir){
     tryMove(heldDir);
   }
-  if(mode!=='desk' && mode!=='battle') draw();   /* includes the title, which shows the floor behind it */
+  if(mode!=='desk' && mode!=='scene') draw();   /* includes the title, which shows the floor behind it */
   requestAnimationFrame(loop);
 }
 
@@ -2264,10 +2407,15 @@ async function flash(){
 /* ==========================================================================
    DERIVED STATS
    ========================================================================== */
-const pAtk = ()=> S.atk + (ITEMS[S.weapon].atk||0);
-const pDef = ()=> S.def + (ITEMS[S.armor].def||0);
-const title = ()=> TITLES[Math.min(S.lv-1, TITLES.length-1)];
-const badge = ()=> BADGES[Math.min(S.lv-1, BADGES.length-1)];
+/* Stamina is how long a day you can take; cover is how little an ignored ping
+   costs you. Both used to be combat numbers and both now live at the desk. */
+const stamina = ()=> S.maxFocus + (ITEMS[S.weapon] ? (ITEMS[S.weapon].stam||0) : 0);
+const cover   = ()=> (ITEMS[S.armor] ? (ITEMS[S.armor].cover||0) : 0);
+/* Promotion tracks output, so your title reads off Performance. */
+const BANDAT  = [0, 55, 68, 78, 87, 94];
+const band    = ()=> Math.max(0, BANDAT.filter(v=>perf() >= v).length - 1);
+const title   = ()=> TITLES[band()];
+const badge   = ()=> BADGES[band()];
 /* Chapter two runs on the sixth floor, where the gates are sign-offs and the
    people who hold them do not write code. */
 const CH2GATES = [
@@ -2332,11 +2480,11 @@ function syncHUD(){
   $('hLevel').textContent = badge();
   $('bLevel').textContent = badge();
   $('hLoc').textContent = nextStep();
-  const f = Math.max(0,S.focus)/S.maxFocus*100, c = Math.max(0,S.caf)/S.maxCaf*100;
+  const f = Math.max(0,S.focus)/stamina()*100, c = Math.max(0,S.caf)/S.maxCaf*100;
   $('hFocus').style.width = f+'%'; $('bFocus').style.width = f+'%';
   $('hCaf').style.width   = c+'%'; $('bCaf').style.width   = c+'%';
-  $('hFocusN').textContent = Math.max(0,S.focus)+'/'+S.maxFocus;
-  $('bFocusN').textContent = Math.max(0,S.focus)+'/'+S.maxFocus;
+  $('hFocusN').textContent = Math.max(0,S.focus)+'/'+stamina();
+  $('bFocusN').textContent = Math.max(0,S.focus)+'/'+stamina();
   $('hCafN').textContent   = Math.max(0,S.caf)+'/'+S.maxCaf;
   $('bCafN').textContent   = Math.max(0,S.caf)+'/'+S.maxCaf;
   syncRates();
@@ -2376,27 +2524,20 @@ const RATES = {
   goalShort:{social: 0, perf:-3, why:'you came up short'},
   burnout:  {social:-2, perf:-5, why:'you ran yourself out'},
   quest:    {social:+8, perf: 0, why:'you did somebody a favor'},
-  refuse:   {social:-5, perf:+1, why:'you said no'}
+  refuse:   {social:-5, perf:+1, why:'you said no'},
+  read:     {social:+6, perf: 0, why:'you read the room'},
+  misread:  {social:-2, perf: 0, why:'you read it wrong'},
+  hallway:  {social:+1, perf:-1, why:'you got stopped on the floor'}
 };
 const RATEBAND = v => v >= 70 ? 'high' : v <= 30 ? 'low' : 'mid';
 
 /* The ratings bend the world, never the critical path. Nothing below can lower
    a build cap, close a gate or make a sign-off unreachable, because a rating
    that can strand you is a rating that turns a comedy into a soft-lock. */
-/* The org is harder on a low performer, but a rating must never make a boss
-   unbeatable: journey at perf 0 hit the round cap on Brayden when this also
-   inflated HP. Low performance makes the room hit harder, not last longer. */
-const bossScale = ()=>{
-  const b = RATEBAND(perf());
-  return b === 'low' ? {hp:1.0, atk:1.10, def:1.05}
-       : b === 'high' ? {hp:0.95, atk:0.96, def:1.0}
-       : {hp:1, atk:1, def:1};
-};
 const shopScale = ()=>{                     /* Sandeep does favors for people who do favors */
   const b = RATEBAND(social());
   return b === 'low' ? 1.3 : b === 'high' ? 0.8 : 1;
 };
-const xpScale = ()=> RATEBAND(perf()) === 'high' ? 1.15 : RATEBAND(perf()) === 'low' ? 0.88 : 1;
 const price = it => Math.max(1, Math.round(it.price * shopScale()));
 const social = ()=> S ? S.social : 50;
 const perf   = ()=> S ? S.perf   : 50;
@@ -2431,21 +2572,6 @@ function rateChip(k, d, why){
   setTimeout(()=>{ el.remove(); }, 1900);
 }
 
-/* A room reads the room. Applied to the table just before the fight starts, off
-   the pristine values in BASEBOSS, so it never compounds across days. */
-const BASEBOSS = {};
-function scaleBoss(){
-  const m = bossScale();
-  for(const k of ['brayden','rand']){
-    const e = ENEMIES[k]; if(!e) continue;
-    if(!BASEBOSS[k]) BASEBOSS[k] = {hp:e.hp, atk:e.atk, def:e.def};
-    const b = BASEBOSS[k];
-    e.hp  = Math.round(b.hp  * m.hp);
-    e.atk = Math.round(b.atk * m.atk);
-    e.def = Math.round(b.def * m.def);
-  }
-}
-
 /* What the year-end packet says about how you spent the week. */
 function reviewLines(){
   const sb = RATEBAND(social()), pb = RATEBAND(perf());
@@ -2472,79 +2598,65 @@ function reviewLines(){
   return out;
 }
 
-function calcDmg(atk, def, mult){
-  return Math.max(1, Math.round(atk*(1+Math.random()*0.25)*mult - def*0.5));
-}
-
-async function gainLevels(notify){
-  while(XPCURVE[S.lv] !== undefined && S.xp >= XPCURVE[S.lv]){
-    S.lv++;
-    S.maxFocus += 20; S.maxCaf += 5; S.atk += 2; S.def += 2;
-    S.focus = S.maxFocus; S.caf = S.maxCaf;
-    syncHUD();
-    Sfx.level();
-    notify('PROMOTED — you are now ' + title() + '.');
-    await sleep(750);
-  }
-}
-async function gainXP(sp, cr){
-  S.xp += sp; S.credits += cr;
-  blog('+'+sp+' story points, +'+cr+' credits.');
-  await gainLevels(blog);
+/* Crossing a social tier is the closest thing left to a level-up, and it
+   happens because people started answering you, not because you ground it. */
+async function checkTier(notify){
+  const now = socialTier().name;
+  if(S.tier === now) return;
+  const rising = !S.tier || SOCIALTIERS.findIndex(t=>t.name===now) > SOCIALTIERS.findIndex(t=>t.name===S.tier);
+  S.tier = now;
+  if(!rising) return;
+  syncHUD(); if(Sfx.level) Sfx.level();
+  notify(now.toUpperCase() + ' — ' + socialTier().note);
+  await sleep(700);
 }
 
 /* ==========================================================================
-   BATTLE
+   THE CALL — a conversation with something at stake
+
+   This replaced the battle system. The premise it runs on: everybody here
+   wants something that is not the thing they said. Pick the reply that meets
+   what they actually want and the conversation goes your way. You find out
+   what they actually want by walking around the building — a `tell` is a flag
+   you set somewhere else, and holding it marks the right reply.
+
+   There is no losing. A bad read is a worse outcome and a better joke, never
+   a wall. The DOM ids here (#scene, #grid, #blog) are shared with nothing else.
    ========================================================================== */
-let B = null;
+let C = null;
+
+/* 09:12 plus however long you have been here */
+function clockStr(){
+  const base = 9*60 + 12 + S.minutes;
+  const h = Math.floor(base/60)%24, m = base%60;
+  return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+}
+/* a stable color per speaker, so a name always arrives the same shade */
+function hueOf(str){ let h = 0; for(let i=0;i<str.length;i++) h = (h*31 + str.charCodeAt(i)) % 360; return h; }
+
+/* out of Focus is not a death; it is a personal day */
+async function burnout(){
+  const lost = Math.min(S.credits, Math.round(S.credits*0.15));
+  S.credits -= lost;
+  S.x = 4; S.y = 2; S.dir = 'up';
+  S.focus = stamina(); S.caf = S.maxCaf; S.switched = 0;
+  syncHUD();
+  await say(null, [
+    'You take a personal day.',
+    'You come back. It goes unmentioned. Your calendar has filled in behind you.',
+    lost ? ('You spent ' + lost + ' credits on something you do not remember buying.') : 'You are, at least, rested.'
+  ]);
+}
 
 function blog(t){
   const el = $('blog');
   const d = document.createElement('div'); d.textContent = t; el.appendChild(d);
-  while(el.children.length > 5) el.removeChild(el.firstChild);
+  el.scrollTop = el.scrollHeight;
+  while(el.children.length > 7) el.removeChild(el.firstChild);
 }
 
-function renderFoes(){
-  const g = $('grid'); g.innerHTML = '';
-  g.classList.toggle('solo', B.foes.length === 1);
-  g.classList.toggle('duo', B.foes.length === 2);
-  B.foes.forEach((f,i)=>{
-    const d = document.createElement('div');
-    d.className = 'tile' + (i===B.target?' sel':'');
-    d.innerHTML = '<div class="art"></div><div class="hp"><i></i></div><div class="nm"></div><div class="st"></div>';
-    d.querySelector('.art').textContent = f.art;
-    d.querySelector('.nm').textContent = f.name;
-    d.style.setProperty('--h', hueOf(f.name));
-    d.onclick = ()=>{ if(f.alive){ B.target = i; renderFoes(); } };
-    g.appendChild(d); f.el = d;
-    updateFoe(i);
-  });
-  g.insertAdjacentHTML('beforeend', '<div id="selfview"><b>YOU</b>CAMERA OFF</div>');
-}
-function hueOf(str){ let h = 0; for(let i=0;i<str.length;i++) h = (h*31 + str.charCodeAt(i)) % 360; return h; }
-function updateFoe(i){
-  const f = B.foes[i]; if(!f.el) return;
-  f.el.querySelector('.hp i').style.width = Math.max(0, f.hp/f.maxHp*100) + '%';
-  f.el.querySelector('.st').textContent = f.blocked ? 'BLOCKED' : '';
-  f.el.classList.toggle('dead', !f.alive);
-  f.el.classList.toggle('sel', i===B.target && f.alive);
-}
-function popDmg(el, text, color){
-  const d = document.createElement('div');
-  d.className='dmg'; d.textContent=text; d.style.color=color||'#fff';
-  d.style.left='50%'; d.style.top='14px'; d.style.transform='translateX(-50%)';
-  el.appendChild(d); setTimeout(()=>d.remove(), 1000);
-}
-const aliveFoes = ()=> B ? B.foes.filter(f=>f.alive) : [];
-function ensureTarget(){
-  if(!B) return;
-  if(!B.foes[B.target] || !B.foes[B.target].alive){
-    const i = B.foes.findIndex(f=>f.alive);
-    B.target = i<0?0:i;
-  }
-}
 function setMenu(buttons){
-  const m = $('bmenu'); m.innerHTML = '';
+  const m = $('smenu'); m.innerHTML = '';
   m.className = buttons.length===1 ? 'one' : '';
   buttons.forEach(b=>{
     const el = document.createElement('button');
@@ -2556,222 +2668,93 @@ function setMenu(buttons){
     m.appendChild(el);
   });
 }
-function clockStr(){
-  const base = 9*60 + 12 + S.minutes;
-  const h = Math.floor(base/60)%24, m = base%60;
-  return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+
+/* the person you are talking to, in the tile the call puts them in */
+function renderWho(sc){
+  const g = $('grid'); g.innerHTML = '';
+  g.classList.add('solo');
+  const t = document.createElement('div');
+  t.className = 'tile';
+  t.style.setProperty('--h', hueOf(sc.who));
+  t.innerHTML = '<div class="art"></div><div class="nm"><b></b><i></i></div>';
+  t.querySelector('.art').textContent = sc.art || '\u{1f464}';
+  t.querySelector('.nm b').textContent = sc.who;
+  t.querySelector('.nm i').textContent = sc.sub || '';
+  g.appendChild(t);
 }
 
-function startBattle(ids, opts){
-  opts = opts || {};
-  return new Promise(resolve=>{
-    mode = 'battle'; heldDir = null;
-    B = {
-      foes: ids.map(id=>{
-        const t = ENEMIES[id];
-        return Object.assign({}, t, {key:id, hp:t.hp, maxHp:t.hp, alive:true, blocked:0, atkMod:0, el:null});
-      }),
-      target:0, over:false, round:0, boss:!!opts.boss, canFlee:!opts.noFlee, resolve
-    };
-    $('blog').innerHTML = '';
-    $('callTitle').textContent = opts.title || (B.foes.length>1 ? 'Group Sync' : B.foes[0].name);
-    $('callTime').textContent = clockStr();
-    document.body.classList.add('fighting');
-    $('toast').classList.remove('on');
-    $('battle').classList.add('on');
-    renderFoes(); syncHUD();
-    blog(opts.intro || (B.foes.length>1 ? 'Several people have joined.' : B.foes[0].name + ' has joined the call.'));
-    promptMenu();
-  });
+/* one tap to move on, so a run of lines reads at the player's pace */
+function beat(lines){
+  (Array.isArray(lines) ? lines : [lines]).forEach(blog);
+  return new Promise(res=> setMenu([{label:'…', on:res}]));
 }
 
-function promptMenu(){
-  ensureTarget();
-  const skills = Object.keys(SKILLS).filter(k=>SKILLS[k].lv <= S.lv);
-  setMenu([
-    {label:'Commit', sub:'Do the work', on:()=>act(doCommit)},
-    {label:'Abilities', sub:skills.length+' available', on:openSkills},
-    {label:'Bag', sub:Object.keys(S.bag).filter(k=>S.bag[k]>0).length+' kinds', on:openBattleBag},
-    {label:'Log Off', sub:B.canFlee?'Attempt to leave':'Not an option', disabled:!B.canFlee, on:()=>act(doFlee)}
-  ]);
-}
-function openSkills(){
-  const list = Object.keys(SKILLS).filter(k=>SKILLS[k].lv <= S.lv).map(k=>{
-    const s = SKILLS[k];
-    return {label:s.name, sub:s.cost?(s.cost+' caffeine'):'free', disabled:S.caf < s.cost, on:()=>act(()=>doSkill(k))};
-  });
-  list.push({label:'← Back', sub:'', on:promptMenu});
-  setMenu(list);
-}
-function openBattleBag(){
-  const keys = Object.keys(S.bag).filter(k=>S.bag[k]>0 && ITEMS[k]);
-  const list = keys.map(k=>({label:ITEMS[k].name, sub:'x'+S.bag[k], on:()=>act(()=>doItem(k))}));
-  if(!list.length) list.push({label:'Bag is empty', sub:'', disabled:true, on:()=>{}});
-  list.push({label:'← Back', sub:'', on:promptMenu});
-  setMenu(list);
+/* the replies, with the tell marked when you have found it */
+function replies(opts, known){
+  return new Promise(res=> setMenu(opts.map((o,i)=>({
+    label: o.say,
+    sub: (known && o.good) ? o.hint || 'you know this one' : o.sub,
+    on: ()=>res(i)
+  }))));
 }
 
-async function act(fn){
-  setMenu([]);
-  if(S.switched){
-    S.switched = 0;
-    blog('You lost the thread. By the time you find it again, your turn is over.');
-    await sleep(950);
-  } else {
-    await fn();
+/* Returns 'win' when the player read the room, 'lose' when they did not, and
+   'left' if the scene let them go and they went. Never blocks progress. */
+async function scene(id, over){
+  const sc = Object.assign({}, SCENES[id], over || {});
+  const prev = mode;
+  mode = 'scene'; heldDir = null;
+  C = {id, good:0, asked:0};
+  $('blog').innerHTML = '';
+  $('callTitle').textContent = sc.title || sc.who;
+  $('callTime').textContent = clockStr();
+  document.body.classList.add('calling');
+  $('toast').classList.remove('on');
+  $('scene').classList.add('on');
+  renderWho(sc); syncHUD();
+
+  const known = !!(sc.tell && S.flags[sc.tell]);
+  if(known && sc.tellLine) blog(sc.tellLine);
+  if(sc.open) await beat(sc.open);
+
+  let left = false;
+  for(const r of sc.rounds){
+    if(r.when && !r.when()) continue;
+    await beat(r.line);
+    const opts = r.opts.filter(o=>!o.when || o.when());
+    const i = await replies(opts, known);
+    const o = opts[i];
+    if(o.good) C.good++;
+    if(o.leaves){ left = true; if(o.back) await beat(o.back); break; }
+    if(o.cost && S.caf >= o.cost){ S.caf -= o.cost; syncHUD(); }
+    if(o.back) await beat(o.back);
+    if(o.sets) S.flags[o.sets] = 1;
   }
-  if(!B || B.over) return;
-  if(!aliveFoes().length){ return endBattle('win'); }
-  await enemyTurn();
-  if(!B || B.over) return;
-  if(S.focus <= 0) return endBattle('lose');
-  B.round++;
-  S.minutes += 2; $('callTime').textContent = clockStr();
-  B.foes.forEach(f=>{ if(f.alive && f.grow){ f.atkMod += f.grow; } });
-  promptMenu();
+
+  const outcome = left ? 'left' : (C.good >= (sc.pass === undefined ? 1 : sc.pass) ? 'win' : 'lose');
+  const tail = outcome === 'win' ? sc.win : outcome === 'left' ? sc.gone : sc.lose;
+  if(tail) await beat(tail);
+
+  $('scene').classList.remove('on');
+  document.body.classList.remove('calling');
+  C = null; mode = prev === 'scene' ? 'field' : prev;
+  S.minutes += sc.mins || 6;
+  if(outcome === 'win') rate('read');
+  else if(outcome === 'lose') rate('misread');
+  syncHUD(); autosave(true);
+  return outcome;
 }
 
-async function hitFoe(i, dmg, note, color){
-  if(!B) return;
-  (color === '#f5a524' ? Sfx.crit() : Sfx.hit());
-  const f = B.foes[i];
-  f.hp -= dmg;
-  f.el.classList.add('hit');
-  popDmg(f.el, '-'+dmg, color||'#ffd9d9');
-  if(note) blog(note);
-  await sleep(340);
-  f.el.classList.remove('hit');
-  if(f.hp <= 0){ f.hp = 0; f.alive = false; blog(f.name + ' has left the call.'); }
-  updateFoe(i);
-  await sleep(260);
-}
-
-async function doCommit(){
-  ensureTarget();
-  const f = B.foes[B.target];
-  const dmg = calcDmg(pAtk(), f.def, 1.0);
-  const COMMITS = [
-    'You write the code. Forty lines. You will later describe this as "non-trivial".',
-    'You fix it properly. Then you fix it the fast way, because the proper way needs a design doc.',
-    'You add a TODO. The TODO has a date. The date is today. It will always be today.',
-    'It works on your machine, so you ship your machine.',
-    'You rename three variables and call it a refactor.',
-    'You push. CI is green. You do not know why, and you know better than to ask.'
-  ];
-  await hitFoe(B.target, dmg, COMMITS[ri(COMMITS.length)]);
-}
-
-async function doSkill(k){
-  const sk = SKILLS[k];
-  S.caf -= sk.cost; syncHUD();
-  if(sk.self){
-    const r = sk.self(S);
-    if(r.heal){ S.focus = Math.min(S.maxFocus, S.focus + r.heal); popDmg($('mestrip'),'+'+r.heal,'#3ecf8e'); }
-    if(r.caf){ S.caf = Math.min(S.maxCaf, S.caf + r.caf); }
-    if(r.cleanse) S.switched = 0;
-    syncHUD(); blog(sk.name + '. ' + r.note);
-    await sleep(700); return;
-  }
-  ensureTarget();
-  const f = B.foes[B.target];
-  const r = sk.hit(Object.assign({}, S, {atk:pAtk()}), f);
-  let mult = 1;
-  if(f.weak === k){ mult = 1.6; }
-  const dmg = calcDmg(r.dmg, f.def, mult);
-  await hitFoe(B.target, dmg, sk.name + '. ' + r.note + (mult>1?' It lands exactly where it hurts.':''),
-               mult>1?'#f5a524':'#ffd9d9');
-  if(r.debuff && f.alive && Math.random()<0.6){
-    f.atkMod -= 3; f.blocked = 1; updateFoe(B.target);
-    blog(f.name + ' has to go check something.');
-    await sleep(450);
-  }
-}
-
-async function doItem(k){
-  const it = ITEMS[k];
-  S.bag[k]--; if(S.bag[k]<=0) delete S.bag[k];
-  if(it.focus){ S.focus = Math.min(S.maxFocus, S.focus + it.focus); popDmg($('mestrip'),'+'+it.focus,'#3ecf8e'); }
-  if(it.caf){ S.caf = Math.min(S.maxCaf, S.caf + it.caf); popDmg($('mestrip'),'+'+it.caf,'#d99a3f'); }
-  if(it.cure) S.switched = 0;
+/* Some rooms you simply sit in. One tap, a few lines, a rating move. */
+async function moment(m){
+  const prev = mode;
+  mode = 'dialogue';
+  await say(m.who || null, m.lines);
+  mode = prev === 'dialogue' ? 'field' : prev;
+  if(m.rate) rate(m.rate);
+  S.minutes += m.mins || 3;
   syncHUD();
-  blog('You use the ' + it.name + '.');
-  await sleep(700);
 }
-
-async function doFlee(){
-  if(Math.random() < 0.62){
-    blog('You set your status to Away and walk somewhere else.');
-    await sleep(750);
-    return endBattle('flee');
-  }
-  blog('You stand up. They keep talking. You sit back down.');
-  await sleep(800);
-}
-
-async function enemyTurn(){
-  for(let i=0;i<B.foes.length;i++){
-    if(!B || B.over) return;
-    const f = B.foes[i];
-    if(!f.alive) continue;
-    if(f.blocked){ f.blocked = 0; updateFoe(i); blog(f.name + ' is still typing.'); await sleep(600); continue; }
-    const mv = f.moves[ri(f.moves.length)];
-    const txt = mv.txt.replace(/\{E\}/g, f.name);
-    if(mv.t === 'skip'){ blog(txt); await sleep(750); continue; }
-    if(mv.t === 'heal'){
-      const h = Math.round(f.maxHp*(f.healPct||0.08));
-      f.hp = Math.min(f.maxHp, f.hp + h); updateFoe(i);
-      popDmg(f.el, '+'+h, '#3ecf8e'); blog(txt); await sleep(800); continue;
-    }
-    if(mv.t === 'status'){
-      blog(txt);
-      if(Math.random() < 0.7){ S.switched = 1; blog('You are context switched.'); }
-      await sleep(850); continue;
-    }
-    const dmg = calcDmg(f.atk + f.atkMod, pDef(), mv.p);
-    S.focus -= dmg; syncHUD(); Sfx.hurt();
-    popDmg($('mestrip'), '-'+dmg, '#ff9b9b');
-    blog(txt);
-    await sleep(760);
-    if(S.focus <= 0) return endBattle('lose');
-  }
-}
-
-async function endBattle(outcome){
-  if(!B || B.over) return; B.over = true;
-  const res = B.resolve;
-  if(outcome === 'win'){
-    const sp = B.foes.reduce((a,f)=>a+f.sp,0), cr = B.foes.reduce((a,f)=>a+f.cr,0);
-    blog('The meeting ends.');
-    await sleep(600);
-    await gainXP(sp, cr);
-    await sleep(900);
-  } else if(outcome === 'lose'){
-    blog('You are out of Focus.');
-    await sleep(1100);
-  } else {
-    await sleep(300);
-  }
-  $('battle').classList.remove('on');
-  document.body.classList.remove('fighting');
-  B = null; mode = 'field'; syncHUD();
-  if(outcome === 'lose') await burnout();
-  autosave(true);
-  res(outcome);
-}
-
-async function burnout(){
-  const lost = Math.min(S.credits, Math.round(S.credits*0.15));
-  S.credits -= lost;
-  S.x = 4; S.y = 2; S.dir = 'up';
-  S.focus = S.maxFocus; S.caf = S.maxCaf; S.switched = 0;
-  syncHUD();
-  await say(null, [
-    'You take a personal day.',
-    'You come back. It goes unmentioned. Your calendar has filled in behind you.',
-    lost ? ('You spent ' + lost + ' credits on something you do not remember buying.') : 'You are, at least, rested.'
-  ]);
-}
-
 /* ==========================================================================
    THE DESK — a shell for build tools, and everything that happens instead
    ========================================================================== */
@@ -3023,7 +3006,7 @@ function escalate(c, i){
   d.cards.splice(i,1); renderCards();
   if(c.mtg){ enterMeeting(c.mtg, true); return; }
   d.ignored++;
-  S.focus -= c.thr; Sfx.hurt(); buzz([40,50,40]);
+  S.focus -= Math.max(1, c.thr - cover()); Sfx.hurt(); buzz([40,50,40]);
   rate('ignore');
   workState(c.esc, true);
   if(d.g.punish) d.g.punish();
@@ -3159,7 +3142,7 @@ async function endDesk(reason){
   if(reason === 'capped'){
     const b = capBlocker();
     await say(null, ['Build is at ' + S.build + '%. That is as far as this goes today.', b.line, tally]);
-    S.xp += 22 + ri(8); await gainLevels(toast);
+    S.credits += 14 + ri(8); await checkTier(toast);
     toast('BLOCKED — go and find ' + b.who + '.');
   } else if(reason === 'burnout'){
     rate('burnout');
@@ -3168,13 +3151,13 @@ async function endDesk(reason){
   } else if(reason === 'topped'){
     await say(null, [d.g.topped || 'You have run out of screen.', 'Build is at ' + S.build + '%.', tally]);
   } else if(reason === 'short'){
-    S.xp += 10 + ri(6); await gainLevels(toast);
+    S.credits += 8 + ri(5); await checkTier(toast);
     await say(null, [d.g.short || 'The queue is empty and you did not get through what you meant to.',
       'You got ' + (gl ? gl.have : 0) + ' of ' + (gl ? gl.need : 0) + '. Build is at ' + S.build + '%.', tally]);
     toast('SHORT OF THE NUMBER — performance took it.');
   } else if(reason === 'done'){
-    S.xp += Math.round((26 + ri(10)) * xpScale()); S.caf = Math.max(0, S.caf - 4);
-    await gainLevels(toast);
+    S.credits += 18 + ri(10); S.caf = Math.max(0, S.caf - 4);
+    await checkTier(toast);
     if(S.build >= 100){
       await say(null, ['The toggle is built. Forty lines. It took a day and a half.', tally, 'Now it needs three sign-offs: Priya, Marcus, Kai.']);
       toast('BUILD 100% — go and get your sign-offs.');
@@ -3816,24 +3799,25 @@ function openMenu(){
   if(mode!=='field') return;
   mode = 'menu'; heldDir = null;
   const body = $('menuBody'); body.innerHTML = '';
-  const need = XPCURVE[S.lv];
   const card = document.createElement('div'); card.className = 'card hero';
-  const xpPct = need !== undefined ? Math.min(100, Math.round(S.xp/need*100)) : 100;
+  const tier = socialTier();
+  const nextTier = SOCIALTIERS[SOCIALTIERS.indexOf(tier) + 1];
+  const tierPct = nextTier ? Math.round((social() - tier.at) / (nextTier.at - tier.at) * 100) : 100;
   card.innerHTML =
     '<div class="idrow">' +
       '<span class="bdg">' + esc(badge()) + '</span>' +
       '<div class="nm"><b>' + esc(title()) + '</b><small>Day ' + (S.day||1) + ' &middot; ' + esc(clockStr()) + '</small></div>' +
     '</div>' +
-    '<div class="bar xp"><div class="lab"><span>STORY POINTS</span><span>' +
-      (need !== undefined ? S.xp + ' / ' + need : S.xp + ' (max band)') + '</span></div>' +
-      '<div class="trk"><i style="width:' + xpPct + '%"></i></div></div>' +
-    '<div class="bar f"><div class="lab"><span>FOCUS</span><span>' + S.focus + ' / ' + S.maxFocus + '</span></div>' +
-      '<div class="trk"><i style="width:' + Math.max(0,S.focus)/S.maxFocus*100 + '%"></i></div></div>' +
+    '<div class="bar xp"><div class="lab"><span>' + esc(tier.name.toUpperCase()) + '</span><span>' +
+      (nextTier ? 'next: ' + esc(nextTier.name) : 'as known as it gets') + '</span></div>' +
+      '<div class="trk"><i style="width:' + tierPct + '%"></i></div></div>' +
+    '<div class="bar f"><div class="lab"><span>FOCUS</span><span>' + S.focus + ' / ' + stamina() + '</span></div>' +
+      '<div class="trk"><i style="width:' + Math.max(0,S.focus)/stamina()*100 + '%"></i></div></div>' +
     '<div class="bar c"><div class="lab"><span>CAFFEINE</span><span>' + S.caf + ' / ' + S.maxCaf + '</span></div>' +
       '<div class="trk"><i style="width:' + Math.max(0,S.caf)/S.maxCaf*100 + '%"></i></div></div>' +
     '<div class="tiles">' +
-      tile('Impact', pAtk(), S.atk + ' +' + (ITEMS[S.weapon].atk||0)) +
-      tile('Boundaries', pDef(), S.def + ' +' + (ITEMS[S.armor].def||0)) +
+      tile('Stamina', stamina(), 'a day this long') +
+      tile('Cover', cover(), 'off every ignored ping') +
       tile('Credits', S.credits, 'perk') +
     '</div>';
   body.appendChild(card);
@@ -3882,6 +3866,9 @@ function openMenu(){
       else if(q.k==='sticky')  st = sq('sticky')>=3 ? 'DONE' : sq('sticky')>=2 ? 'back to the wall' :
         ['Teddy','Ines','Priyanka'].filter(x=>!S.asked['note_'+x.toLowerCase()]).join(', ') || 'back to the wall';
       else if(q.k==='pass')    st = sq('pass')>=3 ? 'DONE' : sq('pass')>=2 ? 'back to Marcus' : sq('pass')>=1 ? 'the Gantt, in the war room' : 'ask Marcus';
+      else if(q.k==='crush')  st = sq('crush')>=3 ? 'DONE' : sq('crush')>=2 ? 'back to Devon' : 'ask Priya';
+      else if(q.k==='chair')  st = sq('chair')>=3 ? 'DONE' : sq('chair')>=2 ? 'back to Sandeep' : 'it is not at his desk';
+      else if(q.k==='ref')    st = 'DONE';
       else                    st = sq('fridge')>=3 ? 'DONE' : sq('fridge')>=2 ? 'decide at the fridge' :
         ['Dee','Ines'].filter(x=>!S.asked['sw_'+x.toLowerCase()]).join(', ') || 'decide at the fridge';
       return kv(q.ttl, st);
@@ -3932,24 +3919,27 @@ function showBag(){
 function showEquip(){
   const owned = Object.keys(S.owned).filter(k=>ITEMS[k]);
   const rows = [];
-  rows.push({card:'Equipped', html:kv('Setup', ITEMS[S.weapon].name) + kv('Defenses', ITEMS[S.armor].name)});
-  owned.filter(k=>ITEMS[k].type==='weapon').forEach(k=>rows.push({
-    label:ITEMS[k].name, sub:ITEMS[k].desc, tag:(k===S.weapon?'EQUIPPED':'+'+(ITEMS[k].atk||0)+' ATK'),
+  rows.push({card:'Equipped', html:kv('Setup', ITEMS[S.weapon].name) + kv('Cover', ITEMS[S.armor].name)});
+  owned.filter(k=>ITEMS[k].type==='desk').forEach(k=>rows.push({
+    label:ITEMS[k].name, sub:ITEMS[k].desc, tag:(k===S.weapon?'EQUIPPED':'+'+(ITEMS[k].stam||0)+' STAMINA'),
     disabled:k===S.weapon, on:()=>{ S.weapon=k; toast('Setup changed.'); showEquip(); }
   }));
-  owned.filter(k=>ITEMS[k].type==='armor').forEach(k=>rows.push({
-    label:ITEMS[k].name, sub:ITEMS[k].desc, tag:(k===S.armor?'EQUIPPED':'+'+(ITEMS[k].def||0)+' DEF'),
-    disabled:k===S.armor, on:()=>{ S.armor=k; toast('Defenses changed.'); showEquip(); }
+  owned.filter(k=>ITEMS[k].type==='cover').forEach(k=>rows.push({
+    label:ITEMS[k].name, sub:ITEMS[k].desc, tag:(k===S.armor?'EQUIPPED':'\u2212'+(ITEMS[k].cover||0)+' PER PING'),
+    disabled:k===S.armor, on:()=>{ S.armor=k; toast('Cover changed.'); showEquip(); }
   }));
   openList('Equipment', rows, ()=>{ closeList(); });
 }
+/* Who on this floor will pick up when you call. */
 function showSkills(){
-  const rows = Object.keys(SKILLS).map(k=>{
-    const s = SKILLS[k], have = S.lv >= s.lv;
-    return {label:s.name, sub: have ? s.desc : 'Unlocks at ' + TITLES[s.lv-1] + '.',
-            tag: have ? (s.cost?s.cost+' caf':'free') : 'LOCKED', disabled:true, on:()=>{}};
-  });
-  openList('Abilities', rows, ()=>{ closeList(); });
+  const here = socialTier();
+  const rows = SOCIALTIERS.map(t=>({
+    label:t.name, sub:t.note,
+    tag: social() >= t.at ? (t === here ? 'YOU ARE HERE' : 'PASSED') : t.at + '+',
+    disabled:true, on:()=>{}
+  }));
+  rows.unshift({note:'Standing is earned by being reachable. It is spent by not being.'});
+  openList('Standing', rows, ()=>{ closeList(); });
 }
 function openShop(){
   const stock = ['brew','snack','lunch','aspirin','cans','keeb','monitor','block'];
@@ -3997,8 +3987,8 @@ function openSaveCode(){
 function quitToTitle(){
   closeMenu();
   mode = 'title';
-  $('battle').classList.remove('on');
-  document.body.classList.remove('fighting');
+  $('scene').classList.remove('on');
+  document.body.classList.remove('calling');
   $('title').classList.remove('off');
   document.body.classList.add('titling');
   $('btnCont').style.display = hasSave() ? '' : 'none';
@@ -4049,18 +4039,22 @@ function migrate(o){
   /* a save written by another build can name items this one does not have */
   for(const k of Object.keys(o.bag || {})) if(!ITEMS[k]) delete o.bag[k];
   for(const k of Object.keys(o.owned || {})) if(!ITEMS[k]) delete o.owned[k];
-  if(!ITEMS[o.weapon] || ITEMS[o.weapon].type !== 'weapon') o.weapon = 'laptop';
-  if(!ITEMS[o.armor]  || ITEMS[o.armor].type  !== 'armor')  o.armor  = 'lanyard';
   o.owned[o.weapon] = 1; o.owned[o.armor] = 1;
   if(o.build > 0 && o.flags && !o.flags.satDown) o.flags.satDown = 1;
   /* a save written before the desk counted sittings has plainly had a few */
   if(!o.sessions) o.sessions = o.day > 1 || o.approvals.code ? 3 : 0;
   /* the two ratings arrived late. An older save has no history to reconstruct
      them from, so it starts even and earns them from here. */
+  /* the combat save had levels, story points and two fight stats; none of them
+     mean anything now, and Focus is derived from gear instead of from levels */
+  delete o.lv; delete o.xp; delete o.atk; delete o.def;
+  if(!ITEMS[o.weapon] || ITEMS[o.weapon].type !== 'desk')  o.weapon = 'laptop';
+  if(!ITEMS[o.armor]  || ITEMS[o.armor].type  !== 'cover') o.armor  = 'lanyard';
   if(typeof o.social !== 'number') o.social = 50;
   if(typeof o.perf   !== 'number') o.perf   = 50;
   o.social = Math.max(0, Math.min(100, o.social));
   o.perf   = Math.max(0, Math.min(100, o.perf));
+  o.focus  = Math.min(o.focus, o.maxFocus + (ITEMS[o.weapon].stam||0));
   o.version = SAVE_VERSION;
   return o;
 }
@@ -4095,7 +4089,7 @@ function importSave(code){
 const sq  = (k)=> (S.side && S.side[k]) || 0;
 const askedAll = (pre, names)=> names.every(x=>S.asked[pre + x]);
 /* the value at which each piece of side work counts as a favor done */
-const SQDONE = {own:2, mani:2, laptop:1, mon:2, thing:2, sticky:3, pass:3, fridge:3};
+const SQDONE = {own:2, mani:2, laptop:1, mon:2, thing:2, sticky:3, pass:3, fridge:3, crush:3, chair:3, ref:1};
 const setSq = (k,v)=>{
   const was = S.side[k] || 0;
   S.side[k] = v;
@@ -4109,13 +4103,13 @@ async function reward(r){
   const held = mode;
   const bits = [];
   if(r.cr){ S.credits += r.cr; bits.push('+' + r.cr + ' perk credits'); }
-  if(r.xp){ S.xp += r.xp; bits.push('+' + r.xp + ' story points'); }
-  if(r.focus){ S.maxFocus += r.focus; S.focus = S.maxFocus; bits.push('+' + r.focus + ' max Focus'); }
+  if(r.social){ rate('quest'); }
+  if(r.focus){ S.maxFocus += r.focus; S.focus = stamina(); bits.push('+' + r.focus + ' max Focus'); }
   if(r.caf){ S.maxCaf += r.caf; S.caf = S.maxCaf; bits.push('+' + r.caf + ' max Caffeine'); }
   if(r.item){ S.bag[r.item] = (S.bag[r.item]||0)+1; bits.push(ITEMS[r.item].name); }
   if(r.gear){ S.owned[r.gear] = 1; bits.push(ITEMS[r.gear].name + ' — equip it in the portal'); }
   syncHUD();
-  if(r.xp) await gainLevels(toast);
+  await checkTier(toast);
   if(bits.length){ Sfx.quest(); mode = held; await say(null, bits.join('. ') + '.'); mode = held; }
 }
 
@@ -4235,13 +4229,13 @@ async function interact(){
           'You take it down. It comes away easily. There was never any adhesive left; it was being held up by the ones around it.',
           'Nobody notices. Nobody will.'
         ]);
-        await reward({cr:140, xp:60, item:'blank'});
+        await reward({cr:140, item:'blank'});
       } else {
         await say(null, [
           'You leave it. It is doing more work than most of this floor.',
           'On the way out you catch yourself arranging around it.'
         ]);
-        await reward({cr:90, xp:60});
+        await reward({cr:90});
       }
       mode='field'; syncHUD(); return;
     }
@@ -4296,12 +4290,12 @@ async function interact(){
         'Nothing happens. No alarm, no email, no meeting.',
         'That is the whole result, and it takes a second, and it took a year.'
       ]);
-      await reward({cr:120, xp:55});
+      await reward({cr:120});
     } else {
       await say(null, [
         'You close the fridge. It is not yours, and it is not nothing, and you are not sure which of those is doing the work.'
       ]);
-      await reward({cr:80, xp:55});
+      await reward({cr:80});
     }
     mode='field'; syncHUD(); return;
   }
@@ -4330,7 +4324,7 @@ async function interact(){
         'The margins run longer than the text.',
         'You are now, technically, the most doctrinally informed person on Floor 3. This will never once come up.'
       ]);
-      await reward({caf:8, cr:70, xp:30});
+      await reward({caf:8, cr:70});
     } else {
       toast('Doctrine page ' + got + ' of 4.');
     }
@@ -4359,7 +4353,7 @@ async function interact(){
         'Do you know how long I have worked here? Every single time. A horse. Somebody always posts a horse.',
         'Here. Take this. I have four and I do not drink them.'
       ]);
-      await reward({cr:80, xp:25, item:'brew'});
+      await reward({cr:80, item:'brew'});
     } else if(c === 1){
       setSq('laptop', 2);
       await say(null,[
@@ -4368,7 +4362,7 @@ async function interact(){
         'Devon returns, reads it, and says nothing at all. Devon has been here a long time.'
       ]);
       await say(null,'Three weeks from now, somebody in Payments will refer to him as Big Devon in a design review, sincerely.');
-      await reward({cr:35, xp:12});
+      await reward({cr:35});
     } else {
       await say(null,'You walk away. Somewhere behind you, a horse is being posted by somebody else.');
     }
@@ -4387,8 +4381,7 @@ async function interact(){
       'Under the desk, taped to the underside, there is a runbook. Forty pages. Handwritten.',
       'You touch the keyboard. The screen wakes all the way up.'
     ]);
-    const r = await startBattle(['thing3am'], {boss:1, noFlee:1, title:'PAGE — 03:07 (recurring since 2019)',
-      intro:'It has been paging for six years. Tonight, for the first time, somebody is looking at it.'});
+    const r = await scene('thing3am');
     if(r === 'win'){
       setSq('thing', 2);
       await say(null,[
@@ -4397,7 +4390,7 @@ async function interact(){
         'You keep the runbook. Whoever wrote it is not here to want it back.',
         'Page thirty-one is a diagram of where the data was supposed to go. You can use that.'
       ]);
-      await reward({gear:'runbook', cr:120, xp:70});
+      await reward({gear:'runbook', cr:120});
       toast('New build tool: Pipeline');
     }
     mode = 'field';
@@ -4519,6 +4512,31 @@ async function npcTalk(n){
   }
 
   if(n.id==='priya'){
+    if(sq('crush') === 1){
+      setSq('crush', 2);
+      hold(); await say(n.name,[
+        'Devon. Devon from Payments.',
+        'He replied to a thread I was on with a link to a blog post he wrote about the thread.',
+        'It was a good post. That is what makes it worse.',
+        'He has a keyboard you can hear through a wall. He has told me the switches are \u201ctactile but not loud\u201d.',
+        'I have heard them. Through a wall.',
+        'No.'
+      ]);
+      const i = await choose('Anything else?', [
+        {label:'\u201cHe is going to ask me what you said.\u201d', note:'she should know'},
+        {label:'Say nothing.'}
+      ]);
+      if(i === 0){
+        hold(); await say(n.name,[
+          'Then tell him. All of it. Do not do the soft version.',
+          'The soft version is how people spend a year on a maybe.',
+          'And tell him the post was good. That part is true and he should get to keep it.'
+        ]);
+        S.flags.priya_blessing = 1;
+      }
+      toast('Go and tell Devon.');
+      return done();
+    }
     if(sq('own')===1 && !S.asked.priya){
       S.asked.priya = 1;
       hold(); await say(n.name,[
@@ -4591,8 +4609,7 @@ async function npcTalk(n){
       'I’m going to put yellow. Yellow just means we’re watching it.',
       'Also — while I have you — Priya owes me a date on the migration. Do you know Priya? Could you ask Priya?'
     ]);
-    const r = await startBattle(['jordan'], {boss:1, title:'Sync: Delivery Risk (recurring)',
-      intro:'Jordan has joined the call. Jordan has also invited two people who do not speak.'});
+    const r = await scene('jordan');
     if(r==='win'){
       F.jordan_done = 1;
       hold(); await say(n.name,[
@@ -4601,8 +4618,8 @@ async function npcTalk(n){
         'And I’ll take the migration off Priya’s calendar. It was never her project. I know. I know.'
       ]);
       toast('Priya’s calendar is clear.');
-    } else if(r==='flee'){
-      hold(); await say(null,'You walk away. Jordan schedules a follow-up before you reach the corridor.');
+    } else if(r==='left'){
+      hold(); await say(null,'The migration stays where it is. So does Priya\u2019s calendar.');
     }
     return done();
   }
@@ -4634,9 +4651,8 @@ async function npcTalk(n){
       '...',
       'Huh.'
     ]);
-    const r = await startBattle(['breach'], {boss:1, noFlee:1, title:'INCIDENT — SEV1 (auto-created)',
-      intro:'Something has been in the logs the entire time. It notices you noticing.'});
-    if(r==='win'){
+    const r = await scene('breach');
+    if(r==='win' || r==='lose'){
       S.approvals.sec = 1;
       hold(); await say(n.name,[
         'That was not your feature.',
@@ -4690,6 +4706,41 @@ async function npcTalk(n){
   }
 
   if(n.id==='brooke'){
+    if(F.ctf_done && !sq('ref')){
+      hold(); await say(n.name,[
+        'Can I ask a favor. A small one. It is small.',
+        'I am exploring some things. Nothing is decided. Everything is decided.',
+        'Would you write me a recommendation. Two lines. It does not have to be \u2014 you know.'
+      ]);
+      const i = await choose('You have known her for one day.', [
+        {label:'\u201cI have known you for a day.\u201d', note:'true'},
+        {label:'\u201cWhat do you want it to say?\u201d', note:'she has already written it'},
+        {label:'\u201cYes.\u201d'}
+      ]);
+      setSq('ref', 1);
+      if(i === 1){
+        hold(); await say(n.name,[
+          'I have a draft. I have had a draft since March.',
+          'It says I build culture at scale. I do not know what that means and I wrote it.',
+          'Could you put in the bit about the cones? You saw me carry the cones.'
+        ]);
+        await reward({cr:55});
+        rate('read');
+      } else if(i === 0){
+        hold(); await say(n.name,[
+          'A day is a data point.',
+          'Sorry. That was \u2014 you are right. That was a lot to ask on a Tuesday.',
+          'Forget it. Genuinely, forget it, I will ask Jordan. Jordan says yes to everything.'
+        ]);
+      } else {
+        hold(); await say(n.name,[
+          'Thank you. Thank you.',
+          'I will send you the draft and you can just \u2014 approve the draft.'
+        ]);
+        await reward({cr:30});
+      }
+      return done();
+    }
     if(F.ctf_done){
       hold(); await say(n.name,[
         'Great energy today. Truly. We’re doing an escape room in November, and attendance is optional in the same way this was.',
@@ -4704,19 +4755,56 @@ async function npcTalk(n){
       'You’re on Blue. Blue is the color of trust. Red is the color of passion. Green had to be renamed for legal reasons.',
       'Ready? There are no wrong answers!'
     ]);
-    const r = await startBattle(['spirit','flag'], {title:'Q3 Team Building — Capture The Flag (Mandatory/Optional)',
-      intro:'You are handed a foam flag and a lanyard in a color you did not choose.'});
-    if(r==='win'){
+    const r = await scene('ctf');
+    if(r==='win' || r==='lose'){
       F.ctf_done = 1;
       hold(); await say(n.name,['Amazing. Amazing energy.','Everybody won. Blue won slightly more, but everybody won.','I’ll let Kai know you were here. That’s what you came for, right? ...Right.']);
       toast('Kai has been notified.');
-    } else if(r==='flee'){
-      hold(); await say(n.name,'You slip out. Brooke marks you present anyway. She is not a monster.');
+    } else if(r==='left'){
+      hold(); await say(n.name,'\u201cI\u2019ll still mark you present. But Kai hears about people who stay.\u201d');
     }
     return done();
   }
 
   if(n.id==='sandeep'){
+    if(!sq('chair') && S.flags.satDown){
+      setSq('chair', 1);
+      hold(); await say(n.name,[
+        'Before you ask me for anything. I have a thing.',
+        'I had an ergonomic chair. Approved. Assessed. There is a form with my name on it.',
+        'It is not at my desk. It has not been at my desk since Tuesday.',
+        'I am not accusing anyone. I would like to know where the chair is.'
+      ]);
+      toast('Find Sandeep\u2019s chair.');
+      return done();
+    }
+    if(sq('chair') === 2){
+      hold(); await say(n.name,['You found it.']);
+      const i = await choose('What do you tell him?', [
+        {label:'\u201cIt is in VELOCITY. Brayden took it for the review.\u201d', note:'true'},
+        {label:'\u201cI could not find it.\u201d'},
+        {label:'\u201cI put it back at your desk.\u201d', note:'you did, just now'}
+      ]);
+      setSq('chair', 3);
+      if(i === 0){
+        hold(); await say(n.name,[
+          'The good chair. For a meeting. About a toggle.',
+          'I am going to go and get my chair, and I am going to do it while he is in it.',
+          'Thank you. Not for the chair. For not making me wonder.'
+        ]);
+        await reward({cr:70});
+      } else if(i === 2){
+        hold(); await say(n.name,[
+          'You \u2014 okay. Okay.',
+          'It is the wrong height. But it is the chair.',
+          'I will fix the height. Fixing the height is a thing I know how to do.'
+        ]);
+        await reward({cr:70, item:'brew'});
+      } else {
+        hold(); await say(n.name,['Right. Well. It is somewhere.','I will raise a ticket. The ticket will be about a chair.']);
+      }
+      return done();
+    }
     if(sq('own')===1 && !S.asked.sandeep){
       S.asked.sandeep = 1;
       hold(); await say(n.name,[
@@ -4735,7 +4823,7 @@ async function npcTalk(n){
         'That will go through. That always goes through. I have furnished half of this floor with that sentence.',
         'Second monitor. It is in the cage. Do not tell anybody it took one sentence.'
       ]);
-      await reward({xp:30, cr:20});
+      await reward({cr:20});
       toast('Second Monitor acquired — equip it in the portal.');
       return done();
     }
@@ -4761,6 +4849,63 @@ async function npcTalk(n){
   }
 
   if(n.id==='devon'){
+    /* he only asks once he trusts you, which is why it waits on Ownership */
+    if(sq('own') === 2 && !sq('crush')){
+      setSq('crush', 1);
+      hold(); await say(n.name,[
+        'Can I ask you something and you not make it weird.',
+        'You talk to Priya. On the platform sync.',
+        'Does she ever mention me.'
+      ]);
+      const i = await choose('Do you?', [
+        {label:'\u201cIn what context.\u201d', note:'buy a second'},
+        {label:'\u201cNo.\u201d', note:'true'},
+        {label:'\u201cWhat would she be mentioning.\u201d'}
+      ]);
+      hold(); await say(n.name, i === 1
+        ? ['Right. No. That\u2019s \u2014 that is data.', 'Could you ask? Not ask. Just \u2014 leave a space where she could say it.']
+        : ['Any context. This isn\u2019t a thing. I\u2019m collecting data.',
+           'Could you ask? Not ask. Just \u2014 leave a space where she could say it.']);
+      toast('Leave a space where Priya could say it.');
+      return done();
+    }
+    if(sq('crush') === 2){
+      hold(); await say(n.name,['Did you talk to her.']);
+      const i = await choose('How do you put it?', [
+        {label:'Straight. All of it, including the keyboard.', note:'he will not enjoy it'},
+        {label:'Soften it. \u201cShe is not really thinking about that right now.\u201d'},
+        {label:'\u201cShe said she would think about it.\u201d', note:'she did not'}
+      ]);
+      setSq('crush', 3);
+      if(i === 0){
+        hold(); await say(n.name,[
+          'Okay. Okay. That\u2019s \u2014 that\u2019s useful data.',
+          'Did she say which wall.',
+          'No, that\u2019s fair. That is genuinely fair and I am going to go and sit down.'
+        ]);
+        await reward({cr:60});
+        rate('read');
+      } else if(i === 1){
+        hold(); await say(n.name,[
+          'Right now. So \u2014 later. Later is a thing that could happen.',
+          'I\u2019m going to leave it a couple of weeks and then send her the post again.'
+        ]);
+      } else {
+        hold(); await say(n.name,[
+          'She said that? She said she\u2019d think about it?',
+          'Okay. Okay!'
+        ]);
+        S.flags.crush_lied = 1;
+        rate('misread');
+      }
+      return done();
+    }
+    if(sq('crush') === 3){
+      hold(); await say(n.name, S.flags.crush_lied
+        ? ['I asked her directly on Thursday.', 'She had not been thinking about it. You knew that.', 'It\u2019s fine. I\u2019d rather have known on Tuesday.']
+        : ['I moved the keyboard to the pod by the window.', 'Nobody has said anything. That is not the same as nobody hearing it.']);
+      return done();
+    }
     if(sq('own') === 2){
       hold(); await say(n.name,['It was Mara. Six years, and it was Mara, and nobody told Mara.','I put it in the wiki. Nobody reads the wiki. But it is in the wiki.']);
       return done();
@@ -4775,7 +4920,7 @@ async function npcTalk(n){
           'I am going to sit with that for a minute.',
           'Thank you. Genuinely. You are the first person who treated that like a question instead of a mood.'
         ]);
-        await reward({cr:90, xp:35, focus:12});
+        await reward({cr:90, focus:12});
       } else {
         const left = [];
         if(!a.priya) left.push('Priya');
@@ -4870,7 +5015,7 @@ async function npcTalk(n){
       if(!F.newpass){
         hold(); await say(null,'He shreds it in front of you. It is the closest Marcus comes to joy.');
       }
-      await reward({gear:'custody', cr:160, xp:70});
+      await reward({gear:'custody', cr:160});
       return done();
     }
     if(sq('pass') >= 1){
@@ -5111,9 +5256,7 @@ async function npcTalk(n){
       }
     }
     hold(); await say(n.name,'Now. Let\u2019s align.');
-    scaleBoss();
-    const r = await startBattle(['rand'], {boss:1, noFlee:1, title:'1:1 (no agenda) \u2014 THE FOUNDER',
-      intro:'Rand shares his screen. It is a photograph of a lighthouse. He has not noticed it is not ours.'});
+    const r = await scene('rand');
     if(r === 'win') return ch2Ending();
     return done();
   }
@@ -5122,9 +5265,7 @@ async function npcTalk(n){
     if(!readyToShip()){ hold(); await say(n.name,'Brayden is on a call. He gestures at you in a way that means later.'); return done(); }
     if((S.day||1) > 1){
       hold(); await say(n.name, ticket().pitch);
-      scaleBoss();
-      const r = await startBattle(['brayden'], {boss:1, noFlee:1, title:'Roadmap Review — VELOCITY (recurring)',
-        intro:'Brayden shares his screen. It is the same document. The title now says "Vision (v' + S.day + ')".'});
+      const r = await scene('brayden', {title:'Roadmap Review \u2014 VELOCITY (recurring)'});
       if(r==='win') return ending();
       return done();
     }
@@ -5137,9 +5278,7 @@ async function npcTalk(n){
       'Lighthouse isn’t a program. Lighthouse is a narrative. Programs get canceled. Narratives get renewed.',
       'That’s not cynical. Now. Let’s align.'
     ]);
-    scaleBoss();
-    const r = await startBattle(['brayden'], {boss:1, noFlee:1, title:'Q3 Roadmap Review — VELOCITY',
-      intro:'Brayden shares his screen. It is a document titled "Vision (WIP)". It is eleven pages.'});
+    const r = await scene('brayden');
     if(r==='win') return ending();
     return done();
   }
@@ -5167,6 +5306,16 @@ async function lockedRoom(){
       'You are not walking in there without: ' + missing.join(', ') + '.',
       'Nobody has ever gone into that room and won an argument they had not prepared for.'
     ]);
+    /* the chair is right there, and he is in it */
+    if(sq('chair') === 1){
+      setSq('chair', 2);
+      await say(null,[
+        'He is sitting in a chair that does not match the other chairs.',
+        'It has a lever nobody in that room will ever use and a label on the back with an assessment number.',
+        'The number is Sandeep\u2019s.'
+      ]);
+      toast('Tell Sandeep where his chair is.');
+    }
   }
   mode = 'field';
 }
