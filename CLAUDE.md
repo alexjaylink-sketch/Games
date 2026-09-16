@@ -332,6 +332,28 @@ which `renderDeskHud` draws in `#goalbar` above the build bar. Only Merge Queue
 has a hard budget; the other four are already bounded by their own fail states
 (leaks, being caught, walls), so they state a target without a countdown.
 
+### The onboarding deck
+The very first sitting of the game shows `TUTDECK`, five paged cards, gated on
+`S.flags.tut_desk`; it also stamps `tut_stack` so the per-tool card does not
+fire on top of it. Every tool after that still gets its single `how`/`why` card.
+
+The pages: the tool, the session goal, **what every card choice costs**, the
+Heads Down trade, and the flow cashout. The consequences page renders its
+deltas with `tag()` off the live `RATES` table — the same call the real
+interruption cards use — so the tutorial cannot drift from the game. The suite
+asserts that equality rather than the literal numbers.
+
+On the falling blocks themselves it says only: *"We are not going to explain the
+falling blocks. If you have shipped code professionally, you have played this.
+If you have not, there is a conversation happening about you in a channel you
+are not in."* Never name the trademark (see the copyright stance below).
+
+`#tut` lives in `#deskmain`, not `#work`. Inside `#work` the card was capped at
+about 414px on a phone and the longest page overflowed; one level up it has the
+whole board area and the header it points at stays visible behind it. The nav row
+is `position:sticky` so the buttons are reachable even when a 320px phone does
+have to scroll, and `@media (max-height:700px)` tightens the whole card.
+
 ### Build tools (`WORK.*`, registry `TOOLS`)
 Each tool implements `start / update(dt, auto) / input(k) / render / punish /
 meeting(big) / peek / stop` plus `intro`, and `how`/`why` text for the

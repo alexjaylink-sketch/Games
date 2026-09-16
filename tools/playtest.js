@@ -522,6 +522,36 @@ SUITES.desk = async browser => {
   ok('first open shows a how-to card', tut.on && /Merge Queue/.test(tut.ttl) && tut.flag === 1, JSON.stringify(tut));
   ok('  and the clock waits for it', tut.clock === 0);
   await d.shot('tool-tutorial');
+
+  /* the first sitting of the game gets the whole shape of the desk, and the
+     page that matters is the one pricing every choice */
+  const deck = await d.state(() => ({ pages: document.querySelectorAll('#tutDots i').length,
+                                      k: document.getElementById('tutK').textContent }));
+  ok('  the first sitting gets a deck, not one card', deck.pages === 5, deck.pages + ' pages, opens on ' + deck.k);
+  let consequences = null;
+  for (let i = 0; i < 4; i++) {
+    await d.page.click('#tutOk'); await sleep(220);
+    const pg = await d.state(() => ({
+      k: document.getElementById('tutK').textContent,
+      rows: [...document.querySelectorAll('#tutRows .trow')].map(r => ({
+        label: r.querySelector('b').textContent, tags: r.querySelector('.tags') ? r.querySelector('.tags').textContent : '' })),
+      btn: document.getElementById('tutOk').textContent,
+      fits: (() => { const b = document.querySelector('#tut .b'); return b.scrollHeight - b.clientHeight <= 1; })()
+    }));
+    if (pg.rows.length === 3) consequences = pg;
+    if (i === 3) ok('  the last page says Got it', pg.btn === 'Got it', pg.btn);
+    ok('  page ' + (i + 2) + ' fits without scrolling', pg.fits, pg.k);
+  }
+  ok('  one page prices every choice', !!consequences && consequences.rows.length === 3,
+     consequences ? consequences.rows.map(r => r.label + ' ' + r.tags).join(' | ') : 'none');
+  /* the numbers must come off the live table, not a copy that can drift */
+  const live = await d.state(() => ['deal', 'snooze', 'ignore'].map(k =>
+    (RATES[k].social ? (RATES[k].social > 0 ? '+' : '') + RATES[k].social + ' SOC' : '') +
+    (RATES[k].perf ? (RATES[k].perf > 0 ? '+' : '') + RATES[k].perf + ' PERF' : '')));
+  ok('  and they are read off RATES, so they cannot drift',
+     !!consequences && consequences.rows.every((r, i) => r.tags === live[i]),
+     consequences ? JSON.stringify(consequences.rows.map(r => r.tags)) + ' vs ' + JSON.stringify(live) : 'none');
+
   await d.page.evaluate(() => pressA()); await sleep(300);
   ok('  A dismisses it and the desk runs', await d.state(() => !document.getElementById('tut').classList.contains('on') && D.clock > 0));
   await d.page.evaluate(() => { endDesk('quit'); }); await d.advance();
@@ -642,6 +672,10 @@ SUITES.desk = async browser => {
   ok('chooser appears with two tools', prompted2 && await d.state(() => document.querySelectorAll('#chList button').length) === 2);
   await d.pickChoice(1); await sleep(400); await d.page.evaluate(() => { hideTut(); });
   ok('Bug Bash opens', await d.state(() => D && D.tool) === 'breaker');
+  ok('  a later tool gets one card, not the deck again', await d.state(() => {
+    const on = document.getElementById('tut').classList.contains('on');
+    return !on || document.querySelectorAll('#tutDots i').length === 0;
+  }));
   ok('  and focus pays it back', await d.state(() => {
     if (!D || D.over || !D.g) return false;
     for (let i = 0; i < 4; i++) D.g.punish();

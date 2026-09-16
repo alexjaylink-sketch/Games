@@ -442,12 +442,44 @@ button{font-family:inherit;color:inherit}
 #away .b small{display:block;font-family:var(--sans);letter-spacing:0;color:var(--dim);font-size:11px;margin-top:4px}
 #tut{position:absolute;inset:0;z-index:7;display:none;align-items:center;justify-content:center;background:rgba(7,9,14,.78);padding:16px}
 #tut.on{display:flex}
-#tut .b{background:var(--panel);border:1px solid var(--brand);border-radius:12px;padding:14px 16px;max-width:340px;width:100%;text-align:left;max-height:100%;overflow-y:auto}
+#tut .b{background:var(--panel);border:1px solid var(--brand);border-radius:12px;padding:14px 16px;max-width:340px;width:100%;text-align:left;max-height:100%;overflow-y:auto;overscroll-behavior:contain}
 #tut .k{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--brand)}
 #tut .t{font-weight:700;font-size:17px;margin:4px 0 8px}
 #tut .how{font-size:13px;line-height:1.45;color:var(--ink)}
 #tut .why{font-size:12px;line-height:1.45;color:var(--dim);margin-top:8px;border-top:1px solid var(--line);padding-top:8px}
-#tut .btn{display:block;width:100%;margin-top:12px;padding:10px;border-radius:9px;border:1px solid var(--brand);background:var(--brand);color:#fff;font-weight:700;font-size:13px}
+#tut .how p{margin:0 0 7px}
+#tut .how p:last-child{margin-bottom:0}
+#tut .rows{margin-top:10px;display:flex;flex-direction:column;gap:7px}
+#tut .trow{background:#0b0f16;border:1px solid var(--edge2);border-radius:8px;padding:7px 9px}
+#tut .trow .h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#tut .trow b{font-size:12.5px}
+#tut .trow .tags{display:flex;gap:5px;font-style:normal;margin-left:auto}
+#tut .trow .tags i{font-family:var(--mono);font-size:8px;letter-spacing:.3px;font-style:normal}
+#tut .trow .tags i.up{color:var(--ok)} #tut .trow .tags i.down{color:var(--danger)}
+#tut .trow small{display:block;margin-top:3px;font-size:11px;line-height:1.4;color:var(--dim)}
+#tut .nav{
+  position:sticky;bottom:-14px;z-index:2;display:flex;align-items:center;gap:10px;
+  margin-top:12px;padding:10px 0 2px;background:var(--panel);
+  box-shadow:0 -10px 12px -8px var(--panel);
+}
+#tut .dots{display:flex;gap:5px;flex:1 1 auto}
+#tut .dots i{width:6px;height:6px;border-radius:50%;background:var(--edge2)}
+#tut .dots i.on{background:var(--brand)}
+#tut .skip{background:none;border:0;color:var(--dim);font-size:12px;padding:6px 4px}
+/* the consequences page is the longest one and a short phone is short */
+@media (max-height:700px){
+  #tut .b{padding:11px 13px}
+  #tut .t{font-size:15px;margin:3px 0 6px}
+  #tut .how{font-size:12px;line-height:1.38}
+  #tut .how p{margin-bottom:5px}
+  #tut .trow{padding:5px 8px}
+  #tut .trow b{font-size:12px}
+  #tut .trow small{font-size:10.5px;margin-top:2px}
+  #tut .rows{gap:5px;margin-top:8px}
+  #tut .why{font-size:11px;margin-top:7px;padding-top:7px}
+  #tut .nav{margin-top:9px;padding:8px 0 2px}
+}
+#tut .btn{flex:0 0 auto;min-width:104px;padding:10px 16px;border-radius:9px;border:1px solid var(--brand);background:var(--brand);color:#fff;font-weight:700;font-size:13px}
 .card-int .fuse{position:absolute;left:0;bottom:0;height:2px;background:var(--warn);transition:width .12s linear}
 
 #work{flex:1 1 auto;min-height:0;position:relative;display:flex;align-items:center;justify-content:center}
@@ -809,10 +841,10 @@ body.sideways #rotate{display:flex}
 
       <div id="deskmain">
         <div id="cards"></div>
+        <div id="tut"><div class="b"><div class="k" id="tutK">NEW BUILD TOOL</div><div class="t" id="tutTtl"></div><div class="how" id="tutHow"></div><div class="rows" id="tutRows"></div><div class="why" id="tutWhy"></div><div class="nav"><span class="dots" id="tutDots"></span><button class="skip" id="tutSkip">Skip</button><button class="btn" id="tutOk">Got it</button></div></div></div>
         <div id="work">
           <canvas id="workcv"></canvas>
           <div id="away"><div class="b">DEALING WITH IT <span id="awayT"></span><small id="awaySub">Your work keeps going without you.</small></div></div>
-          <div id="tut"><div class="b"><div class="k">NEW BUILD TOOL</div><div class="t" id="tutTtl"></div><div class="how" id="tutHow"></div><div class="why" id="tutWhy"></div><button class="btn" id="tutOk">Got it</button></div></div>
           <div id="autoc">
             <div class="meta"><span id="acStreak">STREAK 0</span><span id="acLeft"></span></div>
             <div class="line" id="acLine"></div>
@@ -1686,7 +1718,7 @@ const Sfx = {
 /* ==========================================================================
    STATE
    ========================================================================== */
-const BUILD = '2.2.0';                       /* shown in the UI so bug reports name a build */
+const BUILD = '2.3.0';                       /* shown in the UI so bug reports name a build */
 const SAVE_VERSION = 2;
 const SAVEKEY = 'shipit_lodestar_v2';
 const LEGACY_KEYS = ['shipit_vanta_v1'];     /* saves written before the rename */
@@ -2935,15 +2967,92 @@ async function startDesk(){
 function pingEase(){ const n = S.sessions|0; return n === 0 ? 1.9 : n === 1 ? 1.35 : 1; }
 function firstPing(){ const n = S.sessions|0; return n === 0 ? 26 + Math.random()*6 : n === 1 ? 12 + Math.random()*4 : 5 + Math.random()*3; }
 
-/* the first time a tool opens, one card of instructions; the clock waits */
+/* The first sitting of the game gets the whole shape of the desk, because the
+   part that needs teaching is not the falling blocks, it is what every
+   interruption costs you. The deltas are rendered with tag(), off the same
+   RATES table the live cards use, so the tutorial cannot drift from the game. */
+const TUTDECK = [
+  {k:'THE TOOL', t:'Merge Queue',
+   body:['Commits come down the queue. Steer them, drop them, fill a row all the way across and it merges.',
+         'We are not going to explain the falling blocks.',
+         'If you have shipped code professionally, you have played this.',
+         'If you have not, there is a conversation happening about you in a channel you are not in.'],
+   foot:'Left and right steer. A or the up arrow rotates. B drops.'},
+
+  {k:'THE NUMBER', t:'A queue has a length',
+   body:['Today\u2019s queue is a fixed number of commits and you need a fixed number of rows merged out of it. Both are on screen, top left.',
+         'Land the last one and the sitting is done.',
+         'Run the queue dry first and you keep what you built and explain the rest.'],
+   foot:'The percentage on the build bar is the result. It is not the goal.'},
+
+  {k:'THE FLOOR', t:'People will reach you',
+   body:['Cards come over the board. Each one is a person, and each one has a price printed on it before you touch it.'],
+   rows:[['Deal with it', 'deal', 'You look away. The queue keeps falling without you.'],
+         ['Snooze it',    'snooze','Three caffeine. It comes back in eight seconds, angrier.'],
+         ['Let it go',    'ignore','A row of debt with one hole in it, and it costs you Focus.']],
+   foot:'Ignore three and somebody books a meeting.'},
+
+  {k:'THE TRADE', t:'Heads Down',
+   body:['Ten caffeine buys seven seconds where nothing can reach you, and the work runs faster while it lasts.'],
+   rows:[['Heads Down', 'heads', 'Nobody can reach you. Nobody forgets that either.']],
+   foot:'Performance is what the org measures. Social is what it remembers. Both come out of the same afternoon.'},
+
+  {k:'THE UPSIDE', t:'Flow',
+   body:['Merging rows raises the multiplier. So does dealing with the person in front of you.',
+         'At the top of it you get one stretch of real focus, and it clears the bottom of your board \u2014 including rows a meeting locked shut.',
+         'Those come out no other way.'],
+   foot:'You are out of Focus when the day ends, and not before.'}
+];
+
+let tutPage = 0, tutDeck = null;
+
+/* the first time a tool opens, a card of instructions; the clock waits */
 function showTut(tool){
   const t = TOOLS[tool]; if(!D || !t.how) return;
   D.tut = 1;
-  $('tutTtl').textContent = t.name; $('tutHow').textContent = t.how; $('tutWhy').textContent = t.why;
+  if(!S.flags.tut_desk){
+    S.flags.tut_desk = 1;
+    S.flags['tut_' + tool] = 1;          /* the deck covers this tool already */
+    tutDeck = TUTDECK; tutPage = 0;
+  } else {
+    tutDeck = [{k:'NEW BUILD TOOL', t:t.name, body:[t.how], foot:t.why}];
+    tutPage = 0;
+  }
+  renderTut();
   $('tut').classList.add('on');
 }
-function hideTut(){ if(D) D.tut = 0; $('tut').classList.remove('on'); }
-$('tutOk').addEventListener('click', ()=>{ Sfx.blip(); hideTut(); });
+
+function renderTut(){
+  const pg = tutDeck[tutPage], last = tutPage === tutDeck.length - 1;
+  $('tutK').textContent = pg.k;
+  $('tutTtl').textContent = pg.t;
+  $('tutHow').innerHTML = (pg.body || []).map(l=>'<p></p>').join('');
+  [...$('tutHow').children].forEach((el,i)=> el.textContent = pg.body[i]);
+  const rows = $('tutRows');
+  rows.innerHTML = '';
+  (pg.rows || []).forEach(([label, kind, note])=>{
+    const el = document.createElement('div');
+    el.className = 'trow';
+    el.innerHTML = '<div class="h"><b></b>' + tag(kind) + '</div><small></small>';
+    el.querySelector('b').textContent = label;
+    el.querySelector('small').textContent = note;
+    rows.appendChild(el);
+  });
+  $('tutWhy').textContent = pg.foot || '';
+  $('tutWhy').style.display = pg.foot ? '' : 'none';
+  $('tutDots').innerHTML = tutDeck.length > 1
+    ? tutDeck.map((_,i)=>'<i class="' + (i === tutPage ? 'on' : '') + '"></i>').join('') : '';
+  $('tutOk').textContent = last ? 'Got it' : 'Next';
+  $('tutSkip').style.display = (tutDeck.length > 1 && !last) ? '' : 'none';
+}
+
+function hideTut(){ if(D) D.tut = 0; $('tut').classList.remove('on'); tutDeck = null; }
+$('tutOk').addEventListener('click', ()=>{
+  Sfx.blip();
+  if(tutDeck && tutPage < tutDeck.length - 1){ tutPage++; renderTut(); return; }
+  hideTut();
+});
+$('tutSkip').addEventListener('click', ()=>{ Sfx.blip(); hideTut(); });
 /* a phone buzz for the things that interrupt you; off in settings */
 function buzz(p){ if(S && S.opts.haptics === 0) return; try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }
 
