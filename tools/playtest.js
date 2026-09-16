@@ -109,7 +109,18 @@ async function boot(browser, { stage = 'field' } = {}) {
       }
       return turns;
     },
-    async sceneOut() { return page.evaluate(() => document.getElementById('scene').classList.contains('on')); }
+    async sceneOut() { return page.evaluate(() => document.getElementById('scene').classList.contains('on')); },
+    /* Dee ends on an ask menu; the last option closes it */
+    async closeAsk() {
+      for (let i = 0; i < 8; i++) {
+        if (!await page.evaluate(() => document.getElementById('choices').classList.contains('on'))) return i > 0;
+        const b = await page.$$('#chList button');
+        if (!b.length) return false;
+        await b[b.length - 1].click(); await sleep(300);
+        await d.advance(10);
+      }
+      return true;
+    }
   };
 
   await page.click('#btnNew'); await sleep(400);
@@ -168,7 +179,14 @@ SUITES.smoke = async browser => {
 SUITES.chain = async browser => {
   const d = await boot(browser);
   section('chain — desk and office must alternate');
-  ok('opens pointing at the desk', (await d.hud()).includes('Desk'), await d.hud());
+  /* deliberately changed: you are sent to your onboarding buddy before the desk,
+     because nothing used to tell you she existed */
+  ok('opens pointing at the onboarding buddy', (await d.hud()).includes('Dee'), await d.hud());
+  const marker = await d.state(() => objectiveTarget());
+  ok('  and the marker is on her, not the desk', marker && marker.label === 'DEE', JSON.stringify(marker));
+  await d.interact(18, 5, 'up'); await d.advance(30); await d.closeAsk();
+  ok('  once she has briefed you it moves to the desk',
+     await d.state(() => !!S.flags.briefed) && (await d.hud()).includes('Desk'), await d.hud());
 
   for (const [who, x, y, dir] of [['Priya', 9, 12, 'down'], ['Marcus', 25, 26, 'right'], ['Kai', 4, 4, 'up']]) {
     await d.interact(x, y, dir); const said = await d.line(); await d.advance();
@@ -1178,6 +1196,19 @@ SUITES.journey = async browser => {
   };
 
   await d.interact(18, 5, 'up'); await d.advance(30);
+  /* she answers topics on request now instead of delivering eleven lines */
+  const topics = await d.state(() => [...document.querySelectorAll('#chList button .c')].map(e => e.textContent));
+  ok('Dee offers to answer things rather than lecturing', topics.length === 5, topics.join(' / '));
+  const bars = await d.page.$$('#chList button');
+  await bars[1].click(); await sleep(300);
+  const barLines = [];
+  for (let i = 0; i < 8 && await d.mode() === 'dialogue'; i++) {
+    barLines.push(await d.line()); await d.page.click('#btnA'); await sleep(150);
+  }
+  ok('  and she explains what the two bars actually do',
+     barLines.some(l => /Performance/.test(l)) && barLines.some(l => /packet|shipping/.test(l)),
+     barLines.length + ' lines');
+  await d.closeAsk();
   ok('Dee explains the job', await d.state(() => !!S.flags.briefed));
   await notStuck('the briefing');
 

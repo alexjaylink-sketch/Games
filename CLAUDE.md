@@ -332,6 +332,30 @@ which `renderDeskHud` draws in `#goalbar` above the build bar. Only Merge Queue
 has a hard budget; the other four are already bounded by their own fail states
 (leaks, being caught, walls), so they state a target without a countdown.
 
+### Dee is the reference desk
+**The first objective on a new save is Dee, not the desk.** `nextStep()` and
+`objectiveTarget()` both point at her until `flags.briefed`, because nothing used
+to tell a new player she existed and her briefing is where the rules live.
+
+The condition is `!briefed && !satDown`, not just `!briefed`. Once you have sat
+down you have plainly found the floor, and an arrow still saying "talk to Dee"
+at 100% build when the real next step is a sign-off is the Priya/Jordan bug
+again. The `loop` suite caught exactly that.
+
+She used to deliver eleven lines whether you wanted them or not, only four of
+which told you anything, and none of which mentioned the two ratings or how a
+conversation works — her script predated both. She has topics now (`DEETOPICS`,
+run by `deeAsk()`): how a day goes, what the two bars do, what to do when
+somebody talks to you, and what to avoid. You pull them, they are two to four
+lines each, and options you have already heard are marked "again".
+
+**She is repeatable on purpose.** Coming back re-opens the same menu, so the
+rules are somewhere you can look them up rather than something you had to read
+once while walking past.
+
+Anything that ends a conversation on a `choose()` breaks a harness beat that
+only clicks A — `d.closeAsk()` exists for that.
+
 ### The onboarding deck
 The very first sitting of the game shows `TUTDECK`, five paged cards, gated on
 `S.flags.tut_desk`; it also stamps `tut_stack` so the per-tool card does not

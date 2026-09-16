@@ -79,7 +79,7 @@ button{font-family:inherit;color:inherit}
   border:1px solid var(--edge2);border-radius:4px;padding:3px 6px;white-space:nowrap;
 }
 .meter{flex:0 1 78px;min-width:48px}
-.meter .lab{display:flex;justify-content:space-between;font-size:9px;color:var(--dim);letter-spacing:.6px;margin-bottom:2px}
+.meter .lab{display:flex;justify-content:space-between;gap:6px;font-size:9px;color:var(--dim);letter-spacing:.6px;margin-bottom:2px}
 .meter .trk{position:relative;height:7px;background:#080b11;border-radius:4px;overflow:hidden;border:1px solid var(--edge)}
 .meter .lab span:last-child{display:inline-block}
 /* the distance travelled, lit up for long enough to see */
@@ -1718,7 +1718,7 @@ const Sfx = {
 /* ==========================================================================
    STATE
    ========================================================================== */
-const BUILD = '2.3.0';                       /* shown in the UI so bug reports name a build */
+const BUILD = '2.4.0';                       /* shown in the UI so bug reports name a build */
 const SAVE_VERSION = 2;
 const SAVEKEY = 'shipit_lodestar_v2';
 const LEGACY_KEYS = ['shipit_vanta_v1'];     /* saves written before the rename */
@@ -1802,6 +1802,7 @@ function objectiveTarget(){
     return {x:26, y:20, label:'THE FOUNDER', sign:'THE FOUNDER'};
   }
   if(floorKey() !== 'f3') return null;
+  if(!S.flags.briefed && !S.flags.satDown) return {x:18, y:4, label:'DEE', sign:'LOBBY'};
   if(readyToShip())        return {x:27, y:7,  label:'VELOCITY',  sign:'VELOCITY'};
   if(S.build < buildCap()) return {x:4,  y:10, label:'YOUR DESK', sign:'YOUR DESK'};
   if(!S.approvals.code)    return (S.flags.priya_task && !S.flags.jordan_done)
@@ -2561,8 +2562,9 @@ function nextStep(){
     return g ? '→ ' + g.who.split(' ')[0] + ' · ' + g.what : '→ THE FOUNDER';
   }
   if(floorKey() !== 'f3') return curMap().short;
-  if(readyToShip())        return '→ VELOCITY';
-  if(S.build < buildCap()) return '→ Desk · ' + buildCap() + '%';
+  if(!S.flags.briefed && !S.flags.satDown) return '\u2192 Dee \u00b7 your onboarding buddy';
+  if(readyToShip())        return '\u2192 VELOCITY';
+  if(S.build < buildCap()) return '\u2192 Desk \u00b7 ' + buildCap() + '%';
   if(!S.approvals.code)    return S.flags.priya_task && !S.flags.jordan_done ? '→ Jordan · get him off her calendar' : '→ Priya · review';
   if(!S.approvals.sec)     return '→ Marcus · security';
   if(!S.approvals.design)  return '→ Kai · design';
@@ -4688,6 +4690,45 @@ async function offerMonitor(n){
   toast('Side quest: ask Jordan how to phrase a requisition.');
 }
 
+/* She used to deliver eleven lines whether you wanted them or not, and only
+   four of them told you anything. Now she has topics and you pull them, which
+   is shorter, funnier per line, and repeatable when you forget. */
+const DEETOPICS = [
+  {q:'How does a day go?', lines:[
+    'You build at your desk until you hit something you cannot clear on your own.',
+    'Then you get up. You find the person. You wait for the person.',
+    'Build, then Priya. Build, then Marcus. Build, then Kai. Then the Roadmap Review.',
+    'The arrow top-right says who is next. It is usually right, and when it is wrong it is wrong on purpose.'
+  ]},
+  {q:'What are the two bars?', lines:[
+    'Performance and Social. Performance is what the org measures. Social is what it remembers.',
+    'Heads-down time takes the first one up and the second one down. Being reachable does it the other way.',
+    'Nobody here is good at both. The ones who look like it have a manager who writes it down for them.',
+    'Neither one can stop you shipping. They decide what the year-end packet says about how you did it.'
+  ]},
+  {q:'Somebody is talking to me. Now what?', lines:[
+    'Listen for the thing they want that is not the thing they said. It is never the thing they said.',
+    'If you have already found out what that is \u2014 read the doc, saw the chart, talked to somebody else \u2014 the right answer gets marked for you.',
+    'That is the entire skill. It is not on the job description, and it is most of the job.'
+  ]},
+  {q:'Anything I should avoid?', lines:[
+    'Don\u2019t cross the open floor unless you have to. People see you walking and it reminds them they have questions.',
+    'And you\u2019re already redesigning the onboarding in your head. Don\u2019t. Someone did that. It\u2019s in Kubernetes now.'
+  ]}
+];
+
+async function deeAsk(n, hold){
+  const seen = {};
+  for(;;){
+    const opts = DEETOPICS.map((t,i)=>({label:t.q, note: seen[i] ? 'again' : ''}));
+    opts.push({label:'That\u2019s everything, thanks.'});
+    const i = await choose('Ask Dee.', opts);
+    if(i >= DEETOPICS.length) return;
+    seen[i] = 1;
+    hold(); await say(n.name, DEETOPICS[i].lines);
+  }
+}
+
 async function npcTalk(n){
   mode = 'dialogue';
   const F = S.flags;
@@ -4701,19 +4742,16 @@ async function npcTalk(n){
     if(!F.briefed){
       F.briefed = 1;
       hold(); await say(n.name,[
-        'You must be the new engineer. Welcome! Laptop’s provisioned, badge opens two of the four doors.',
-        'You’re the Lighthouse hire. Right. Slight thing.',
-        'Lighthouse has been fully staffed since before your req went out. I don’t know why the req went out.',
-        'You’re on Platform. Platform is where we put people while we work out where to put them. It is not a demotion, it is a placement.',
-        'And you’re already redesigning the onboarding in your head. Don’t. Someone did that. It’s in Kubernetes now.',
+        'You must be the new engineer. Welcome! Laptop\u2019s provisioned, badge opens two of the four doors.',
+        'You\u2019re the Lighthouse hire. Right. Slight thing.',
+        'Lighthouse has been fully staffed since before your req went out. I don\u2019t know why the req went out.',
+        'You\u2019re on Platform. Platform is where we put people while we work out where to put them. It is not a demotion, it is a placement.',
         'Your first ticket is LDS-4417. A settings toggle. Eleven months in the backlog, estimated at two points.',
-        'Ship it and you’re real. Nobody on this floor is real until they have shipped something.',
-        'You build at your desk — the pod behind me — until you hit something you cannot clear on your own.',
-        'So you get up. You find the person. You wait for the person. You come back and build a bit more.',
-        'Build, then Priya. Build, then Marcus. Build, then Kai. Then the Roadmap Review.',
-        'And don’t cross the open floor unless you have to. People see you walking and it reminds them they have questions.'
+        'Ship it and you\u2019re real. Nobody on this floor is real until they have shipped something.',
+        'Ask me anything. I have forty minutes and a checklist with nine items.'
       ]);
-      toast('Go to your desk — the pod behind Dee.');
+      await deeAsk(n, hold);
+      toast('Go to your desk \u2014 the pod behind Dee.');
     } else if(readyToShip()){
       hold(); await say(n.name,[
         'All three? On day one?',
@@ -4723,11 +4761,14 @@ async function npcTalk(n){
         'Good luck. That is a real thing I am saying, not a scheduled check-in.'
       ]);
     } else {
-      hold(); await say(n.name,[
-        'Still going? Build it at your desk, then Priya, Marcus and Kai for the sign-offs. In whatever order they’re free, which is none.',
-        'And no, I can’t get you onto Lighthouse. I have asked. On my own behalf, twice.',
-        'You’re doing great. That’s not feedback, that’s just something I say.'
-      ]);
+      /* she is a reference desk now, so coming back is the point */
+      hold(); await say(n.name, S.flags.dee_again
+        ? ['Back again. Good \u2014 nobody asks twice.',
+           'And no, I can\u2019t get you onto Lighthouse. I have asked. On my own behalf, twice.']
+        : ['Still going? Ask away, the checklist is not going anywhere.',
+           'You\u2019re doing great. That\u2019s not feedback, that\u2019s just something I say.']);
+      S.flags.dee_again = 1;
+      await deeAsk(n, hold);
     }
     return done();
   }
