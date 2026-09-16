@@ -22,7 +22,7 @@ Other files in this repo (`book-picker*.html`, `eleonores_*`, `frodo-*`,
 # syntax check (node --check does not parse HTML; extract the script first)
 node -e "const s=require('fs').readFileSync('ship_it_rpg.html','utf8');const m=s.match(/<script>([\s\S]*)<\/script>/);require('fs').writeFileSync('/tmp/game.js',m[1]);" && node --check /tmp/game.js
 
-# the playtests (about 8 minutes for all six)
+# the playtests (about 12 minutes for all nine)
 NODE_PATH=/opt/node22/lib/node_modules node tools/playtest.js            # all suites
 NODE_PATH=/opt/node22/lib/node_modules node tools/playtest.js desk loop   # some suites
 NODE_PATH=/opt/node22/lib/node_modules node tools/playtest.js desk --shots /tmp/shots   # with screenshots
@@ -36,9 +36,10 @@ icons, manifest, save codes, migration, settings), `mobile` (the platform:
 no sideways scroll, thumb-sized controls, the portrait guard, autosave on
 backgrounding, corrupt and unwritable saves), `ch2` (the sixth floor end to
 end: the elevator, the nameplate, three sign-offs, the founder's door, the
-fight and the slide), `journey` (a new save to the end of chapter two through
-the real gates, doors and fights — the only suite that takes no structural
-shortcut, and the one that proves the game is finishable). `desk` and
+conversation with him and the slide), `journey` (a new save to the end of
+chapter two through the real gates, doors and rooms, played at 0/0 ratings —
+the only suite that takes no structural shortcut, and the one that proves the
+game is finishable). `desk` and
 `journey` are slow on purpose.
 
 `journey` is the suite to trust when you change progression. Every other suite
@@ -59,7 +60,9 @@ git push -u origin claude/html-rpg-cloud-hosting-wze8lp
 ```
 
 Then republish `build/ship-it.html` to the **existing** artifact:
-`https://claude.ai/code/artifact/6443caa7-4ec6-4a49-8ef0-f2414929be84`
+`https://claude.ai/artifact/DP77KQYfbb2aZJBRFz3VXh`
+(the service reissued this URL at v2.0.0; the old
+`claude.ai/code/artifact/6443caa7-…` form still resolves)
 (pass that as `url`; publishing without it creates a duplicate; favicon 🚢).
 If the publish is refused as "not built on the newer version", read the saved
 copy it points at and diff it against your previous build — so far it has
@@ -72,18 +75,18 @@ why, in plain sentences. No model names anywhere in the repo.
 ## How the code is laid out (search for the banner comments)
 
 `STATE` → `MAP` → `CANVAS / RENDER` → `MOVEMENT` → `DERIVED STATS` →
-`BATTLE` → `BUILD TOOLS` → `SAVE` → `SIDE QUESTS` → `INTERACTION` → `NPCS`
-→ `ENDING` → `INPUT` → `BOOT`. Data tables sit near the top (`TILE`,
-`FLOOR3`, `TICKETS`, `SKILLS`, `ITEMS`, `ENEMIES`, `INTERRUPTS`, `MEETINGS`,
-`SIDEQUESTS`, `SIGNS`, `NPCS`, `TOOLS`).
+`THE TWO RATINGS` → `THE CALL` → `THE DESK` → `BUILD TOOLS` → `SAVE` →
+`SIDE QUESTS` → `INTERACTION` → `NPCS` → `ENDING` → `INPUT` → `BOOT`. Data
+tables sit near the top (`TILE`, `FLOOR3`, `TICKETS`, `SOCIALTIERS`, `ITEMS`,
+`SCENES`, `HALLWAY`, `INTERRUPTS`, `MEETINGS`, `SIDEQUESTS`, `SIGNS`, `NPCS`,
+`TOOLS`, `TUTDECK`, `DEETOPICS`).
 
 ### Modes
-`mode` ∈ title / dialogue / choice / field / menu / shop / battle / desk.
+`mode` ∈ title / dialogue / choice / field / menu / shop / scene / desk.
 `say()` and `choose()` return promises; NPC conversations use `hold()` to
 keep mode = dialogue across chained lines. `S` is the save state (null on
-the title). `D` is the live desk session, `B` the live battle. Guard with
-`if(!S)`, `if(!D || D.over)`, `if(!B || B.over)` — those null derefs have
-bitten before.
+the title). `D` is the live desk session, `C` the live conversation. Guard
+with `if(!S)` and `if(!D || D.over)` — those null derefs have bitten before.
 
 ### Field
 Tile map in `FLOOR3` (ASCII, every row the same width — a validator will
@@ -105,7 +108,7 @@ upstairs reads as a different building. `goFloor(key)` is the ride.
 `buildCap()` is 35 until code review (Priya), 70 until security review
 (Marcus), 100 after; `capBlocker()` explains; design review (Kai) needs the
 CTF (Brooke); `readyToShip()` = all approvals and build 100 → VELOCITY →
-Brayden boss → `ending()`. The portal card lists the seven steps.
+the Brayden scene → `ending()`. The portal card lists the seven steps.
 
 Two gates have a person in front of the person: **Priya will not review until
 Jordan is off her calendar** (`flags.priya_task` → `flags.jordan_done`), and
@@ -259,23 +262,20 @@ The premise: every hour heads-down is an hour you were not reachable. Heads Down
 is the purest form of it and is priced hardest — it was the move with no cost at
 all before this, which is why it was suspected of being strictly best.
 
-**Nothing a rating does can strand you.** They bend boss stats (`scaleBoss()`
-off the pristine `BASEBOSS` copy, so it never compounds across days), shop
-prices (`shopScale()`, shown with a ▴/▾ on the tag), XP (`xpScale()`), whether
-`helps` cards appear at all, and the review lines in `ending()`. They never
-touch `buildCap()`, `capBlocker()`, `readyToShip()`, `nextStep()` or any gate.
-`journey` runs the **entire playthrough at 0/0** for exactly this reason: if it
-finishes, no rating can close a gate. Do not "improve" this by having low
-performance shrink the build cap — that was proposed and rejected, because it
-soft-locks the run.
+**Nothing a rating does can strand you.** They bend shop prices
+(`shopScale()`, shown with a ▴/▾ on the tag), whether `helps` cards appear at
+all, and the review lines in `ending()`. They never touch `buildCap()`,
+`capBlocker()`, `readyToShip()`, `nextStep()` or any gate. `journey` runs the
+**entire playthrough at 0/0** for exactly this reason: if it finishes, no rating
+can close a gate. Do not "improve" this by having low performance shrink the
+build cap — that was proposed and rejected, because it soft-locks the run.
 
-**A difficulty scale must never inflate boss HP.** The first version of
-`bossScale()` multiplied hp, atk and def together by 1.16 at low performance,
-and `journey` at perf 0 then hit the round cap on Brayden and could not finish
-the chapter — a rating that soft-locked the run through combat rather than
-through a gate. It now returns separate `{hp, atk, def}` factors and leaves hp
-alone going up: a low rating makes the room hit harder, never last longer. Run
-`tools/sim.js` after touching any of it.
+**The lesson that outlived the code it came from:** a rating must not be able to
+soft-lock the run *by any route*, not just by closing a gate. Back when there
+were fights, low performance scaled boss hp, atk and def together by 1.16, and
+`journey` at perf 0 hit the round cap on Brayden and could not finish the
+chapter. Combat is gone, but if you ever make a rating bend a challenge again,
+bend how hard it hits and never how long it lasts.
 
 **A rating move has to be visible on the bar.** Two points is under two pixels
 of a 78px meter, so the fill was technically animating and visibly doing
@@ -472,7 +472,7 @@ the overlay is up.
 on `blur`, and re-boots the audio context when the app comes back (iOS suspends
 it in the background and it never resumes on its own). `autosave(force)` is
 throttled to 1.5 s unless forced, and is also called at checkpoints: the end of
-a fight, each approval, and the end of a desk session. Nothing in the game asks
+a conversation, each approval, and the end of a desk session. Nothing in the game asks
 the player to save.
 
 `watchErrors()` saves and toasts once on an uncaught error or rejection.
@@ -545,19 +545,22 @@ Bad: *"Managers like Brayden are what's wrong with tech."* (moralizes.)
    you add is another reason to walk into a room you did not have to.
 
 Done, so do not redo: the two ratings and their meters, the finite merge queue,
-the visual pass (office, title, offer letter, battle,
+the visual pass (office, title, offer letter, the call,
 desk, portal, dialogue, list screens all share one look), the app icons, the
 lifecycle work, chapter two's spine (map, cast, gates, boss, ending), all four
 Floor 6 side quests, and the per-day variation in the loop. Mara's surname is
 Okafor, fixed in `ch2Ending()`.
 
-### Measured length (v1.5.0)
-Both chapters on the critical path run 40–45 minutes; with every side quest
-and some exploring, 60–75. Derived from: a near-optimal bot builds a 35% desk
-chunk in 18s (a human is 4–5× slower), Brayden is 22s of raw tapping and Rand
-31s, and there are 9,463 words of player-facing text of which one playthrough
-sees roughly half. Keep it in the 60–90 minute band; the wit is the product
-and padding kills it.
+### Measured length — **stale, needs redoing**
+The 40–45 minute figure was measured at v1.5.0, when eight fights sat on the
+critical path and every one of them was ten to twenty rounds of tapping. Those
+are conversations now, which are faster to play and slower to read, and the
+word count went the other way (roughly 23,000 player-facing words against
+9,463). Nobody has re-measured since.
+
+Keep it in the 60–90 minute band; the wit is the product and padding kills it.
+If it now runs short, the fix is more scenes and more `tell` flags, not longer
+ones.
 
 ## Playtest save codes
 
