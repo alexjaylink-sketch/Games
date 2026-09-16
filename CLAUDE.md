@@ -277,6 +277,19 @@ through a gate. It now returns separate `{hp, atk, def}` factors and leaves hp
 alone going up: a low rating makes the room hit harder, never last longer. Run
 `tools/sim.js` after touching any of it.
 
+**A rating move has to be visible on the bar.** Two points is under two pixels
+of a 78px meter, so the fill was technically animating and visibly doing
+nothing. `bumpMeter()` lights the ground covered as a segment across the track
+— floored at 8px so a small move still reads — and pulses the meter and its
+number. It runs after `syncHUD()`, so the fill is already sliding to its new
+width underneath.
+
+**`.meter .fil` needs `display:block`.** Every fill is an `<i>`, an inline box
+ignores width, and all four meters — Focus, Caffeine, Social, Performance —
+shipped rendering completely empty. Nobody noticed until a playtester asked why
+the bars never went up: they never went anywhere, because they were never drawn.
+The `mobile` suite measures all four now.
+
 The card carries its own price before you press it: the Deal and Snooze buttons
 print their deltas, and a `.cost` row underneath prints what doing nothing
 costs. `tag()` renders a `RATES` entry, so the table is the single source of
@@ -285,7 +298,12 @@ truth for both the effect and the label.
 ### Session goals — the tools are finite now
 The playtester said the Merge Queue felt endless, and it was: its only objective
 was an abstract percentage that lived outside the minigame. A merge queue has a
-length, so now it has one — **24 commits, merge 5 rows before they run out**.
+length, so now it has one — **24 commits, merge 5 rows before they run out**,
+easing in over your first sittings (`QUEUES`/`GOALS`, on the same `S.sessions`
+counter the fall speed and the ping cadence already ramp on): **30 commits for 3
+rows**, then 27 for 4, then 24 for 5. Five out of twenty-four needs about sixty
+percent of every commit packed with no waste, which is not a first go at
+anything.
 `spawn()` ends the session when the queue is dry (`'short'`) and `lock()` ends
 it the moment the fifth row merges (`'done'`).
 

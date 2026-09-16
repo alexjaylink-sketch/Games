@@ -870,6 +870,32 @@ SUITES.desk = async browser => {
   /* ---- the queue is finite and the goal is the session ---- */
   const q = await d.state(() => D.g.peek());
   ok('the merge queue has a length', q.queue === 24 && q.need === 5, q.queue + ' commits, need ' + q.need + ' merges');
+
+  /* five rows out of twenty-four is most of a board packed perfectly, which is
+     not a first go at anything */
+  const qRamp = await d.state(() => {
+    const was = S.sessions, out = [];
+    for (const n of [0, 1, 2]) { S.sessions = n; D.g.start(); const g = D.g.peek(); out.push([g.queue, g.need]); }
+    S.sessions = was; D.g.start();
+    return out;
+  });
+  ok('your first sittings get a longer queue and a smaller number',
+     qRamp[0][0] > qRamp[2][0] && qRamp[0][1] < qRamp[2][1],
+     qRamp.map((r, i) => 's' + i + ' ' + r[0] + '/' + r[1]).join(', '));
+
+  /* a two-point move is under two pixels of bar, so the bar has to say so */
+  const lit = await d.state(() => {
+    D.away = 0; D.cards = []; document.getElementById('away').classList.remove('on');
+    S.social = 50; S.perf = 50;
+    const c = Object.assign({}, INTERRUPTS[0], { life: 9, maxLife: 9 });
+    D.cards.push(c); renderCards(); handleCard(c);
+    const g = document.querySelector('#dRates .meter.s .gain');
+    const m = document.querySelector('#dRates .meter.s');
+    return { ghost: !!g, dir: g && g.className, bump: m && m.classList.contains('bump'),
+             wide: g ? parseFloat(getComputedStyle(g).width) : 0 };
+  });
+  ok('a rating move lights the distance it travelled on the bar',
+     lit.ghost && /up/.test(lit.dir) && lit.wide >= 6 && lit.bump, JSON.stringify(lit));
   const shown = await d.state(() => document.getElementById('goalbar').textContent.replace(/\s+/g, ' ').trim());
   ok('  and says so on screen', /\/ 5/.test(shown) && /queue/.test(shown), shown);
   const drained = await d.state(() => {
@@ -941,6 +967,18 @@ SUITES.mobile = async browser => {
     .filter(x => x.r.width && (x.r.width < 40 || x.r.height < 40))
     .map(x => x.id + ' ' + Math.round(x.r.width) + 'x' + Math.round(x.r.height)));
   ok('controls stay thumb-sized on a small phone', small.length === 0, small.join(', '));
+
+  /* Every meter is an <i>, and an inline box ignores width. All four of them
+     shipped rendering completely empty until a playtester asked why the bars
+     never moved. */
+  const fills = await d.state(() => ['hFocus', 'hCaf', 'hSoc', 'hPerf'].map(id => {
+    const e = document.getElementById(id);
+    return { id, w: e.getBoundingClientRect().width, track: e.parentElement.getBoundingClientRect().width };
+  }));
+  ok('every meter actually draws its fill', fills.every(f => f.w > 1),
+     fills.map(f => f.id + ' ' + Math.round(f.w) + '/' + Math.round(f.track)).join(', '));
+  ok('  and a half-full one is about half', fills.filter(f => /Soc|Perf/.test(f.id))
+     .every(f => f.w > f.track * 0.3 && f.w < f.track * 0.7));
 
   /* ---- a tablet held sideways gets its own layout ---- */
   const boardAt = async (w, h) => {

@@ -80,8 +80,20 @@ button{font-family:inherit;color:inherit}
 }
 .meter{flex:0 1 78px;min-width:48px}
 .meter .lab{display:flex;justify-content:space-between;font-size:9px;color:var(--dim);letter-spacing:.6px;margin-bottom:2px}
-.meter .trk{height:7px;background:#080b11;border-radius:4px;overflow:hidden;border:1px solid var(--edge)}
-.meter .fil{height:100%;width:100%;border-radius:3px;transition:width .3s ease}
+.meter .trk{position:relative;height:7px;background:#080b11;border-radius:4px;overflow:hidden;border:1px solid var(--edge)}
+.meter .lab span:last-child{display:inline-block}
+/* the distance travelled, lit up for long enough to see */
+.meter .gain{position:absolute;top:0;bottom:0;border-radius:3px;opacity:0;pointer-events:none}
+.meter .gain.up{background:var(--ok);box-shadow:0 0 9px rgba(62,207,142,.95)}
+.meter .gain.down{background:var(--danger);box-shadow:0 0 9px rgba(224,87,107,.95)}
+.meter .gain.go{animation:gainflash .9s ease-out forwards}
+@keyframes gainflash{0%{opacity:0}12%{opacity:1}58%{opacity:1}100%{opacity:0}}
+.meter.bump .lab span:last-child{animation:numpop .55s ease-out}
+@keyframes numpop{0%{transform:scale(1)}32%{transform:scale(1.55)}100%{transform:scale(1)}}
+.meter.bump .trk{animation:trkpop .55s ease-out}
+@keyframes trkpop{0%,100%{box-shadow:none}38%{box-shadow:0 0 0 2px rgba(255,255,255,.22)}}
+.meter .fil{display:block;height:100%;width:100%;border-radius:3px;transition:width .3s ease}  /* <i> is inline: without display:block the width is ignored and every
+     meter in the game renders empty, which is how they all shipped */
 .meter.f .fil{background:linear-gradient(90deg,#2fae76,var(--focus))}
 .meter.c .fil{background:linear-gradient(90deg,#b47a2c,var(--caf))}
 .meter.s .fil{background:linear-gradient(90deg,#7a5bbf,#a582ea)}
@@ -1674,7 +1686,7 @@ const Sfx = {
 /* ==========================================================================
    STATE
    ========================================================================== */
-const BUILD = '2.1.1';                       /* shown in the UI so bug reports name a build */
+const BUILD = '2.2.0';                       /* shown in the UI so bug reports name a build */
 const SAVE_VERSION = 2;
 const SAVEKEY = 'shipit_lodestar_v2';
 const LEGACY_KEYS = ['shipit_vanta_v1'];     /* saves written before the rename */
@@ -2597,14 +2609,37 @@ function rate(kind, mult){
   if(!S) return;
   const r = RATES[kind]; if(!r) return;
   const m = mult === undefined ? 1 : mult;
+  const moved = [];
   for(const k of ['social','perf']){
     const d = Math.round(r[k]*m);
     if(!d) continue;
     const was = S[k];
     S[k] = Math.max(0, Math.min(100, was + d));
-    if(S[k] !== was) rateChip(k, S[k] - was, r.why);
+    if(S[k] !== was){ moved.push([k, was, S[k]]); rateChip(k, S[k] - was, r.why); }
   }
-  syncHUD();
+  syncHUD();                                   /* the fill slides to its new width */
+  for(const m2 of moved) bumpMeter(m2[0], m2[1], m2[2]);
+}
+
+/* Two points is under two pixels of a 78px meter, so the bar was technically
+   moving and visibly doing nothing. Draw the move itself: a lit segment across
+   the ground covered, floored at a width you can actually see, and a pulse on
+   the meter and its number so the eye is told which one changed. */
+function bumpMeter(k, was, now){
+  for(const pre of ['h','d']){
+    const fil = $(pre + (k === 'social' ? 'Soc' : 'Perf'));
+    if(!fil) continue;
+    const trk = fil.parentElement, meter = trk.parentElement;
+    let g = trk.querySelector('.gain');
+    if(!g){ g = document.createElement('i'); g.className = 'gain'; trk.appendChild(g); }
+    const lo = Math.min(was, now), hi = Math.max(was, now);
+    g.style.left = lo + '%';
+    g.style.width = 'max(8px, ' + (hi - lo) + '%)';
+    g.className = 'gain ' + (now > was ? 'up' : 'down');
+    void g.offsetWidth;                        /* restart the flash */
+    g.classList.add('go');
+    meter.classList.remove('bump'); void meter.offsetWidth; meter.classList.add('bump');
+  }
 }
 
 /* the number moving is the point; a chip floats off the meter that changed */
@@ -3263,8 +3298,13 @@ WORK.stack = (()=>{
   ];
   /* A merge queue has a length. Today's is QUEUE commits long and you need
      GOAL rows merged out of it. That is the session: not an abstract bar that
-     keeps going, a finite queue with a number on it. */
-  const QUEUE = 24, GOAL = 5;
+     keeps going, a finite queue with a number on it.
+     Your first sittings get a longer queue and a smaller number, on the same
+     S.sessions counter the fall speed and the ping cadence already ramp on:
+     five rows out of twenty-four needs about sixty percent of every commit
+     packed with no waste, which is not a thing anybody does on their first go. */
+  const QUEUES = [30, 27], GOALS = [3, 4];
+  let QUEUE = 24, GOAL = 5;
   let grid, piece, next, fallT, held, dasT, over, unattended = false;
   let spawned = 0, merged = 0;
   const g = {
@@ -3272,6 +3312,8 @@ WORK.stack = (()=>{
     topped:'The queue has backed up to the top of the screen. Nothing in this batch is going anywhere.',
     short:'The queue is empty. What got merged got merged. The rest goes back in and comes round again.',
     start(){
+      const sn = S.sessions|0;
+      QUEUE = QUEUES[sn] || 24; GOAL = GOALS[sn] || 5;
       grid = Array.from({length:H}, ()=>Array(W).fill(0));
       spawned = 0; merged = 0;
       next = mk(); spawn(); fallT = 0; held = null; dasT = 0; over = false;
