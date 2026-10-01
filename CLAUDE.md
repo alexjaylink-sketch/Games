@@ -601,8 +601,13 @@ replay twenty minutes to reach the part being tested. Regenerate them with
   on dialogue; wrap in braces `{ endDesk('quit'); }`.
 - `String.replace` with `$$` in the replacement string produces `$`. Use a
   function replacement or split/join.
-- `pgrep -f` matching its own command line; never put `pkill` and the
-  relaunch in the same shell command.
+- `pgrep -f` matching its own command line. The note used to be about `pkill`;
+  the worse version is waiting. `until ! pgrep -f "tools/playtest.js"; do sleep
+  45; done` never exits, because the shell running the loop has that string in
+  its own argv, so pgrep always finds itself. A whole session of waits each sat
+  there until the harness timed them out instead of returning when the suite
+  finished. Match the interpreter instead (`pgrep -x node`), or just let the
+  backgrounded run notify you and read its log.
 - Test bots that top out: the stacker heuristic needs holes, bumpiness and
   max height, not just aggregate height.
 - Referring to a Node-side variable inside `page.evaluate(() => ...)`. It runs
