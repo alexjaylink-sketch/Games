@@ -1222,7 +1222,7 @@ const SCENES = {
     who:'Jordan, Project Manager', art:'\u{1f4ca}', sub:'and two people who do not speak',
     title:'Sync: Delivery Risk (recurring)',
     tell:'saw_gantt',
-    tellLine:'You have seen the Gantt. The migration is on it twice, both times under Priya.',
+    tellLine:'You read the whiteboard by VELOCITY. The migration is on that Gantt twice, both under Priya, and Priya did not draw it.',
     open:['Jordan has started the call four minutes early and waited.',
           '“So — not a blocker. Just want to get ahead of the narrative.”'],
     pass:2,
@@ -1265,7 +1265,7 @@ const SCENES = {
     who:'Marcus, Security', art:'\u{1f6e1}\u{fe0f}', sub:'sharing his screen, which is all logs',
     title:'INCIDENT — SEV1 (auto-created)',
     tell:'saw_bucket',
-    tellLine:'You have seen the bucket. It is labelled temporary and it is four years old.',
+    tellLine:'You saw it on the unlocked laptop: prod-exports-temporary, public, created in 2021.',
     open:['Marcus does not say hello.',
           '“Something has been in these logs the entire time. It is not yours.”'],
     pass:1,
@@ -1304,7 +1304,7 @@ const SCENES = {
     who:'The Page', art:'\u{1f4df}', sub:'firing since 2019',
     title:'PAGE — 03:07 (recurring since 2019)',
     tell:'saw_runbook',
-    tellLine:'The runbook is taped under the desk. Page thirty-one is a diagram.',
+    tellLine:'You know about the runbook taped under a desk out there. Page thirty-one is a diagram.',
     open:['It has been paging at 03:07 for six years.',
           'Tonight, for the first time, somebody is looking at it.'],
     pass:1,
@@ -1331,6 +1331,8 @@ const SCENES = {
 
   ctf: {
     who:'Brooke, Culture', art:'\u{1f389}', sub:'holding a foam flag',
+    tell:'saw_scoreboard',
+    tellLine:'You read the scoreboard. She wrote EVERYONE WINS, and she wrote the "no" underneath it too.',
     title:'Q3 Team Building — Capture The Flag (Mandatory/Optional)',
     open:['You are handed a foam flag and a lanyard in a color you did not choose.',
           '“So you’re on Blue. Blue is the fun one. They’re all the fun one.”'],
@@ -1339,7 +1341,7 @@ const SCENES = {
       {line:'“Quick one before we start — what do you want out of today?”',
        opts:[
          {say:'“I want Kai to know I was here.”', good:1,
-          hint:'she would rather you say it than pretend',
+          hint:'she wrote the "no" herself',
           back:['“Oh thank god. Somebody who says it.”',
                 '“Everybody wants that. You are the first one who said it out loud.”']},
          {say:'“Team building. Genuinely.”',
@@ -1368,7 +1370,7 @@ const SCENES = {
     who:'Brayden, Product Manager', art:'\u{1f9e2}', sub:'screen shared on slide 1 of 14',
     title:'Q3 Roadmap Review — VELOCITY',
     tell:'read_doc',
-    tellLine:'You read the doc. Every section he added starts with the words "what if".',
+    tellLine:'You read the copy abandoned by the coffee. Every section he added starts with "what if", and none of them finish.',
     open:['Brayden has been in this room since eight.',
           '“Okay! So. Before we ship — and we are shipping — I want to pressure-test the shape.”'],
     pass:2,
@@ -1718,7 +1720,7 @@ const Sfx = {
 /* ==========================================================================
    STATE
    ========================================================================== */
-const BUILD = '2.4.0';                       /* shown in the UI so bug reports name a build */
+const BUILD = '2.5.0';                       /* shown in the UI so bug reports name a build */
 const SAVE_VERSION = 2;
 const SAVEKEY = 'shipit_lodestar_v2';
 const LEGACY_KEYS = ['shipit_vanta_v1'];     /* saves written before the rename */
@@ -4129,9 +4131,9 @@ function showBag(){
     label:ITEMS[k].name, sub:ITEMS[k].desc, tag:'x'+S.bag[k],
     on:()=>{
       const it = ITEMS[k];
-      if(it.focus && S.focus>=S.maxFocus && !it.caf) return toast('Your Focus is already full.');
+      if(it.focus && S.focus>=stamina() && !it.caf) return toast('Your Focus is already full.');
       S.bag[k]--; if(S.bag[k]<=0) delete S.bag[k];
-      if(it.focus) S.focus = Math.min(S.maxFocus, S.focus+it.focus);
+      if(it.focus) S.focus = Math.min(stamina(), S.focus+it.focus);
       if(it.caf)   S.caf   = Math.min(S.maxCaf, S.caf+it.caf);
       if(it.cure)  S.switched = 0;
       syncHUD(); toast('Used ' + it.name + '.'); showBag();
@@ -4559,9 +4561,12 @@ async function interact(){
     if(sq('laptop')) return say(null,'Devon\u2019s desk. The laptop is locked now. There is a sticky note on it that says THANK YOU.');
     mode = 'dialogue';
     try{
+    S.flags.saw_bucket = 1;
     await say(null,[
       'An empty desk. The laptop is open, unlocked, and logged in.',
       'There is a half-written message in the box. It begins "honestly".',
+      'Behind it, a storage console somebody left open. One bucket is highlighted. Access: public.',
+      'It is named prod-exports-temporary. It was created in 2021.',
       'Office custom on Floor 3 is extremely clear about what you are supposed to do here.'
     ]);
     const c = await choose('The laptop is unlocked.', [
@@ -4621,9 +4626,18 @@ async function interact(){
   }
 
   if(k==='counter'){
-    if(S.focus>=S.maxFocus && S.caf>=S.maxCaf)
+    if(!S.flags.read_doc){
+      S.flags.read_doc = 1;
+      await say(null,[
+        'Somebody printed a document and left it on the counter by the tap.',
+        'It is called Vision (WIP). It is eleven pages and the header on every one says CONFIDENTIAL \u2014 DO NOT PRINT.',
+        'Every section Brayden added starts with the words "what if".',
+        'None of them finish the sentence. They all become a new section.'
+      ]);
+    }
+    if(S.focus>=stamina() && S.caf>=S.maxCaf)
       return say(null,'The micro-kitchen. You are as restored as this floor can make you.');
-    S.focus = S.maxFocus; S.caf = S.maxCaf; S.switched = 0; syncHUD();
+    S.focus = stamina(); S.caf = S.maxCaf; S.switched = 0; syncHUD();
     return say(null,[
       'You take something from the wall of snacks and something cold from the tap.',
       'Focus and Caffeine restored. This is the third-best perk and everybody says so.'
@@ -4667,8 +4681,36 @@ async function interact(){
     return;
   }
   if(k==='board'){
-    if(ty<8) return say('Whiteboard',['Someone has written Q3 PRIORITIES, and beneath it six items.','All six are numbered 1.']);
-    return say('Scoreboard',['CAPTURE THE FLAG. Blue: 3. Red: 3. Green: 3.','Someone has written EVERYONE WINS.','Underneath, in different handwriting: "no".']);
+    if(ty<8){
+      const first = !S.flags.saw_gantt;
+      S.flags.saw_gantt = 1;
+      return say('Whiteboard', first
+        ? ['Someone has written Q3 PRIORITIES, and beneath it six items.',
+           'All six are numbered 1.',
+           'Down the right-hand side, a Gantt somebody drew in marker and nobody has erased.',
+           'The migration is on it twice. Both times under Priya.',
+           'Priya did not draw this.']
+        : ['Q3 PRIORITIES. Six items, all numbered 1.',
+           'The migration is still on there twice, still under Priya.']);
+    }
+    const seen = !S.flags.saw_scoreboard;
+    S.flags.saw_scoreboard = 1;
+    return say('Scoreboard', seen
+      ? ['CAPTURE THE FLAG. Blue: 3. Red: 3. Green: 3.',
+         'Someone has written EVERYONE WINS.',
+         'Underneath, in different handwriting: "no".',
+         'The second handwriting is the same as the handwriting on the sign-up sheet, which Brooke filled in herself.']
+      : ['CAPTURE THE FLAG. Blue: 3. Red: 3. Green: 3. EVERYONE WINS, and underneath, "no".']);
+  }
+  /* the first desk you actually look at, rather than walk past */
+  if(k==='desk' && !S.flags.saw_runbook){
+    S.flags.saw_runbook = 1;
+    return say(null,[
+      'Somebody\u2019s desk. Two monitors, a cable you cannot account for, a mug that has been there long enough to have a ring under it.',
+      'Taped underneath, where your knee would go, there is a runbook. Forty pages, handwritten.',
+      'Page thirty-one is a diagram. The rest is in a hand nobody on this floor writes in any more.',
+      'You leave it where it is. Whoever taped it there taped it there on purpose.'
+    ]);
   }
   if(k==='door') return say(null,'A doorway. It has a badge reader that has never once been armed.');
   const f = FLAVOR[k];
@@ -5591,7 +5633,7 @@ async function startCh2(){
   S.flags.ch2 = 1; S.flags.finished = 0;
   S.build = 0; S.minutes = 0;
   S.sign = {legal:0, comms:0, finance:0};
-  S.focus = S.maxFocus; S.caf = S.maxCaf;
+  S.focus = stamina(); S.caf = S.maxCaf;
   S.floor = 'f3'; S.x = MAP.start.x; S.y = MAP.start.y; S.dir = MAP.start.dir;
   buildMap(); resize();
   mode = 'dialogue';
@@ -5670,7 +5712,7 @@ async function nextDay(){
   S.flags.finished = 0;
   S.build = 0; S.minutes = 0;
   S.approvals = {code:1, sec:1, design:1};
-  S.focus = S.maxFocus; S.caf = S.maxCaf;
+  S.focus = stamina(); S.caf = S.maxCaf;
   S.x = MAP.start.x; S.y = MAP.start.y; S.dir = MAP.start.dir;
   const t = ticket(), m = dayMod();
   if(m && m.head) S.build = m.head;

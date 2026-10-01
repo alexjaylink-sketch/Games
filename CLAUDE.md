@@ -32,7 +32,8 @@ Suites: `smoke` (intro, field, a conversation, save), `chain` (desk/office must
 alternate through the gates), `loop` (chapter-one ending → day two → day
 three), `side` (five side quests), `desk` (all five build tools with in-page
 bots, interruption coupling, tutorial card), `store` (no network, fonts,
-icons, manifest, save codes, migration, settings), `mobile` (the platform:
+icons, manifest, save codes, migration, settings), `tells` (every scene names a tell, and something in the
+building sets it), `mobile` (the platform:
 no sideways scroll, thumb-sized controls, the portrait guard, autosave on
 backgrounding, corrupt and unwritable saves), `ch2` (the sixth floor end to
 end: the elevator, the nameplate, three sign-offs, the founder's door, the
@@ -424,6 +425,29 @@ somewhere else in the building. Holding it prints `tellLine` at the top of the
 transcript and marks the good reply with its `hint`. That is the whole reason to
 walk around: you are collecting what people actually want.
 
+**Four of the six shipped dead.** `saw_gantt`, `saw_bucket`, `saw_runbook` and
+`read_doc` were read by their scenes and written by nothing at all — the reader
+got built and the writers never did, so for four of six scenes the mechanic
+silently did nothing. Where each one lives now:
+
+| tell | where you find it | scene |
+|---|---|---|
+| `saw_gantt` | the whiteboard by VELOCITY — the migration is on the Gantt twice, both under Priya | Jordan |
+| `saw_bucket` | the unattended laptop — a public bucket named prod-exports-temporary, created 2021 | Marcus |
+| `saw_runbook` | the first desk you actually look at, rather than walk past | the 3am page |
+| `read_doc` | a copy of Vision (WIP) printed and abandoned by the coffee | Brayden |
+| `saw_scoreboard` | the CTF board — Brooke wrote EVERYONE WINS *and* the "no" under it | Brooke |
+| `said_mara` | the war-room nameplate, or finishing the Thing quest | Rand |
+
+Note `said_mara` is written as `F.said_mara` (where `F = S.flags`), so any audit
+that greps for `flags.<name>` alone will report it dead when it is not.
+
+**The `tells` suite exists so this cannot happen again.** It walks `SCENES`,
+asserts every scene names a tell, greps the source for a write site for each
+(all three alias forms), checks each has a `tellLine` and at least one `good`
+reply carrying a `hint`, and that holding the flag is what does the marking. It
+was negative-tested by pointing a scene at a flag nothing sets; it went red.
+
 `moment({who, lines, rate})` is the small version — no choices, used for the
 hallway. `beat()` prints lines and waits for one tap; `replies()` renders the
 options into `#smenu`.
@@ -540,9 +564,10 @@ Bad: *"Managers like Brayden are what's wrong with tech."* (moralizes.)
 3. A LICENSE file — the owner's call, not ours.
 4. A third chapter, if the game ever needs to be longer. Do not start it
    before watching somebody finish chapter two.
-5. More `tell` flags. Every scene supports one and only four are wired
-   (`saw_gantt`, `saw_bucket`, `saw_runbook`, `read_doc`, `said_mara`). Each one
-   you add is another reason to walk into a room you did not have to.
+5. More `tell` flags. All six scenes have one and all six are findable, but a
+   scene only supports a single tell. A second one per scene — a different
+   round, a different thing to have noticed — is the next step, and it needs
+   `scene()` to take `tell` as a list.
 
 Done, so do not redo: the two ratings and their meters, the finite merge queue,
 the visual pass (office, title, offer letter, the call,
@@ -601,6 +626,18 @@ replay twenty minutes to reach the part being tested. Regenerate them with
   live in that range. Removing the combat tables by lines 1086–1267 took `ITEMS`
   with them, because the asserts only checked the two endpoints. Assert on what
   is *inside* a range too, or match on text instead of numbers.
+- Two `page.evaluate` round trips are not atomic: an animation frame can land
+  between them. The flow-cashout check armed `d.cash` in one call and read it in
+  the next, and intermittently lost the race to the frame that spends it. Arm
+  and assert inside a single evaluate.
+- `d.advance(n)` stops the moment the dialogue ends, so cap it generously. A
+  beat written as `advance(4)` against a three-line `say()` breaks the instant
+  somebody adds a fourth line, and it fails as "no choice panel appeared"
+  several checks later rather than where the lines changed.
+- A flag that is read but never written is invisible to every behavioural test:
+  the code path runs, it just always takes the false branch. Four `tell` flags
+  shipped that way. If a feature reads state the world is supposed to set,
+  assert the write site exists, not just that the read compiles.
 - When you delete a section, list every symbol it defined and grep each one for
   surviving callers. `clockStr`, `hueOf` and `burnout` all lived inside the
   battle block and are all still wanted; three of them were only found by

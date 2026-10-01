@@ -434,6 +434,53 @@ SUITES.ch2 = async browser => {
   return d;
 };
 
+/* A tell the world never sets is invisible to every other check here: the scene
+   still runs, the reply is just never marked, and the whole reason to explore
+   quietly does nothing. Four of six shipped that way. */
+SUITES.tells = async browser => {
+  const d = await boot(browser);
+  section('tells — every scene names one, and the building can hand it to you');
+
+  const src = fs.readFileSync(path.join(__dirname, '..', 'ship_it_rpg.html'), 'utf8');
+  const scenes = await d.state(() => Object.keys(SCENES).map(k => ({
+    id: k, tell: SCENES[k].tell || null, line: !!SCENES[k].tellLine,
+    hinted: (SCENES[k].rounds || []).some(r => (r.opts || []).some(o => o.good && o.hint))
+  })));
+
+  ok('every scene names a tell', scenes.every(x => x.tell),
+     scenes.map(x => x.id + ':' + (x.tell || 'NONE')).join(' '));
+
+  for (const x of scenes) {
+    if (!x.tell) continue;
+    /* flags are written as S.flags.x, flags.x or F.x depending on the site */
+    const writes = (src.match(new RegExp('(?:S\\.flags|flags|F)\\.' + x.tell + '\\s*=\\s*1', 'g')) || []).length;
+    ok('  ' + x.id + ' — ' + x.tell + ' is set somewhere in the world', writes > 0,
+       writes + ' write site(s)');
+    ok('    and it has a line and a marked reply', x.line && x.hinted,
+       'tellLine ' + x.line + ', hinted reply ' + x.hinted);
+  }
+
+  /* and the marking actually reaches the player */
+  const marked = await d.state(async () => {
+    const out = {};
+    for (const id of Object.keys(SCENES)) {
+      const t = SCENES[id].tell;
+      for (const hold of [false, true]) {
+        hold ? (S.flags[t] = 1) : delete S.flags[t];
+        const known = !!(SCENES[id].tell && S.flags[SCENES[id].tell]);
+        const good = (SCENES[id].rounds || []).flatMap(r => r.opts || []).filter(o => o.good);
+        out[id + (hold ? '+' : '-')] = known && good.length ? 1 : 0;
+      }
+      delete S.flags[t];
+    }
+    return out;
+  });
+  ok('holding a tell is what makes a scene mark its reply',
+     Object.keys(marked).every(k => marked[k] === (k.endsWith('+') ? 1 : 0)));
+
+  return d;
+};
+
 SUITES.side = async browser => {
   const d = await boot(browser);
   section('side quests — five optional chains');
@@ -458,7 +505,9 @@ SUITES.side = async browser => {
   await d.interact(5, 2, 'up');
   ok('  pages stay re-readable', (await d.line()).length > 20); await d.advance();
 
-  await d.interact(13, 12, 'down'); await d.advance(4);
+  /* advance() stops as soon as the dialogue ends, so cap it generously rather
+     than at the exact line count — the laptop grew two lines and broke this */
+  await d.interact(13, 12, 'down'); await d.advance(14);
   const offered = await d.state(() => document.getElementById('choices').classList.contains('on'));
   ok('laptop offers a choice', offered);
   if (offered) { await d.pickChoice(0); await d.advance(); }
@@ -853,8 +902,10 @@ SUITES.desk = async browser => {
   /* ---- max flow is the only thing that undoes a meeting ---- */
   await d.page.evaluate(() => { D.away = 0; document.getElementById('away').classList.remove('on'); D.g.meeting(true); D.g.meeting(true); });
   const lockedWas = await d.state(() => D.g.peek().grid.filter(r => r.some(v => v === 'L')).length);
-  await d.page.evaluate(() => { workFlow(5); });
-  ok('hitting max flow arms a cashout for the next frame', await d.state(() => D.cash === 1));
+  /* arm and read in ONE evaluate: across two round trips a frame can land in
+     between, spend the cashout, and the check loses the race it is testing */
+  ok('hitting max flow arms a cashout for the next frame',
+     await d.state(() => { workFlow(5); return D.cash === 1; }));
   /* it is spent by deskUpdate, so wait for a frame rather than for a stopwatch:
      under a full run the animation frames do not always land inside 500ms */
   for (let t = 0; t < 40 && await d.state(() => !D || D.cash === 1); t++) await sleep(100);
